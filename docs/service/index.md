@@ -2,9 +2,16 @@
 
 The TrustyAI service.
 
-## Running
 
-### Locally
+## Explainers
+
+The TrustyAI service supports a number of explainers.
+
+### Time-series
+
+- [TSSaliency](explainers/time-series/tssaliency.md)
+
+
 
 The TrustyAI service includes several demos.
 
