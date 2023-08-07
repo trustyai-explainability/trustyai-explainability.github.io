@@ -13,3 +13,7 @@ TrustyAI provides a set of explainability algorithms and a set of bias and fairn
 The explainers provided are explained in more detail in the [explainers overview](algorithms/explainers/index.md) section.
 
 The metrics provided are explained in more detail in the [metrics overview](algorithms/metrics/index.md) section.
+
+## Quickstarts
+
+To get started with the TrustyAI service (the ODH component), see the [TrustyAI service quickstart](service/quickstart.md).
