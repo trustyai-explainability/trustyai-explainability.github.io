@@ -1,0 +1,17 @@
+:root {
+    --md-primary-fg-color:        #357c8c;
+    --md-primary-fg-color--light: #d9ecc7;
+    --md-primary-fg-color--dark:  #0c1e21;
+
+    --md-mermaid-node-fg-color: #357c8c;
+  }
+  
+/* Mermaid.js */
+
+  .labelBox {
+    stroke: #357c8c;
+  }
+
+  .actor {
+    stroke: #357c8c;
+  }

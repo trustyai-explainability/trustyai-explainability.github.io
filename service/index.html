@@ -1,0 +1,1743 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../python/">
+      
+      
+        <link rel="next" href="quickstart/">
+      
+      <link rel="icon" href="../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
+    
+    
+      
+        <title>Introduction - TrustyAI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#introduction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="TrustyAI" class="md-header__button md-logo" aria-label="TrustyAI" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TrustyAI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Introduction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="TrustyAI" class="md-nav__button md-logo" aria-label="TrustyAI" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    TrustyAI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Algorithms
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Algorithms
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+          Explainers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          Explainers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/explainers/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_1_2" id="__nav_2_1_2_label" tabindex="0">
+          Local
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Local
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/explainers/local/lime/" class="md-nav__link">
+        LIME
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          Metrics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Metrics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/metrics/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/metrics/dir/" class="md-nav__link">
+        Disparate impact ratio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/metrics/spd/" class="md-nav__link">
+        Statistical Parity Difference
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Python
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Python
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Service
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Service
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Introduction
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Introduction
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#explainers" class="md-nav__link">
+    Explainers
+  </a>
+  
+    <nav class="md-nav" aria-label="Explainers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    Time-series
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-data-in-storage-only" class="md-nav__link">
+    Using data in storage only
+  </a>
+  
+    <nav class="md-nav" aria-label="Using data in storage only">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#own-data-in-minio" class="md-nav__link">
+    Own data in MinIO
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consuming-kserve-v2-data" class="md-nav__link">
+    Consuming KServe v2 data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3-minio" class="md-nav__link">
+    S3 (MinIO)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metrics" class="md-nav__link">
+    Metrics
+  </a>
+  
+    <nav class="md-nav" aria-label="Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#statistical-parity-difference" class="md-nav__link">
+    Statistical Parity Difference
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metric-definitions" class="md-nav__link">
+    Metric Definitions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explainers_1" class="md-nav__link">
+    Explainers
+  </a>
+  
+    <nav class="md-nav" aria-label="Explainers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tssaliency" class="md-nav__link">
+    TSSaliency
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prometheus" class="md-nav__link">
+    Prometheus
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    Health checks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consuming-kserve-v2-payloads" class="md-nav__link">
+    Consuming KServe v2 payloads
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-info" class="md-nav__link">
+    Service info
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-featureoutput-names" class="md-nav__link">
+    Defining Feature/Output Names
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="quickstart/" class="md-nav__link">
+        Quickstart
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="running/" class="md-nav__link">
+        Running
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+          Explainers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4_4">
+          <span class="md-nav__icon md-icon"></span>
+          Explainers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_4_1" id="__nav_4_4_1_label" tabindex="0">
+          Time series
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_4_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4_4_1">
+          <span class="md-nav__icon md-icon"></span>
+          Time series
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="explainers/time-series/tssaliency/" class="md-nav__link">
+        TSSaliency
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+          Metrics
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4_5">
+          <span class="md-nav__icon md-icon"></span>
+          Metrics
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="metrics/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="metrics/dir/" class="md-nav__link">
+        Disparate Impact Ratio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="metrics/spd/" class="md-nav__link">
+        Statistical Parity Difference
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#explainers" class="md-nav__link">
+    Explainers
+  </a>
+  
+    <nav class="md-nav" aria-label="Explainers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    Time-series
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-data-in-storage-only" class="md-nav__link">
+    Using data in storage only
+  </a>
+  
+    <nav class="md-nav" aria-label="Using data in storage only">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#own-data-in-minio" class="md-nav__link">
+    Own data in MinIO
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consuming-kserve-v2-data" class="md-nav__link">
+    Consuming KServe v2 data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3-minio" class="md-nav__link">
+    S3 (MinIO)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metrics" class="md-nav__link">
+    Metrics
+  </a>
+  
+    <nav class="md-nav" aria-label="Metrics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#statistical-parity-difference" class="md-nav__link">
+    Statistical Parity Difference
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metric-definitions" class="md-nav__link">
+    Metric Definitions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explainers_1" class="md-nav__link">
+    Explainers
+  </a>
+  
+    <nav class="md-nav" aria-label="Explainers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tssaliency" class="md-nav__link">
+    TSSaliency
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prometheus" class="md-nav__link">
+    Prometheus
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    Health checks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consuming-kserve-v2-payloads" class="md-nav__link">
+    Consuming KServe v2 payloads
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-info" class="md-nav__link">
+    Service info
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-featureoutput-names" class="md-nav__link">
+    Defining Feature/Output Names
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="introduction">Introduction</h1>
+<p>The TrustyAI service.</p>
+<h2 id="explainers">Explainers</h2>
+<p>The TrustyAI service supports a number of explainers.</p>
+<h3 id="time-series">Time-series</h3>
+<ul>
+<li><a href="explainers/time-series/tssaliency/">TSSaliency</a></li>
+</ul>
+<p>The TrustyAI service includes several demos.</p>
+<ul>
+<li>generating data into storage, which can be monitored by the service</li>
+<li>or, having a process simulating sending KServe gRPC data to a consumer endpoint</li>
+</ul>
+<p>With either of these demos, the TrustyAI service will monitor the payloads and produce fairness metrics.</p>
+<p>The first step to run the demos locally, is to build the TrustyAI service container image.
+This can be done by running (on <code>$PROJECT/explainability-service</code>):</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mvn<span class="w"> </span>clean<span class="w"> </span>install<span class="w"> </span>-Dquarkus.container-image.build<span class="o">=</span><span class="nb">true</span>
+</span></code></pre></div>
+<h3 id="using-data-in-storage-only">Using data in storage only</h3>
+<p>To run this demo, first build the remaining images using:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>demo
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>compose-generator-memory-single-model.yaml<span class="w"> </span>build
+</span></code></pre></div>
+<p>Finally, run the demo using:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>compose-generator-memory-single-model.yaml<span class="w"> </span>up
+</span></code></pre></div>
+<p>Issue a metric request to, for instance:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://localhost:8080/metrics/spd/request&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s2">            \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="s2">            \&quot;requestName\&quot;: \&quot;lala\&quot;,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="s2">            \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="s2">            \&quot;favorableOutcome\&quot;:  1.0,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="s2">            \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="s2">            \&quot;privilegedAttribute\&quot;: 1.0,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="s2">            \&quot;unprivilegedAttribute\&quot;: 0.0</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="s2">        }&quot;</span>
+</span></code></pre></div>
+<p>And observe the <code>trustyai_spd</code> metric in Prometheus: http://localhost:9090</p>
+<h4 id="own-data-in-minio">Own data in MinIO</h4>
+<p>To use your own provided data, configure the MinIO container (by pre-populating it with data, according to
+the <a href="#s3-minio">steps below</a>)
+and run the container using (either <code>docker</code>, <code>podman</code>):</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">SERVICE_DATA_FORMAT</span><span class="o">=</span>CSV<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">SERVICE_STORAGE_FORMAT</span><span class="o">=</span><span class="s2">&quot;MINIO&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">MINIO_BUCKET_NAME</span><span class="o">=</span><span class="s2">&quot;inputs&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">MINIO_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://localhost:9000&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">STORAGE_DATA_FILENAME</span><span class="o">=</span><span class="s2">&quot;income-biased-inputs.csv&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">STORAGE_DATA_FOLDER</span><span class="o">=</span><span class="s2">&quot;/inputs&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">MINIO_SECRET_KEY</span><span class="o">=</span><span class="s2">&quot;minioadmin&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">MINIO_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;minioadmin&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span>--env<span class="w"> </span><span class="nv">SERVICE_METRICS_SCHEDULE</span><span class="o">=</span><span class="s2">&quot;5s&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span>trustyai/trustyai-service:999-SNAPSHOT<span class="w"> </span>-d<span class="w"> </span>
+</span></code></pre></div>
+<p>When using the metrics HTTP request, remember to adjust the feature names and values to what makes sense for your own
+data.</p>
+<h3 id="consuming-kserve-v2-data">Consuming KServe v2 data</h3>
+<p>Another demo includes a process with simulates sending gRPC encoded KServe v2 data to a <code>consumer</code> endpoint in the
+service.
+The service then parses the data and saves it into storage.</p>
+<p>To run it, start by building the necessary images with:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>demo
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>$<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>compose-generator-pvc-multi-model.yaml<span class="w"> </span>build
+</span></code></pre></div>
+<p>This demo uses a Docker bind mount, which on the host can be created with:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>~/volumes/pvc/inputs
+</span></code></pre></div>
+<blockquote>
+<p>Note:</p>
+<p>If you are having permission errors from the service, while saving the data to the volume, change the permissions
+with <code>cmhod 777 ~/volume/pvc/inputs</code></p>
+</blockquote>
+<p>The demo can then be started with:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>compose-generator-pvc-multi-model.yaml.yml<span class="w"> </span>up
+</span></code></pre></div>
+<p>After a few seconds, you will start seeing the logs showing both the payload sent</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>generator         | Sending data
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>trustyai-service  | 2023-02-18 12:22:13,572 INFO  [org.kie.tru.ser.end.con.ConsumerEndpoint] (executor-thread-1) Got payload on the consumer
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>trustyai-service  | 2023-02-18 12:22:13,572 INFO  [org.kie.tru.ser.end.con.ConsumerEndpoint] (executor-thread-1) [Feature{name=&#39;input-0&#39;, type=number, value=22.0}, Feature{name=&#39;input-1&#39;, type=number, value=5.0}, Feature{name=&#39;input-2&#39;, type=number, value=1.0}]
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>trustyai-service  | 2023-02-18 12:22:13,572 INFO  [org.kie.tru.ser.end.con.ConsumerEndpoint] (executor-thread-1) [Output{value=1.0, type=number, score=1.0, name=&#39;output-0&#39;}]
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>trustyai-service  | 2023-02-18 12:22:18,001 INFO  [org.kie.tru.ser.dat.par.CSVParser] (executor-thread-1) Creating dataframe from CSV data
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>trustyai-service  | 2023-02-18 12:22:18,001 INFO  [org.kie.tru.ser.dat.DataSource] (executor-thread-1) Batching with 5000 rows. Passing 73 rows
+</span></code></pre></div>
+<p>You can also inspect the data <code>~/volumes/pvc/inputs</code> in order to see what data is being serialised.</p>
+<h2 id="s3-minio">S3 (MinIO)</h2>
+<p>In order to set up MinIO for local development, first install the <a href="https://github.com/minio/mc">MinIO client</a> <code>mc</code>.
+Run the MinIO server with</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">   </span>-p<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">   </span>-p<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">   </span>--name<span class="w"> </span>minio<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">   </span>-v<span class="w"> </span>~/minio/trustyai-service/data:/data<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">   </span>-e<span class="w"> </span><span class="s2">&quot;MINIO_ROOT_USER=minioadmin&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">   </span>-e<span class="w"> </span><span class="s2">&quot;MINIO_ROOT_PASSWORD=minioadmin&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">   </span>quay.io/minio/minio<span class="w"> </span>server<span class="w"> </span>/data<span class="w"> </span>--console-address<span class="w"> </span><span class="s2">&quot;:9090&quot;</span>
+</span></code></pre></div>
+<p>Connect to MinIO using:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>mc<span class="w"> </span><span class="nb">alias</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nb">local</span><span class="w"> </span>http://127.0.0.1:9000<span class="w"> </span>minioadmin<span class="w"> </span>minioadmin
+</span></code></pre></div>
+<p>Now create a bucket, for instance, <code>inputs</code>:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>mc<span class="w"> </span>mb<span class="w"> </span>local/inputs
+</span></code></pre></div>
+<p>Copy a file into the bucket:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>mc<span class="w"> </span>cp<span class="w"> </span>data/income-biased-inputs.csv<span class="w"> </span>local/inputs
+</span></code></pre></div>
+<p>Optionally, check the file was successfully copies:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mc<span class="w"> </span>ls<span class="w"> </span>local/inputs
+</span></code></pre></div>
+<p>Which should produce:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>[2023-02-09 23:01:49 GMT]  68KiB income-biased-inputs.csv
+</span></code></pre></div>
+<h2 id="endpoints">Endpoints</h2>
+<p>The OpenAPI schema can be displayed using</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://localhost:8080/q/openapi&quot;</span>
+</span></code></pre></div>
+<h3 id="metrics">Metrics</h3>
+<p>Each of the metrics default bounds can be overridden with
+the corresponding environment variable, e.g.</p>
+<ul>
+<li><code>METRICS_SPD_THRESHOLD_LOWER</code></li>
+<li><code>METRICS_SPD_THRESHOLD_UPPER</code></li>
+<li><code>METRICS_DIR_THRESHOLD_LOWER</code></li>
+<li><em>etc</em></li>
+</ul>
+<h4 id="statistical-parity-difference">Statistical Parity Difference</h4>
+<p>Get statistical parity difference at <code>/metrics/spd</code></p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}/metrics/spd&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="s2">          \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="s2">          \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="s2">          \&quot;favorableOutcome\&quot;: 1.0,</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="s2">          \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="s2">          \&quot;privilegedAttribute\&quot;: 1.0,</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="s2">          \&quot;unprivilegedAttribute\&quot;: 0.0</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="s2">        }&quot;</span>
+</span></code></pre></div>
+<p>Returns:</p>
+<p>```http request
+HTTP/1.1 200 OK
+content-length: 199
+Content-Type: application/json;charset=UTF-8</p>
+<p>{
+  "type": "metric",
+  "name": "SPD",
+  "value": -0.2531969309462916,
+  "specificDefinition":"The SPD of -0.253196 indicates that the likelihood of Group:gender=1 receiving Outcome:income=1 was -25.3196 percentage points lower than that of Group:gender=0."
+  "timestamp": 1675850601910,
+  "thresholds": {
+    "lowerBound": -0.1,
+    "upperBound": 0.1,
+    "outsideBounds": true
+  },
+  "id": "ec435fc6-d037-493b-9efc-4931138d7656"
+}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>### Disparate Impact Ratio
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>```shell
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>curl -X POST --location &quot;http://{{host}}/metrics/dir&quot; \
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    -H &quot;Content-Type: application/json&quot; \
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    -d &quot;{
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>          \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>          \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>          \&quot;favorableOutcome\&quot;: 1.0,
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>          \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>          \&quot;privilegedAttribute\&quot;: 1.0,
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>          \&quot;unprivilegedAttribute\&quot;: 0.0
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        }&quot;
+</span></code></pre></div></p>
+<p>```http request
+HTTP/1.1 200 OK
+content-length: 197
+Content-Type: application/json;charset=UTF-8
+{
+  "type": "metric",
+  "name": "DIR",
+  "value": 0.3333333333333333,
+  "specificDefinition":"The DIR of 0.33333 indicates that the likelihood of Group:gender=1 receiving Outcome:income=1 is 0.33333 times that of Group:gender=0."
+  "id": "15f87802-30ae-424b-9937-1589489d6b4b",
+  "timestamp": 1675850775317,
+  "thresholds": {
+    "lowerBound": 0.8,
+    "upperBound": 1.2,
+    "outsideBounds": true
+  }
+}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>### Scheduled metrics
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>In order to generate period measurements for a certain metric, you can send a request to
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>the `/metrics/$METRIC/schedule`.
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>Looking at the SPD example above if we wanted the metric to be calculated periodically we would request:
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>```shell
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>curl -X POST --location &quot;http://{{host}}/metrics/spd/request&quot; \
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    -H &quot;Content-Type: application/json&quot; \
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    -d &quot;{
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>          \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>          \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>          \&quot;favorableOutcome\&quot;: 1.0
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>          \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>          \&quot;privilegedAttribute\&quot;: 1.0,
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>          \&quot;unprivilegedAttribute\&quot;: 0.0
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>        }&quot;
+</span></code></pre></div></p>
+<p>We would get a response with the schedule id for this specific query:</p>
+<p>```http request
+HTTP/1.1 200 OK
+content-length: 78
+Content-Type: application/json;charset=UTF-8</p>
+<p>{
+  "requestId": "3281c891-e2a5-4eb3-b05d-7f3831acbb56",
+  "timestamp": 1676031994868
+}
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>The metrics will now be pushed to Prometheus with the runtime provided `SERVICE_METRICS_SCHEDULE` configuration (
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>e.g. `SERVICE_METRICS_SCHEDULE=10s`)
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>which follows the [Quarkus syntax](https://quarkus.io/guides/scheduler-reference).
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>You can also specify the bias threshold deltas in the request body:
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>```shell
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>curl -X POST --location &quot;http://{{host}}/metrics/spd/request&quot; \
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    -H &quot;Content-Type: application/json&quot; \
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    -d &quot;{
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>          \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>          \&quot;thresholdDelta\&quot;: 0.05,
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>          \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>          \&quot;favorableOutcome\&quot;: 1.0,
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>          \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>          \&quot;privilegedAttribute\&quot;: 1.0,
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>          \&quot;unprivilegedAttribute\&quot;: 0.0
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>        }&quot;
+</span></code></pre></div></p>
+<p>This means that <em>this specific</em> metric request will consider SPD values within +/-0.05 to be fair, and values outside
+those bounds to be unfair.</p>
+<p>You can also specify the batch size in the request body:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}/metrics/spd/request&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="s2">          \&quot;modelId\&quot;: \&quot;example-model-1\&quot;,</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="s2">          \&quot;batchSize\&quot;: 1000,</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="s2">          \&quot;protectedAttribute\&quot;: \&quot;input-2\&quot;,</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="s2">          \&quot;favorableOutcome\&quot;: 1.0,</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="s2">          \&quot;outcomeName\&quot;: \&quot;output-0\&quot;,</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="s2">          \&quot;privilegedAttribute\&quot;: 1.0,</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="s2">          \&quot;unprivilegedAttribute\&quot;: 0.0</span>
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="s2">        }&quot;</span>
+</span></code></pre></div>
+<p>This mean that for <em>this specific</em> metric request the dataset used will
+consist of the last 1000 records.
+If the batch size is omitted, the default value is taken from the configuration variable <code>BATCH_SIZE</code> as the default.</p>
+<p>To stop the periodic calculation you can issue an HTTP <code>DELETE</code> request to the <code>/metrics/$METRIC/request</code> endpoint, with
+the id of periodic task we want to cancel in the payload.
+For instance:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/metrics/spd/request&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="s2">          \&quot;requestId\&quot;: \&quot;3281c891-e2a5-4eb3-b05d-7f3831acbb56\&quot;</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="s2">        }&quot;</span>
+</span></code></pre></div>
+<p>To list all currently active requests for a certain metric, use <code>GET /metrics/{{metric}}/requests</code>.
+For instance, to get all current scheduled SPD metrics use:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/metrics/spd/requests&quot;</span>
+</span></code></pre></div>
+<p>This will return, as an example:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>HTTP/1.1<span class="w"> </span><span class="m">200</span><span class="w"> </span>OK
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>Content-Type:<span class="w"> </span>application/json<span class="p">;</span><span class="nv">charset</span><span class="o">=</span>UTF-8
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>content-length:<span class="w"> </span><span class="m">271</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="o">{</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">  </span><span class="s2">&quot;requests&quot;</span>:<span class="w"> </span><span class="o">[</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="o">{</span>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">      </span><span class="s2">&quot;id&quot;</span>:<span class="w"> </span><span class="s2">&quot;ab46d639-6567-438b-a0aa-44ee9fd423a3&quot;</span>,
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">      </span><span class="s2">&quot;request&quot;</span>:<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">        </span><span class="s2">&quot;protectedAttribute&quot;</span>:<span class="w"> </span><span class="s2">&quot;input-2&quot;</span>,
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="w">        </span><span class="s2">&quot;favorableOutcome&quot;</span>:<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">          </span><span class="s2">&quot;type&quot;</span>:<span class="w"> </span><span class="s2">&quot;DOUBLE&quot;</span>,
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">          </span><span class="s2">&quot;value&quot;</span>:<span class="w"> </span><span class="m">1</span>.0
+</span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="w">      </span><span class="o">}</span>,
+</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="w">      </span><span class="s2">&quot;outcomeName&quot;</span>:<span class="w"> </span><span class="s2">&quot;output-0&quot;</span>,
+</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="w">      </span><span class="s2">&quot;privilegedAttribute&quot;</span>:<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-23-17"><a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span>:<span class="w"> </span><span class="s2">&quot;DOUBLE&quot;</span>,
+</span><span id="__span-23-18"><a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="w">        </span><span class="s2">&quot;value&quot;</span>:<span class="w"> </span><span class="m">1</span>.0
+</span><span id="__span-23-19"><a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="w">      </span><span class="o">}</span>,
+</span><span id="__span-23-20"><a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="w">      </span><span class="s2">&quot;unprivilegedAttribute&quot;</span>:<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-23-21"><a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="w">      </span><span class="s2">&quot;type&quot;</span>:<span class="w"> </span><span class="s2">&quot;DOUBLE&quot;</span>,
+</span><span id="__span-23-22"><a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="w">      </span><span class="s2">&quot;value&quot;</span>:<span class="w"> </span><span class="m">0</span>.0
+</span><span id="__span-23-23"><a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a><span class="w">      </span><span class="o">}</span>,
+</span><span id="__span-23-24"><a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="w">      </span><span class="s2">&quot;modelId&quot;</span>:<span class="w"> </span>null
+</span><span id="__span-23-25"><a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="w">    </span><span class="o">}</span>
+</span><span id="__span-23-26"><a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a><span class="w">  </span><span class="o">}</span>
+</span><span id="__span-23-27"><a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="o">]</span>
+</span><span id="__span-23-28"><a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="o">}</span>
+</span></code></pre></div>
+<h2 id="metric-definitions">Metric Definitions</h2>
+<p>To get a <em>general</em> definition of a metric, you can issue an HTTP <code>GET</code> request to the <code>/metrics/$METRIC/definition</code>
+endpoint:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>http://<span class="o">{{</span>host<span class="o">}}</span>:8080/metrics/<span class="o">{{</span>metric<span class="o">}}</span>/definition
+</span></code></pre></div>
+<p>returns</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Statistical Parity Difference (SPD) measures imbalances in classifications by calculating the difference between the proportion of the majority and protected classes getting a particular outcome. Typically, -0.1 &lt; SPD &lt; 0.1 indicates a fair model, while a value outside those bounds indicates an unfair model for the groups and outcomes in question&quot;
+</span></code></pre></div>
+<p>To get a <em>specific</em> definition of what a particular value means in the context of a specific computed metric,
+you can issue an HTTP <code>POST</code> request to the <code>/metrics/$METRIC/definition</code> endpoint. The body of this request will
+look identical to a normal metric request, except you will specify the metric value of interest within the <code>metricValue</code>
+field.
+This is equivalent to asking "If I computed this metric in this configuration, what would a value of $x mean?":</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/metrics/{metric}/definition&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="s2">          \&quot;protectedAttribute\&quot;: \&quot;gender\&quot;,</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="s2">          \&quot;favorableOutcome\&quot;: 1</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="s2">          \&quot;outcomeName\&quot;: \&quot;income\&quot;,</span>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="s2">          \&quot;privilegedAttribute\&quot;: 1</span>
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="s2">          \&quot;unprivilegedAttribute\&quot;: 0</span>
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="s2">          \&quot;metricValue\&quot;: 0.25</span>
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="s2">        }&quot;</span>
+</span></code></pre></div>
+<p>returns</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>The SPD of 0.250000 indicates that the likelihood of Group:gender=1 receiving Outcome:income=1 was 25.000000 percentage points higher than that of Group:gender=0.%
+</span></code></pre></div>
+<h2 id="explainers_1">Explainers</h2>
+<p>The TrustyAI service provides local and globalsexplainers. The supported explainers are:</p>
+<ul>
+<li>LIME</li>
+<li>SHAP</li>
+<li>Counterfactuals</li>
+<li>TSSaliency</li>
+<li>PDP</li>
+</ul>
+<h3 id="tssaliency">TSSaliency</h3>
+<p>Assuming there's a ModelMesh-deployed model at host <code>$MODELSERVER</code> and using a standard <code>8081</code> port, with
+name <code>$MODELNAME</code> and
+version <code>$MODELVERSION</code>, a TSSaliency explainer can be invoked with:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/explainers/local/tssaliency&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="s2">          \&quot;model\&quot;: {</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="s2">            \&quot;target\&quot;: &quot;</span><span class="nv">$MODELHOST</span>:8081<span class="s2">&quot;,</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="s2">            \&quot;name\&quot;: </span><span class="nv">$MODELNAME</span><span class="s2">,</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="s2">            \&quot;version\&quot;: </span><span class="nv">$MODELVERSION</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="s2">          },</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="s2">          \&quot;parameters\&quot;: {</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="s2">            \&quot;numberSamples\&quot;: 100,</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="s2">            \&quot;numberSteps\&quot;: 50,</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="s2">            \&quot;sigma\&quot;: 20.0,</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="s2">            \&quot;mu\&quot;: 0.1</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a><span class="s2">          },</span>
+</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="s2">          \&quot;data\&quot;: {</span>
+</span><span id="__span-28-16"><a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a><span class="s2">            \&quot;f1\&quot;: [</span>
+</span><span id="__span-28-17"><a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a><span class="s2">              -0.14040239,</span>
+</span><span id="__span-28-18"><a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a><span class="s2">              0.17164128,</span>
+</span><span id="__span-28-19"><a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a><span class="s2">              0.30204415,</span>
+</span><span id="__span-28-20"><a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a><span class="s2">              0.23280369,</span>
+</span><span id="__span-28-21"><a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a><span class="s2">              0.033852769,</span>
+</span><span id="__span-28-22"><a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a><span class="s2">              -0.22418335,</span>
+</span><span id="__span-28-23"><a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a><span class="s2">              -0.46998698,</span>
+</span><span id="__span-28-24"><a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a><span class="s2">              -0.64539614,</span>
+</span><span id="__span-28-25"><a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a><span class="s2">              -0.61769196</span>
+</span><span id="__span-28-26"><a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a><span class="s2">            ]</span>
+</span><span id="__span-28-27"><a id="__codelineno-28-27" name="__codelineno-28-27" href="#__codelineno-28-27"></a><span class="s2">          }</span>
+</span><span id="__span-28-28"><a id="__codelineno-28-28" name="__codelineno-28-28" href="#__codelineno-28-28"></a><span class="s2">      }&quot;</span>
+</span></code></pre></div>
+<p>Where <code>f1</code> is the time-series instance to be explained.
+The <code>parameters</code> section is optional and can be omitted, in which case the default values will be used.</p>
+<h2 id="prometheus">Prometheus</h2>
+<p>Whenever a metric endpoint is called with a HTTP request, the service also updates
+the corresponding Prometheus metric.</p>
+<p>The metrics are published at <code>/q/metrics</code> and can be consumed directly with Prometheus.
+The examples also include a Grafana dashboard to visualize them.</p>
+<p><img alt="" src="docs/grafana.jpg" /></p>
+<p>Each Prometheus metric is scoped to a specific <code>model</code> and attributes using tags.
+For instance, for the SPD metric request above we would have a metric:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>trustyai_spd{
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    favorable_value=&quot;1&quot;, 
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    instance=&quot;trustyai:8080&quot;, 
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    job=&quot;trustyai-service&quot;, 
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    model=&quot;example&quot;, 
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    outcome=&quot;income&quot;, 
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    privileged=&quot;1&quot;, 
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>    protected=&quot;gender&quot;, 
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    request=&quot;e4bf1430-cc33-48a0-97ce-4d0c8b2c91f0&quot;, 
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    unprivileged=&quot;0&quot;
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>}
+</span></code></pre></div>
+<h2 id="health-checks">Health checks</h2>
+<p>The service provides an health check endpoint at <code>/q/health</code>:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>curl<span class="w"> </span><span class="o">{{</span>host<span class="o">}}</span>:8080/q/health
+</span></code></pre></div>
+<h2 id="consuming-kserve-v2-payloads">Consuming KServe v2 payloads</h2>
+<p>The TrustyAI service provides an endpoint to consume KServe v2 inference payloads.
+When received, these will be persisted to the configured storage and used,
+for instance, in the calculation of metrics.</p>
+<p>The payload consists of a JSON object with an <code>input</code> and <code>output</code> fields, which
+contain the Base64 encoded raw bytes of the gRPC Protocol payload. As an example:</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/consumer/kserve/v2&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>-d<span class="w"> </span><span class="s2">&quot;{</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="s2">  \&quot;modelId\&quot;: \&quot;example-2\&quot;,</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="s2">  \&quot;input\&quot;: \&quot;CgdleGFtcGxlGg1teSByZXF1ZXN0IGlkKiUKBWlucHV0EgRGUDY0GgIBAyoSOhAAAAAAAABUQAAAAAAAABBA\&quot;,</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="s2">  \&quot;output\&quot;: \&quot;CgdleGFtcGxlGg1teSByZXF1ZXN0IGlkKh0KBWlucHV0EgRGUDY0GgIBASoKOggAAAAAAAAAAA==\&quot;</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="s2">}&quot;</span>
+</span></code></pre></div>
+<h2 id="service-info">Service info</h2>
+<p>To retrieve service info, you can issue a <code>GET /info</code>. This is will return currently registered scheduled metrics,
+number of
+observations in the dataset and dataset schema.</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://{{host}}:8080/info&quot;</span>
+</span></code></pre></div>
+<p>Will return, for instance</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>[
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>    {
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>        &quot;metrics&quot;: {
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>            &quot;scheduledMetadata&quot;: {
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>                &quot;spd&quot;: 1,
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>                &quot;dir&quot;: 0
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>            }
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>        },
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>        &quot;data&quot;: {
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>            &quot;inputSchema&quot;: {
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>                &quot;items&quot;: {
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>                    &quot;input-0&quot;: {
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-14"><a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>                        &quot;name&quot;: &quot;input-0&quot;,
+</span><span id="__span-33-15"><a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>                        &quot;index&quot;: 1
+</span><span id="__span-33-16"><a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a>                    }, 
+</span><span id="__span-33-17"><a id="__codelineno-33-17" name="__codelineno-33-17" href="#__codelineno-33-17"></a>                },
+</span><span id="__span-33-18"><a id="__codelineno-33-18" name="__codelineno-33-18" href="#__codelineno-33-18"></a>                nameMapping: {
+</span><span id="__span-33-19"><a id="__codelineno-33-19" name="__codelineno-33-19" href="#__codelineno-33-19"></a>                    &quot;input-0&quot;: &quot;Age&quot;,
+</span><span id="__span-33-20"><a id="__codelineno-33-20" name="__codelineno-33-20" href="#__codelineno-33-20"></a>                }
+</span><span id="__span-33-21"><a id="__codelineno-33-21" name="__codelineno-33-21" href="#__codelineno-33-21"></a>            },
+</span><span id="__span-33-22"><a id="__codelineno-33-22" name="__codelineno-33-22" href="#__codelineno-33-22"></a>            &quot;outputSchema&quot;: {
+</span><span id="__span-33-23"><a id="__codelineno-33-23" name="__codelineno-33-23" href="#__codelineno-33-23"></a>                &quot;items&quot;: {
+</span><span id="__span-33-24"><a id="__codelineno-33-24" name="__codelineno-33-24" href="#__codelineno-33-24"></a>                    &quot;output-0&quot;: {
+</span><span id="__span-33-25"><a id="__codelineno-33-25" name="__codelineno-33-25" href="#__codelineno-33-25"></a>                        &quot;type&quot;: &quot;INT32&quot;,
+</span><span id="__span-33-26"><a id="__codelineno-33-26" name="__codelineno-33-26" href="#__codelineno-33-26"></a>                        &quot;name&quot;: &quot;output-0&quot;,
+</span><span id="__span-33-27"><a id="__codelineno-33-27" name="__codelineno-33-27" href="#__codelineno-33-27"></a>                        &quot;index&quot;: 5
+</span><span id="__span-33-28"><a id="__codelineno-33-28" name="__codelineno-33-28" href="#__codelineno-33-28"></a>                    }
+</span><span id="__span-33-29"><a id="__codelineno-33-29" name="__codelineno-33-29" href="#__codelineno-33-29"></a>                },
+</span><span id="__span-33-30"><a id="__codelineno-33-30" name="__codelineno-33-30" href="#__codelineno-33-30"></a>                &quot;nameMapping:&quot; {
+</span><span id="__span-33-31"><a id="__codelineno-33-31" name="__codelineno-33-31" href="#__codelineno-33-31"></a>                    &quot;output-0&quot;: &quot;Income&quot;,
+</span><span id="__span-33-32"><a id="__codelineno-33-32" name="__codelineno-33-32" href="#__codelineno-33-32"></a>                }
+</span><span id="__span-33-33"><a id="__codelineno-33-33" name="__codelineno-33-33" href="#__codelineno-33-33"></a>            },
+</span><span id="__span-33-34"><a id="__codelineno-33-34" name="__codelineno-33-34" href="#__codelineno-33-34"></a>            &quot;observations&quot;: 105,
+</span><span id="__span-33-35"><a id="__codelineno-33-35" name="__codelineno-33-35" href="#__codelineno-33-35"></a>            &quot;modelId&quot;: &quot;example-model-1&quot;
+</span><span id="__span-33-36"><a id="__codelineno-33-36" name="__codelineno-33-36" href="#__codelineno-33-36"></a>        }
+</span><span id="__span-33-37"><a id="__codelineno-33-37" name="__codelineno-33-37" href="#__codelineno-33-37"></a>    },
+</span><span id="__span-33-38"><a id="__codelineno-33-38" name="__codelineno-33-38" href="#__codelineno-33-38"></a>    {
+</span><span id="__span-33-39"><a id="__codelineno-33-39" name="__codelineno-33-39" href="#__codelineno-33-39"></a>        &quot;metrics&quot;: {
+</span><span id="__span-33-40"><a id="__codelineno-33-40" name="__codelineno-33-40" href="#__codelineno-33-40"></a>            &quot;scheduledMetadata&quot;: {
+</span><span id="__span-33-41"><a id="__codelineno-33-41" name="__codelineno-33-41" href="#__codelineno-33-41"></a>                &quot;spd&quot;: 1,
+</span><span id="__span-33-42"><a id="__codelineno-33-42" name="__codelineno-33-42" href="#__codelineno-33-42"></a>                &quot;dir&quot;: 0
+</span><span id="__span-33-43"><a id="__codelineno-33-43" name="__codelineno-33-43" href="#__codelineno-33-43"></a>            }
+</span><span id="__span-33-44"><a id="__codelineno-33-44" name="__codelineno-33-44" href="#__codelineno-33-44"></a>        },
+</span><span id="__span-33-45"><a id="__codelineno-33-45" name="__codelineno-33-45" href="#__codelineno-33-45"></a>        &quot;data&quot;: {
+</span><span id="__span-33-46"><a id="__codelineno-33-46" name="__codelineno-33-46" href="#__codelineno-33-46"></a>            &quot;inputSchema&quot;: {
+</span><span id="__span-33-47"><a id="__codelineno-33-47" name="__codelineno-33-47" href="#__codelineno-33-47"></a>                &quot;items&quot;: {
+</span><span id="__span-33-48"><a id="__codelineno-33-48" name="__codelineno-33-48" href="#__codelineno-33-48"></a>                    &quot;input-0&quot;: {
+</span><span id="__span-33-49"><a id="__codelineno-33-49" name="__codelineno-33-49" href="#__codelineno-33-49"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-50"><a id="__codelineno-33-50" name="__codelineno-33-50" href="#__codelineno-33-50"></a>                        &quot;name&quot;: &quot;input-0&quot;,
+</span><span id="__span-33-51"><a id="__codelineno-33-51" name="__codelineno-33-51" href="#__codelineno-33-51"></a>                        &quot;index&quot;: 1
+</span><span id="__span-33-52"><a id="__codelineno-33-52" name="__codelineno-33-52" href="#__codelineno-33-52"></a>                    },
+</span><span id="__span-33-53"><a id="__codelineno-33-53" name="__codelineno-33-53" href="#__codelineno-33-53"></a>                     &quot;input-1&quot;: {
+</span><span id="__span-33-54"><a id="__codelineno-33-54" name="__codelineno-33-54" href="#__codelineno-33-54"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-55"><a id="__codelineno-33-55" name="__codelineno-33-55" href="#__codelineno-33-55"></a>                        &quot;name&quot;: &quot;input-1&quot;,
+</span><span id="__span-33-56"><a id="__codelineno-33-56" name="__codelineno-33-56" href="#__codelineno-33-56"></a>                        &quot;index&quot;: 2
+</span><span id="__span-33-57"><a id="__codelineno-33-57" name="__codelineno-33-57" href="#__codelineno-33-57"></a>                    }              
+</span><span id="__span-33-58"><a id="__codelineno-33-58" name="__codelineno-33-58" href="#__codelineno-33-58"></a>                },
+</span><span id="__span-33-59"><a id="__codelineno-33-59" name="__codelineno-33-59" href="#__codelineno-33-59"></a>                nameMapping: {
+</span><span id="__span-33-60"><a id="__codelineno-33-60" name="__codelineno-33-60" href="#__codelineno-33-60"></a>                    &quot;input-0&quot;: &quot;Age&quot;,
+</span><span id="__span-33-61"><a id="__codelineno-33-61" name="__codelineno-33-61" href="#__codelineno-33-61"></a>                    &quot;input-2&quot;: &quot;Race&quot;,
+</span><span id="__span-33-62"><a id="__codelineno-33-62" name="__codelineno-33-62" href="#__codelineno-33-62"></a>                }
+</span><span id="__span-33-63"><a id="__codelineno-33-63" name="__codelineno-33-63" href="#__codelineno-33-63"></a>            },
+</span><span id="__span-33-64"><a id="__codelineno-33-64" name="__codelineno-33-64" href="#__codelineno-33-64"></a>            &quot;outputSchema&quot;: {
+</span><span id="__span-33-65"><a id="__codelineno-33-65" name="__codelineno-33-65" href="#__codelineno-33-65"></a>                &quot;items&quot;: {
+</span><span id="__span-33-66"><a id="__codelineno-33-66" name="__codelineno-33-66" href="#__codelineno-33-66"></a>                    &quot;output-0&quot;: {
+</span><span id="__span-33-67"><a id="__codelineno-33-67" name="__codelineno-33-67" href="#__codelineno-33-67"></a>                        &quot;type&quot;: &quot;INT32&quot;,
+</span><span id="__span-33-68"><a id="__codelineno-33-68" name="__codelineno-33-68" href="#__codelineno-33-68"></a>                        &quot;name&quot;: &quot;output-0&quot;,
+</span><span id="__span-33-69"><a id="__codelineno-33-69" name="__codelineno-33-69" href="#__codelineno-33-69"></a>                        &quot;index&quot;: 5
+</span><span id="__span-33-70"><a id="__codelineno-33-70" name="__codelineno-33-70" href="#__codelineno-33-70"></a>                    }
+</span><span id="__span-33-71"><a id="__codelineno-33-71" name="__codelineno-33-71" href="#__codelineno-33-71"></a>                },
+</span><span id="__span-33-72"><a id="__codelineno-33-72" name="__codelineno-33-72" href="#__codelineno-33-72"></a>                &quot;nameMapping:&quot; {
+</span><span id="__span-33-73"><a id="__codelineno-33-73" name="__codelineno-33-73" href="#__codelineno-33-73"></a>                    &quot;output-0&quot;: &quot;Income&quot;,
+</span><span id="__span-33-74"><a id="__codelineno-33-74" name="__codelineno-33-74" href="#__codelineno-33-74"></a>                }
+</span><span id="__span-33-75"><a id="__codelineno-33-75" name="__codelineno-33-75" href="#__codelineno-33-75"></a>            },
+</span><span id="__span-33-76"><a id="__codelineno-33-76" name="__codelineno-33-76" href="#__codelineno-33-76"></a>            &quot;observations&quot;: 105,
+</span><span id="__span-33-77"><a id="__codelineno-33-77" name="__codelineno-33-77" href="#__codelineno-33-77"></a>            &quot;modelId&quot;: &quot;example-model-2&quot;
+</span><span id="__span-33-78"><a id="__codelineno-33-78" name="__codelineno-33-78" href="#__codelineno-33-78"></a>        }
+</span><span id="__span-33-79"><a id="__codelineno-33-79" name="__codelineno-33-79" href="#__codelineno-33-79"></a>    },
+</span><span id="__span-33-80"><a id="__codelineno-33-80" name="__codelineno-33-80" href="#__codelineno-33-80"></a>    {
+</span><span id="__span-33-81"><a id="__codelineno-33-81" name="__codelineno-33-81" href="#__codelineno-33-81"></a>        &quot;metrics&quot;: {
+</span><span id="__span-33-82"><a id="__codelineno-33-82" name="__codelineno-33-82" href="#__codelineno-33-82"></a>            &quot;scheduledMetadata&quot;: {
+</span><span id="__span-33-83"><a id="__codelineno-33-83" name="__codelineno-33-83" href="#__codelineno-33-83"></a>                &quot;spd&quot;: 1,
+</span><span id="__span-33-84"><a id="__codelineno-33-84" name="__codelineno-33-84" href="#__codelineno-33-84"></a>                &quot;dir&quot;: 0
+</span><span id="__span-33-85"><a id="__codelineno-33-85" name="__codelineno-33-85" href="#__codelineno-33-85"></a>            }
+</span><span id="__span-33-86"><a id="__codelineno-33-86" name="__codelineno-33-86" href="#__codelineno-33-86"></a>        },
+</span><span id="__span-33-87"><a id="__codelineno-33-87" name="__codelineno-33-87" href="#__codelineno-33-87"></a>        &quot;data&quot;: {
+</span><span id="__span-33-88"><a id="__codelineno-33-88" name="__codelineno-33-88" href="#__codelineno-33-88"></a>            &quot;inputSchema&quot;: {
+</span><span id="__span-33-89"><a id="__codelineno-33-89" name="__codelineno-33-89" href="#__codelineno-33-89"></a>                &quot;items&quot;: {
+</span><span id="__span-33-90"><a id="__codelineno-33-90" name="__codelineno-33-90" href="#__codelineno-33-90"></a>                    &quot;input-0&quot;: {
+</span><span id="__span-33-91"><a id="__codelineno-33-91" name="__codelineno-33-91" href="#__codelineno-33-91"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-92"><a id="__codelineno-33-92" name="__codelineno-33-92" href="#__codelineno-33-92"></a>                        &quot;name&quot;: &quot;input-0&quot;,
+</span><span id="__span-33-93"><a id="__codelineno-33-93" name="__codelineno-33-93" href="#__codelineno-33-93"></a>                        &quot;index&quot;: 1
+</span><span id="__span-33-94"><a id="__codelineno-33-94" name="__codelineno-33-94" href="#__codelineno-33-94"></a>                    },
+</span><span id="__span-33-95"><a id="__codelineno-33-95" name="__codelineno-33-95" href="#__codelineno-33-95"></a>                     &quot;input-1&quot;: {
+</span><span id="__span-33-96"><a id="__codelineno-33-96" name="__codelineno-33-96" href="#__codelineno-33-96"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-97"><a id="__codelineno-33-97" name="__codelineno-33-97" href="#__codelineno-33-97"></a>                        &quot;name&quot;: &quot;input-1&quot;,
+</span><span id="__span-33-98"><a id="__codelineno-33-98" name="__codelineno-33-98" href="#__codelineno-33-98"></a>                        &quot;index&quot;: 2
+</span><span id="__span-33-99"><a id="__codelineno-33-99" name="__codelineno-33-99" href="#__codelineno-33-99"></a>                    },
+</span><span id="__span-33-100"><a id="__codelineno-33-100" name="__codelineno-33-100" href="#__codelineno-33-100"></a>                    &quot;input-2&quot;: {
+</span><span id="__span-33-101"><a id="__codelineno-33-101" name="__codelineno-33-101" href="#__codelineno-33-101"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-102"><a id="__codelineno-33-102" name="__codelineno-33-102" href="#__codelineno-33-102"></a>                        &quot;name&quot;: &quot;input-1&quot;,
+</span><span id="__span-33-103"><a id="__codelineno-33-103" name="__codelineno-33-103" href="#__codelineno-33-103"></a>                        &quot;index&quot;: 3
+</span><span id="__span-33-104"><a id="__codelineno-33-104" name="__codelineno-33-104" href="#__codelineno-33-104"></a>                    },
+</span><span id="__span-33-105"><a id="__codelineno-33-105" name="__codelineno-33-105" href="#__codelineno-33-105"></a>                    &quot;input-3&quot;: {
+</span><span id="__span-33-106"><a id="__codelineno-33-106" name="__codelineno-33-106" href="#__codelineno-33-106"></a>                        &quot;type&quot;: &quot;DOUBLE&quot;,
+</span><span id="__span-33-107"><a id="__codelineno-33-107" name="__codelineno-33-107" href="#__codelineno-33-107"></a>                        &quot;name&quot;: &quot;input-3&quot;,
+</span><span id="__span-33-108"><a id="__codelineno-33-108" name="__codelineno-33-108" href="#__codelineno-33-108"></a>                        &quot;index&quot;: 4
+</span><span id="__span-33-109"><a id="__codelineno-33-109" name="__codelineno-33-109" href="#__codelineno-33-109"></a>                    }
+</span><span id="__span-33-110"><a id="__codelineno-33-110" name="__codelineno-33-110" href="#__codelineno-33-110"></a>                },
+</span><span id="__span-33-111"><a id="__codelineno-33-111" name="__codelineno-33-111" href="#__codelineno-33-111"></a>                nameMapping: {
+</span><span id="__span-33-112"><a id="__codelineno-33-112" name="__codelineno-33-112" href="#__codelineno-33-112"></a>                    &quot;input-0&quot;: &quot;Age&quot;,
+</span><span id="__span-33-113"><a id="__codelineno-33-113" name="__codelineno-33-113" href="#__codelineno-33-113"></a>                    &quot;input-2&quot;: &quot;Race&quot;,
+</span><span id="__span-33-114"><a id="__codelineno-33-114" name="__codelineno-33-114" href="#__codelineno-33-114"></a>                    &quot;input-3&quot;: &quot;Gender&quot;,
+</span><span id="__span-33-115"><a id="__codelineno-33-115" name="__codelineno-33-115" href="#__codelineno-33-115"></a>                    &quot;input-4&quot;: &quot;Employment&quot;,
+</span><span id="__span-33-116"><a id="__codelineno-33-116" name="__codelineno-33-116" href="#__codelineno-33-116"></a>                }
+</span><span id="__span-33-117"><a id="__codelineno-33-117" name="__codelineno-33-117" href="#__codelineno-33-117"></a>            },
+</span><span id="__span-33-118"><a id="__codelineno-33-118" name="__codelineno-33-118" href="#__codelineno-33-118"></a>            &quot;outputSchema&quot;: {
+</span><span id="__span-33-119"><a id="__codelineno-33-119" name="__codelineno-33-119" href="#__codelineno-33-119"></a>                &quot;items&quot;: {
+</span><span id="__span-33-120"><a id="__codelineno-33-120" name="__codelineno-33-120" href="#__codelineno-33-120"></a>                    &quot;output-0&quot;: {
+</span><span id="__span-33-121"><a id="__codelineno-33-121" name="__codelineno-33-121" href="#__codelineno-33-121"></a>                        &quot;type&quot;: &quot;INT32&quot;,
+</span><span id="__span-33-122"><a id="__codelineno-33-122" name="__codelineno-33-122" href="#__codelineno-33-122"></a>                        &quot;name&quot;: &quot;output-0&quot;,
+</span><span id="__span-33-123"><a id="__codelineno-33-123" name="__codelineno-33-123" href="#__codelineno-33-123"></a>                        &quot;index&quot;: 5
+</span><span id="__span-33-124"><a id="__codelineno-33-124" name="__codelineno-33-124" href="#__codelineno-33-124"></a>                    },
+</span><span id="__span-33-125"><a id="__codelineno-33-125" name="__codelineno-33-125" href="#__codelineno-33-125"></a>                    &quot;output-1&quot;: {
+</span><span id="__span-33-126"><a id="__codelineno-33-126" name="__codelineno-33-126" href="#__codelineno-33-126"></a>                            &quot;type&quot;: &quot;INT32&quot;,
+</span><span id="__span-33-127"><a id="__codelineno-33-127" name="__codelineno-33-127" href="#__codelineno-33-127"></a>                            &quot;name&quot;: &quot;output-1&quot;,
+</span><span id="__span-33-128"><a id="__codelineno-33-128" name="__codelineno-33-128" href="#__codelineno-33-128"></a>                            &quot;index&quot;: 6
+</span><span id="__span-33-129"><a id="__codelineno-33-129" name="__codelineno-33-129" href="#__codelineno-33-129"></a>                    }
+</span><span id="__span-33-130"><a id="__codelineno-33-130" name="__codelineno-33-130" href="#__codelineno-33-130"></a>                },
+</span><span id="__span-33-131"><a id="__codelineno-33-131" name="__codelineno-33-131" href="#__codelineno-33-131"></a>                &quot;nameMapping:&quot; {
+</span><span id="__span-33-132"><a id="__codelineno-33-132" name="__codelineno-33-132" href="#__codelineno-33-132"></a>                    &quot;output-0&quot;: &quot;Income&quot;,
+</span><span id="__span-33-133"><a id="__codelineno-33-133" name="__codelineno-33-133" href="#__codelineno-33-133"></a>                    &quot;output-1&quot;: &quot;Credit Score&quot;,
+</span><span id="__span-33-134"><a id="__codelineno-33-134" name="__codelineno-33-134" href="#__codelineno-33-134"></a>                }
+</span><span id="__span-33-135"><a id="__codelineno-33-135" name="__codelineno-33-135" href="#__codelineno-33-135"></a>            },
+</span><span id="__span-33-136"><a id="__codelineno-33-136" name="__codelineno-33-136" href="#__codelineno-33-136"></a>            &quot;observations&quot;: 85,
+</span><span id="__span-33-137"><a id="__codelineno-33-137" name="__codelineno-33-137" href="#__codelineno-33-137"></a>            &quot;modelId&quot;: &quot;example-model-3&quot;
+</span><span id="__span-33-138"><a id="__codelineno-33-138" name="__codelineno-33-138" href="#__codelineno-33-138"></a>        }
+</span><span id="__span-33-139"><a id="__codelineno-33-139" name="__codelineno-33-139" href="#__codelineno-33-139"></a>    }
+</span><span id="__span-33-140"><a id="__codelineno-33-140" name="__codelineno-33-140" href="#__codelineno-33-140"></a>]
+</span></code></pre></div>
+<h2 id="defining-featureoutput-names">Defining Feature/Output Names</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>--location<span class="w"> </span><span class="s2">&quot;http://localhost:8080/q/info&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">    </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="s1">        &quot;modelId&quot;: &quot;example-model-1&quot;, </span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="s1">        &quot;inputMapping&quot;: </span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="s1">            {</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="s1">                &quot;input-0&quot;: &quot;age&quot;, </span>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="s1">                &quot;input-1&quot;: &quot;race&quot;,</span>
+</span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a><span class="s1">                &quot;input-2&quot;: &quot;gender&quot;</span>
+</span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="s1">            },</span>
+</span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a><span class="s1">        &quot;outputMapping&quot;: </span>
+</span><span id="__span-34-12"><a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a><span class="s1">            {</span>
+</span><span id="__span-34-13"><a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a><span class="s1">                &quot;output-0&quot;: &quot;predictedIncome=high&quot;</span>
+</span><span id="__span-34-14"><a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="s1">            }</span>
+</span><span id="__span-34-15"><a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a><span class="s1">    }&#39;</span>
+</span></code></pre></div>
+<h1 id="data-sources">Data sources</h1>
+<h2 id="metrics_1">Metrics</h2>
+<p>Storage backend adapters implement the <code>Storage</code> interface which has the responsibility
+of reading the data from a specific storage type (flat file on PVC, S3, database, <em>etc</em>)
+and return the inputs and outputs as <code>ByteBuffer</code>.
+From there, the service converts the <code>ByteBuffer</code> into a TrustyAI <code>Dataframe</code> to be used
+in the metrics calculations.</p>
+<p>The type of datasource is passed with the environment variable <code>SERVICE_STORAGE_FORMAT</code>.</p>
+<p>The supported data sources are:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Storage property</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td><code>MINIO</code></td>
+</tr>
+<tr>
+<td>Kubernetes Persistent Volume Claims (PVC)</td>
+<td><code>PVC</code></td>
+</tr>
+<tr>
+<td>Memory</td>
+<td><code>MEMORY</code></td>
+</tr>
+</tbody>
+</table>
+<p>The data can be batched into the latest <code>n</code> observations by using the configuration key
+<code>SERVICE_BATCH_SIZE=n</code>. This behaves like a <code>n</code>-size tail and its optional.
+If not specified, the entire dataset is used.</p>
+<h1 id="deployment">Deployment</h1>
+<h2 id="openshift">OpenShift</h2>
+<p>To deploy in Kubernetes or OpenShift, the connection information
+can be passed into the manifest using the <code>ConfigMap</code> in <a href="manifests/opendatahub/base/trustyai-configmap.yaml">here</a>.</p>
+<p>The main manifest is available <a href="manifests/opendatahub/default/trustyai-deployment.yaml">here</a>.</p>
+<p>The configuration variables include:</p>
+<table>
+<thead>
+<tr>
+<th>Environment variable</th>
+<th>Values</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QUARKUS_CACHE_ENABLED</code></td>
+<td><code>true</code>/<code>false</code></td>
+<td><code>true</code></td>
+<td>Enables data fetching and metric calculation caching. Enabled by default.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.annotate"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
+      
+        
+          <script src="../javascripts/katex.js"></script>
+        
+      
+        
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+        
+      
+        
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
+        
+      
+    
+  </body>
+</html>
