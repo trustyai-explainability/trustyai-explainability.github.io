@@ -10,4 +10,8 @@
         <description>Created after removal of "This is the first topic" from TrustyAI</description>
         <accepts>Default-topic.html</accepts>
     </rule>
+    <rule id="3334115b">
+        <description>Created after removal of "Install on Open Data Hub" from TrustyAI</description>
+        <accepts>Install-on-Open-Data-Hub.html</accepts>
+    </rule>
 </rules>

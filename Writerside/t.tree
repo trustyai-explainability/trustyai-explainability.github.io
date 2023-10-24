@@ -20,7 +20,6 @@
         <toc-element topic="TrustyAI-core.md"/>
         <toc-element topic="TrustyAI-operator.md">
             <toc-element topic="Install-on-Kubernetes.md"/>
-            <toc-element topic="Install-on-Open-Data-Hub.md"/>
         </toc-element>
         <toc-element topic="TrustyAI-service.md">
             <toc-element topic="Starter.md"/>
@@ -28,4 +27,8 @@
             <toc-element topic="Reference.md"/>
         </toc-element>
     </toc-element>
+    <toc-element topic="How-to.md">
+        <toc-element topic="Install-on-Open-Data-Hub.md"/>
+    </toc-element>
+    <toc-element topic="Tutorial.md"/>
 </instance-profile>
