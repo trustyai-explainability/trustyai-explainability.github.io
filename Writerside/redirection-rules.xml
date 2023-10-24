@@ -18,4 +18,8 @@
         <description><![CDATA[Created after removal of "<Install-on-Kubernetes.md>" from TrustyAI]]></description>
         <accepts>Install-on-Kubernetes.html</accepts>
     </rule>
+    <rule id="78f6008a">
+        <description>Created after removal of "Metrics API" from TrustyAI</description>
+        <accepts>Metrics-API.html</accepts>
+    </rule>
 </rules>
