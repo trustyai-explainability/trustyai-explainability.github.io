@@ -14,4 +14,8 @@
         <description>Created after removal of "Install on Open Data Hub" from TrustyAI</description>
         <accepts>Install-on-Open-Data-Hub.html</accepts>
     </rule>
+    <rule id="43c37bd3">
+        <description><![CDATA[Created after removal of "<Install-on-Kubernetes.md>" from TrustyAI]]></description>
+        <accepts>Install-on-Kubernetes.html</accepts>
+    </rule>
 </rules>

@@ -19,7 +19,6 @@
         <toc-element topic="TrustyAI-Python.md"/>
         <toc-element topic="TrustyAI-core.md"/>
         <toc-element topic="TrustyAI-operator.md">
-            <toc-element topic="Install-on-Kubernetes.md"/>
         </toc-element>
         <toc-element topic="TrustyAI-service.md">
             <toc-element topic="Starter.md"/>
@@ -29,6 +28,7 @@
     </toc-element>
     <toc-element topic="How-to.md">
         <toc-element topic="Install-on-Open-Data-Hub.md"/>
+        <toc-element topic="Installing-on-Kubernetes.md"/>
     </toc-element>
     <toc-element topic="Tutorial.md">
         <toc-element topic="Bias-Monitoring-via-TrustyAI-in-ODH.md"/>
