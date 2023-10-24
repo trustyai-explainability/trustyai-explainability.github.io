@@ -738,3 +738,9 @@ The configuration variables include:
 | Environment variable    | Values         | Default | Purpose                                                                   |
 |-------------------------|----------------|---------|---------------------------------------------------------------------------|
 | `QUARKUS_CACHE_ENABLED` | `true`/`false` | `true`  | Enables data fetching and metric calculation caching. Enabled by default. | 
+
+<seealso style="links">
+       <category ref="api">
+           <a href="TrustyAI-service-API.md">TrustyAI service REST API</a>
+       </category>
+</seealso>

@@ -5,4 +5,5 @@
     <category id="wrs" name="Writerside documentation" order="1"/>
     <category id="related" name="Related" order="2"/>
     <category id="repos" name="Repositories" order="3"/>
+    <category id="api" name="API" order="4"/>
 </categories>

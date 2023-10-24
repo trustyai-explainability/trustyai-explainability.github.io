@@ -1,0 +1,1367 @@
+---
+openapi: 3.0.3
+info:
+  title: explainability-service API
+  version: 999-SNAPSHOT
+tags:
+- name: Aggregated LIME Explainer Endpoint
+- name: ApproxKSTest Drift Endpoint
+  description: Approximate Kolmogorov-Smirnov Test measures that the columns of the
+    tested dataframe come from the same distribution as the training dataframe.
+- name: Counterfactual Explainer Endpoint
+- name: Disparate Impact Ratio Endpoint
+  description: Disparate Impact Ratio (DIR) measures imbalances in classifications
+    by calculating the ratio between the proportion of the majority and protected
+    classes getting a particular outcome.
+- name: Disparate Impact Ratio Endpoint (Legacy)
+  description: Disparate Impact Ratio (DIR) measures imbalances in classifications
+    by calculating the ratio between the proportion of the majority and protected
+    classes getting a particular outcome. This endpoint will be moving to /metrics/group/fairness/dir
+    in a later release.
+- name: FourierMMD Drift Endpoint
+  description: Meanshift measures the distance between distributions as distance between
+    mean embeddings of features from the test dataframe and the training dataframe.
+- name: Identity Endpoint
+  description: "The identity endpoint simply returns a mean of a model's last N feature\
+    \ or output values. This is usefulfor tracking the model's feature and output\
+    \ trends, or if the model contains diagnostic metrics as part of its inference\
+    \ output."
+- name: KSTest Drift Endpoint
+  description: Kolmogorov-Smirnov Test measures the columns of the tested dataframe
+    come from the same distribution as the training dataframe.
+- name: LIME Explainer Endpoint
+- name: Meanshift Drift Endpoint
+  description: Meanshift measures that the columns of the tested dataframe come from
+    the same distribution as the training dataframe.
+- name: Metrics Information Endpoint
+  description: Return a list of all metrics being currently requested.
+- name: Partial Dependence Plot Explainer Endpoint
+- name: SHAP Explainer Endpoint
+- name: Statistical Parity Difference Endpoint
+  description: Statistical Parity Difference (SPD) measures imbalances in classifications
+    by calculating the difference between the proportion of the majority and protected
+    classes getting a particular outcome.
+- name: Statistical Parity Difference Endpoint (Legacy)
+  description: Statistical Parity Difference (SPD) measures imbalances in classifications
+    by calculating the difference between the proportion of the majority and protected
+    classes getting a particular outcome. This endpoint will be moving to /metrics/group/fairness/spd
+    in a later release.
+- name: TSSaliency Explainer Endpoint
+paths:
+  /consumer/kserve/v2:
+    post:
+      tags:
+      - Consumer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferencePartialPayload'
+      responses:
+        "200":
+          description: OK
+  /consumer/kserve/v2/full:
+    post:
+      tags:
+      - Consumer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferencePayload'
+      responses:
+        "200":
+          description: OK
+  /data/download:
+    post:
+      tags:
+      - Data Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataRequestPayload'
+      responses:
+        "200":
+          description: OK
+  /data/upload:
+    post:
+      tags:
+      - Data Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelInferJointPayload'
+      responses:
+        "200":
+          description: OK
+  /explainers/global/lime:
+    post:
+      tags:
+      - Aggregated LIME Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalExplanationRequest'
+      responses:
+        "200":
+          description: OK
+  /explainers/global/pdp:
+    post:
+      tags:
+      - Partial Dependence Plot Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalExplanationRequest'
+      responses:
+        "200":
+          description: OK
+  /explainers/local/cf:
+    post:
+      tags:
+      - Counterfactual Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CounterfactualExplanationRequest'
+      responses:
+        "200":
+          description: OK
+  /explainers/local/lime:
+    post:
+      tags:
+      - LIME Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocalExplanationRequest'
+      responses:
+        "200":
+          description: OK
+  /explainers/local/shap:
+    post:
+      tags:
+      - SHAP Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocalExplanationRequest'
+      responses:
+        "200":
+          description: OK
+  /explainers/local/tssaliency:
+    post:
+      tags:
+      - TSSaliency Explainer Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TSSaliencyRequest'
+      responses:
+        "200":
+          description: OK
+  /info:
+    get:
+      tags:
+      - Service Metadata Endpoint
+      responses:
+        "200":
+          description: OK
+  /info/names:
+    post:
+      tags:
+      - Service Metadata Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NameMapping'
+      responses:
+        "200":
+          description: OK
+  /info/tags:
+    post:
+      tags:
+      - Service Metadata Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataTagging'
+      responses:
+        "200":
+          description: OK
+  /metrics/all/requests:
+    get:
+      tags:
+      - Metrics Information Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/dir:
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/dir/definition:
+    get:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupDefinitionRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/dir/request:
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+    delete:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/dir/requests:
+    get:
+      tags:
+      - Disparate Impact Ratio Endpoint (Legacy)
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/drift/approxkstest:
+    post:
+      tags:
+      - ApproxKSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproxKSTestMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/approxkstest/definition:
+    get:
+      tags:
+      - ApproxKSTest Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/approxkstest/request:
+    post:
+      tags:
+      - ApproxKSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproxKSTestMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - ApproxKSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/approxkstest/requests:
+    get:
+      tags:
+      - ApproxKSTest Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/fouriermmd:
+    post:
+      tags:
+      - FourierMMD Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FourierMMDMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/fouriermmd/definition:
+    get:
+      tags:
+      - FourierMMD Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/fouriermmd/request:
+    post:
+      tags:
+      - FourierMMD Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FourierMMDMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - FourierMMD Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/fouriermmd/requests:
+    get:
+      tags:
+      - FourierMMD Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/kstest:
+    post:
+      tags:
+      - KSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KSTestMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/kstest/definition:
+    get:
+      tags:
+      - KSTest Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/kstest/request:
+    post:
+      tags:
+      - KSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KSTestMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - KSTest Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/kstest/requests:
+    get:
+      tags:
+      - KSTest Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/meanshift:
+    post:
+      tags:
+      - Meanshift Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeanshiftMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/meanshift/definition:
+    get:
+      tags:
+      - Meanshift Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/meanshift/request:
+    post:
+      tags:
+      - Meanshift Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeanshiftMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - Meanshift Drift Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/drift/meanshift/requests:
+    get:
+      tags:
+      - Meanshift Drift Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/dir:
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/dir/definition:
+    get:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupDefinitionRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/dir/request:
+    post:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/dir/requests:
+    get:
+      tags:
+      - Disparate Impact Ratio Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/spd:
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/spd/definition:
+    get:
+      tags:
+      - Statistical Parity Difference Endpoint
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupDefinitionRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/spd/request:
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - Statistical Parity Difference Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/group/fairness/spd/requests:
+    get:
+      tags:
+      - Statistical Parity Difference Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/identity:
+    post:
+      tags:
+      - Identity Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentityMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/identity/definition:
+    get:
+      tags:
+      - Identity Endpoint
+      responses:
+        "200":
+          description: OK
+    post:
+      tags:
+      - Identity Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentityMetricRequest'
+      responses:
+        "200":
+          description: OK
+  /metrics/identity/request:
+    post:
+      tags:
+      - Identity Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentityMetricRequest'
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+      - Identity Endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+  /metrics/identity/requests:
+    get:
+      tags:
+      - Identity Endpoint
+      responses:
+        "200":
+          description: OK
+  /metrics/spd:
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/spd/definition:
+    get:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupDefinitionRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/spd/request:
+    post:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMetricRequest'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+    delete:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleId'
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+  /metrics/spd/requests:
+    get:
+      tags:
+      - Statistical Parity Difference Endpoint (Legacy)
+      responses:
+        "200":
+          description: OK
+      deprecated: true
+components:
+  schemas:
+    ApproxKSTestMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        thresholdDelta:
+          format: double
+          type: number
+        referenceTag:
+          type: string
+        fitColumns:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        epsilon:
+          format: double
+          type: number
+        sketchFitting:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/GKSketch'
+    CounterfactualExplanationRequest:
+      type: object
+      properties:
+        predictionId:
+          type: string
+        modelConfig:
+          $ref: '#/components/schemas/ModelConfig'
+        goals:
+          type: object
+          additionalProperties:
+            type: string
+    DataRequestPayload:
+      type: object
+      properties:
+        modelId:
+          type: string
+        matchAny:
+          type: array
+          items:
+            $ref: '#/components/schemas/RowMatcher'
+        matchAll:
+          type: array
+          items:
+            $ref: '#/components/schemas/RowMatcher'
+        matchNone:
+          type: array
+          items:
+            $ref: '#/components/schemas/RowMatcher'
+    DataTagging:
+      type: object
+      properties:
+        modelId:
+          type: string
+        dataTagging:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: array
+              items:
+                format: int32
+                type: integer
+    DataType:
+      enum:
+      - BOOL
+      - FLOAT
+      - DOUBLE
+      - INT32
+      - INT64
+      - STRING
+      - MAP
+      - UNKNOWN
+      type: string
+    FourierMMDFitting:
+      type: object
+      properties:
+        randomSeed:
+          format: int32
+          type: integer
+        deltaStat:
+          type: boolean
+        nMode:
+          format: int32
+          type: integer
+        scale:
+          type: array
+          items:
+            format: double
+            type: number
+        aRef:
+          type: array
+          items:
+            format: double
+            type: number
+        meanMMD:
+          format: double
+          type: number
+        stdMMD:
+          format: double
+          type: number
+    FourierMMDMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        thresholdDelta:
+          format: double
+          type: number
+        referenceTag:
+          type: string
+        fitColumns:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        parameters:
+          $ref: '#/components/schemas/FourierMMDParameters'
+        gamma:
+          format: double
+          type: number
+        fitting:
+          $ref: '#/components/schemas/FourierMMDFitting'
+    FourierMMDParameters:
+      type: object
+      properties:
+        nWindow:
+          format: int32
+          type: integer
+        nTest:
+          format: int32
+          type: integer
+        nMode:
+          format: int32
+          type: integer
+        randomSeed:
+          format: int32
+          type: integer
+        sig:
+          format: double
+          type: number
+        deltaStat:
+          type: boolean
+        epsilon:
+          format: double
+          type: number
+    GKSketch:
+      type: object
+      properties:
+        epsilon:
+          format: double
+          type: number
+        summary:
+          type: array
+          items:
+            type: object
+            properties:
+              left:
+                format: double
+                type: number
+              middle:
+                format: int32
+                type: integer
+              right:
+                format: int32
+                type: integer
+        xmin:
+          format: double
+          type: number
+        xmax:
+          format: double
+          type: number
+        numx:
+          format: int32
+          type: integer
+    GlobalExplanationRequest:
+      type: object
+      properties:
+        modelConfig:
+          $ref: '#/components/schemas/ModelConfig'
+    GroupDefinitionRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        protectedAttribute:
+          type: string
+        outcomeName:
+          type: string
+        privilegedAttribute:
+          $ref: '#/components/schemas/ReconcilableFeature'
+        unprivilegedAttribute:
+          $ref: '#/components/schemas/ReconcilableFeature'
+        favorableOutcome:
+          $ref: '#/components/schemas/ReconcilableOutput'
+        thresholdDelta:
+          format: double
+          type: number
+        metricValue:
+          $ref: '#/components/schemas/JsonNode'
+    GroupMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        protectedAttribute:
+          type: string
+        outcomeName:
+          type: string
+        privilegedAttribute:
+          $ref: '#/components/schemas/ReconcilableFeature'
+        unprivilegedAttribute:
+          $ref: '#/components/schemas/ReconcilableFeature'
+        favorableOutcome:
+          $ref: '#/components/schemas/ReconcilableOutput'
+        thresholdDelta:
+          format: double
+          type: number
+    IdentityMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        columnName:
+          type: string
+        lowerThreshold:
+          format: double
+          type: number
+        upperThreshold:
+          format: double
+          type: number
+    InferencePartialPayload:
+      type: object
+      properties:
+        modelid:
+          type: string
+        data:
+          type: string
+        kind:
+          $ref: '#/components/schemas/PartialKind'
+        id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    InferencePayload:
+      type: object
+      properties:
+        input:
+          type: string
+        output:
+          type: string
+        modelId:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    JsonNode:
+      type: object
+      properties:
+        empty:
+          type: boolean
+        valueNode:
+          type: boolean
+        containerNode:
+          type: boolean
+        missingNode:
+          type: boolean
+        array:
+          type: boolean
+        object:
+          type: boolean
+        nodeType:
+          $ref: '#/components/schemas/JsonNodeType'
+        pojo:
+          type: boolean
+        number:
+          type: boolean
+        integralNumber:
+          type: boolean
+        floatingPointNumber:
+          type: boolean
+        short:
+          type: boolean
+        int:
+          type: boolean
+        long:
+          type: boolean
+        float:
+          type: boolean
+        double:
+          type: boolean
+        bigDecimal:
+          type: boolean
+        bigInteger:
+          type: boolean
+        textual:
+          type: boolean
+        boolean:
+          type: boolean
+        "null":
+          type: boolean
+        binary:
+          type: boolean
+    JsonNodeType:
+      enum:
+      - ARRAY
+      - BINARY
+      - BOOLEAN
+      - MISSING
+      - "NULL"
+      - NUMBER
+      - OBJECT
+      - POJO
+      - STRING
+      type: string
+    KSTestMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        thresholdDelta:
+          format: double
+          type: number
+        referenceTag:
+          type: string
+        fitColumns:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    LocalExplanationRequest:
+      type: object
+      properties:
+        predictionId:
+          type: string
+        modelConfig:
+          $ref: '#/components/schemas/ModelConfig'
+    MeanshiftMetricRequest:
+      type: object
+      properties:
+        modelId:
+          type: string
+        requestName:
+          type: string
+        metricName:
+          type: string
+        batchSize:
+          format: int32
+          type: integer
+        thresholdDelta:
+          format: double
+          type: number
+        referenceTag:
+          type: string
+        fitColumns:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        fitting:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/StatisticalSummaryValues'
+    ModelConfig:
+      type: object
+      properties:
+        target:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+    ModelInferJointPayload:
+      type: object
+      properties:
+        model_name:
+          type: string
+        data_tag:
+          type: string
+        is_ground_truth:
+          type: boolean
+        request:
+          $ref: '#/components/schemas/ModelInferRequestPayload'
+        response:
+          $ref: '#/components/schemas/ModelInferResponsePayload'
+    ModelInferRequestPayload:
+      type: object
+      properties:
+        id:
+          type: string
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TensorPayload'
+    ModelInferResponsePayload:
+      type: object
+      properties:
+        model_name:
+          type: string
+        model_version:
+          type: string
+        id:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: {}
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TensorPayload'
+    NameMapping:
+      type: object
+      properties:
+        modelId:
+          type: string
+        inputMapping:
+          type: object
+          additionalProperties:
+            type: string
+        outputMapping:
+          type: object
+          additionalProperties:
+            type: string
+    PartialKind:
+      enum:
+      - request
+      - response
+      type: string
+    ReconcilableFeature:
+      type: object
+      properties:
+        rawValueNode:
+          $ref: '#/components/schemas/ValueNode'
+        reconciledType:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/TypedValue'
+          nullable: true
+    ReconcilableOutput:
+      type: object
+      properties:
+        rawValueNode:
+          $ref: '#/components/schemas/ValueNode'
+        reconciledType:
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/TypedValue'
+          nullable: true
+    RowMatcher:
+      type: object
+      properties:
+        columnName:
+          type: string
+        operation:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValueNode'
+    ScheduleId:
+      type: object
+      properties:
+        requestId:
+          $ref: '#/components/schemas/UUID'
+    StatisticalSummaryValues:
+      type: object
+      properties:
+        mean:
+          format: double
+          type: number
+        variance:
+          format: double
+          type: number
+        "n":
+          format: int64
+          type: integer
+        max:
+          format: double
+          type: number
+        min:
+          format: double
+          type: number
+        sum:
+          format: double
+          type: number
+        standardDeviation:
+          format: double
+          type: number
+    TSSaliencyParameters:
+      type: object
+      properties:
+        mu:
+          format: double
+          type: number
+        numberSamples:
+          format: int32
+          type: integer
+        numberSteps:
+          format: int32
+          type: integer
+        sigma:
+          format: double
+          type: number
+    TSSaliencyRequest:
+      type: object
+      properties:
+        model:
+          $ref: '#/components/schemas/ModelConfig'
+        predictionId:
+          type: string
+        data:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              format: double
+              type: number
+        parameters:
+          $ref: '#/components/schemas/TSSaliencyParameters'
+    TensorPayload:
+      type: object
+      properties:
+        name:
+          type: string
+        shape:
+          type: array
+          items:
+            type: number
+        datatype:
+          type: string
+        parameters:
+          type: object
+          additionalProperties: {}
+        data:
+          type: array
+          items: {}
+        executionIDs:
+          type: array
+          items:
+            type: string
+    TypedValue:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/DataType'
+        value:
+          $ref: '#/components/schemas/JsonNode'
+    UUID:
+      format: uuid
+      pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+      type: string
+    ValueNode:
+      type: object
+      properties:
+        valueNode:
+          type: boolean
+        containerNode:
+          type: boolean
+        missingNode:
+          type: boolean
+        array:
+          type: boolean
+        object:
+          type: boolean
+        nodeType:
+          $ref: '#/components/schemas/JsonNodeType'
+        pojo:
+          type: boolean
+        number:
+          type: boolean
+        integralNumber:
+          type: boolean
+        floatingPointNumber:
+          type: boolean
+        short:
+          type: boolean
+        int:
+          type: boolean
+        long:
+          type: boolean
+        float:
+          type: boolean
+        double:
+          type: boolean
+        bigDecimal:
+          type: boolean
+        bigInteger:
+          type: boolean
+        textual:
+          type: boolean
+        boolean:
+          type: boolean
+        "null":
+          type: boolean
+        binary:
+          type: boolean
+        empty:
+          type: boolean
+  securitySchemes:
+    SecurityScheme:
+      type: http
+      description: Authentication
+      scheme: basic
