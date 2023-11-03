@@ -1,4 +1,4 @@
-# How to schedule a metric
+# Schedule a metric
 
 A How-to article is an action-oriented type of document.
 It explains how to perform a specific task or solve a problem, and usually contains a sequence of steps.

@@ -26,16 +26,16 @@ use the following information about the applicant to make their prediction:
 * Length of Employment (in days)
 
 What we want to verify is that neither of our models are not biased over the gender field of `Is Male-Identifying?`. To do this,
-we will monitor our models with *Statistical Parity Difference (SPD)* metric, which will tell us how the difference betweem how often
-male-identifying and non-male-identifying applicants are given favorable predictions (i.e., they are predicted
+we will monitor our models with [Statistical Parity Difference](Statistical-Parity-Difference.md) (SPD)* metric, which will tell us how the difference betweem how often
+male-identifying and non-male-identifying applicants are given favorable predictions (_i.e._, they are predicted
 to pay back their loans). Ideally, the SPD value would be 0, indicating that both groups have equal likelihood of getting a good outcome. However, an SPD value between -0.1 and 0.1 is also indicative of reasonable fairness,
 indicating that the two groups' rates of getting good outcomes only varies by +/-10%.
 
 
 ## Setup
 Follow the instructions within the [installation section](Install-on-Open-Data-Hub.md).
-Afterwards, you should have an ODH installation, a TrustyAI Operator, and a `model-namespace` project containing
-an instance of the TrustyAI Service.
+Afterwards, you should have an ODH installation, a [TrustyAI operator](TrustyAI-operator.md), and a `model-namespace` project containing
+an instance of the [TrustyAI service](TrustyAI-service.md).
 
 ## Deploy Models
 1) Navigate to the `model-namespace` created in the setup section: `oc project model-namespace`
