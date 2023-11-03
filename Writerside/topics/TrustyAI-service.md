@@ -700,47 +700,10 @@ curl -X POST --location "http://localhost:8080/q/info" \
     }'
 ```
 
-# Data sources
-
-## Metrics data
-
-Storage backend adapters implement the `Storage` interface which has the responsibility
-of reading the data from a specific storage type (flat file on PVC, S3, database, _etc_)
-and return the inputs and outputs as `ByteBuffer`.
-From there, the service converts the `ByteBuffer` into a TrustyAI `Dataframe` to be used
-in the metrics calculations.
-
-The type of datasource is passed with the environment variable `SERVICE_STORAGE_FORMAT`.
-
-The supported data sources are:
-
-| Type                                      | Storage property |
-|-------------------------------------------|------------------|
-| MinIO                                     | `MINIO`          |
-| Kubernetes Persistent Volume Claims (PVC) | `PVC`            |
-| Memory                                    | `MEMORY`         |
-
-The data can be batched into the latest `n` observations by using the configuration key
-`SERVICE_BATCH_SIZE=n`. This behaves like a `n`-size tail and its optional.
-If not specified, the entire dataset is used.
-
-# Deployment
-
-## OpenShift
-
-To deploy in Kubernetes or OpenShift, the connection information
-can be passed into the manifest using the `ConfigMap` in [here](manifests/opendatahub/base/trustyai-configmap.yaml).
-
-The main manifest is available [here](manifests/opendatahub/default/trustyai-deployment.yaml).
-
-The configuration variables include:
-
-| Environment variable    | Values         | Default | Purpose                                                                   |
-|-------------------------|----------------|---------|---------------------------------------------------------------------------|
-| `QUARKUS_CACHE_ENABLED` | `true`/`false` | `true`  | Enables data fetching and metric calculation caching. Enabled by default. | 
 
 <seealso style="links">
        <category ref="api">
            <a href="TrustyAI-service-API.md">TrustyAI service REST API</a>
+           <a href="Configuration.md">TrustyAI service configuration</a>
        </category>
 </seealso>

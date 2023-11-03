@@ -1,3 +1,4 @@
 # TrustyAI service
 
-<api-doc openapi-path="./../specs/openapi.yml"></api-doc>
+* Reference for the [REST API](REST-API-reference.md)
+* Service [configuration](Configuration.md)

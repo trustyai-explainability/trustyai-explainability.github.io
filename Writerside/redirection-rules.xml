@@ -22,4 +22,8 @@
         <description>Created after removal of "Metrics API" from TrustyAI</description>
         <accepts>Metrics-API.html</accepts>
     </rule>
+    <rule id="3ab6c883">
+        <description>Created after removal of "Starter" from TrustyAI</description>
+        <accepts>Starter.html</accepts>
+    </rule>
 </rules>
