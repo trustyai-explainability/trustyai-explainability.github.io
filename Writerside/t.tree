@@ -30,6 +30,7 @@
     </toc-element>
     <toc-element topic="Tutorial.md">
         <toc-element topic="Bias-Monitoring-via-TrustyAI-in-ODH.md"/>
+        <toc-element topic="Data-Drift.md"/>
     </toc-element>
     <toc-element topic="Reference.md">
         <toc-element topic="TrustyAI-service-API.md">
