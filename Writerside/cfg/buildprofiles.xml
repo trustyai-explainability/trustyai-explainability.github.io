@@ -4,6 +4,8 @@
 
     <variables>
         <header-logo>trustyai-logo.svg</header-logo>
+        <primary-color>emerald</primary-color>
+        <color-preset>soft</color-preset>
     </variables>
     <build-profile instance="hi">
         <variables>
