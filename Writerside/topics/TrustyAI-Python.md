@@ -1,3 +1,7 @@
 # TrustyAI Python
 
-Start typing here...
+To use Python TrustyAI start by installing it using
+
+```shell
+pip install trustyai
+```
