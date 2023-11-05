@@ -41,14 +41,22 @@ To get enable ODH's monitoring stack, <code>user-workload-monitoring</code> must
 
 <procedure title="Enable User-Workload-Monitoring" id="enable-user-workload-monitoring">
 <step>
-<p>Enable user-workload-monitoring</p>
-<code-block>
+<p>Enable user-workload-monitoring by creating the following <code>ConfigMap</code></p>
+<code-block lang="yaml" src="enable_uwm.yaml"></code-block>
+</step>
+<step>
+<p>Apply the file using</p>
+<code-block lang="shell">
 oc apply -f resources/enable_uwm.yaml
 </code-block>
 </step>
 <step>
-<p>Configure user-workload-monitoring to hold metric data for 15 days</p>
-<code-block>
+<p>Configure user-workload-monitoring to hold metric data for 15 days by creating the following <code>ConfigMap</code></p>
+<code-block lang="yaml" src="uwm_configmap.yaml"></code-block>
+</step>
+<step>
+<p>And applying it with</p>
+<code-block lang="shell">
 oc apply -f resources/uwm_configmap.yaml
 </code-block>
 </step>
