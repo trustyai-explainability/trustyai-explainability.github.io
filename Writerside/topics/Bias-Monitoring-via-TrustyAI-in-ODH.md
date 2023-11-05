@@ -1,17 +1,17 @@
 # Bias Monitoring via TrustyAI in ODH
 
-Ensuring that your models are fair and unbiased is a crucial part of establishing trust in your models amonst
+Ensuring that your models are fair and unbiased is a crucial part of establishing trust in your models amongst
 your users. While fairness can be explored during model training, it is only during deployment
-that your models have exposure to the outside world. It does not matter if your models are unbiased on the training data, if they are dangerously biased over real-world data, and therefore it is absolutely
-crucial to monitor your models for fairness during real-world deployments:
+that your models have exposure to the outside world. It does not matter if your models are unbiased on the training data, 
+if they are dangerously biased over real-world data, and therefore it is absolutely crucial to monitor your models for 
+fairness during real-world deployments:
 
 This demo will explore how to use TrustyAI to monitor models for bias, and how not all model biases are visible at training time.
 
 ## Context
-We will take on the
-persona of a dev-ops engineer for a credit lender. Our data scientists have created two
-candidate neural networks to predict if a borrower will default on the loan they hold with us. Both models
-use the following information about the applicant to make their prediction:
+We will take on the persona of a dev-ops engineer for a credit lender. 
+Our data scientists have created two candidate neural networks to predict if a borrower will default on the loan they 
+hold with us. Both models use the following information about the applicant to make their prediction:
 
 * Number of Children
 * Total Income:
@@ -25,19 +25,23 @@ use the following information about the applicant to make their prediction:
 * Age (in days)
 * Length of Employment (in days)
 
-What we want to verify is that neither of our models are not biased over the gender field of `Is Male-Identifying?`. To do this,
-we will monitor our models with [Statistical Parity Difference](Statistical-Parity-Difference.md) (SPD)* metric, which will tell us how the difference betweem how often
-male-identifying and non-male-identifying applicants are given favorable predictions (_i.e._, they are predicted
-to pay back their loans). Ideally, the SPD value would be 0, indicating that both groups have equal likelihood of getting a good outcome. However, an SPD value between -0.1 and 0.1 is also indicative of reasonable fairness,
+What we want to verify is that neither of our models are not biased over the gender field of `Is Male-Identifying?`. 
+To do this, we will monitor our models with [Statistical Parity Difference](Statistical-Parity-Difference.md) (SPD) 
+metric, which will tell us how the difference between how often male-identifying and non-male-identifying applicants are 
+given favorable predictions (_i.e._, they are predicted to pay back their loans). 
+Ideally, the SPD value would be 0, indicating that both groups have equal likelihood of getting a good outcome. 
+However, an SPD value between -0.1 and 0.1 is also indicative of reasonable fairness,
 indicating that the two groups' rates of getting good outcomes only varies by +/-10%.
 
 
 ## Setup
+
 Follow the instructions within the [installation section](Install-on-Open-Data-Hub.md).
 Afterwards, you should have an ODH installation, a [TrustyAI operator](TrustyAI-operator.md), and a `model-namespace` project containing
 an instance of the [TrustyAI service](TrustyAI-service.md).
 
 ## Deploy Models
+
 1) Navigate to the `model-namespace` created in the setup section: `oc project model-namespace`
 2) Deploy the model's storage container: `oc apply -f resources/model_storage_container`
 3) Deploy the OVMS 1.x serving runtime: `oc apply -f resources/ovms-1.x.yaml`
@@ -51,6 +55,7 @@ an instance of the [TrustyAI service](TrustyAI-service.md).
    4) In the Environment tab, if the field `MM_PAYLOAD_PROCESSORS` is set, then your models are successfully registered with TrustyAI: ![Pods in the Model Namespace](model_environment.png)
 
 ## Send Training Data to Models
+
 Here, we'll pass all the training data through the models, such as to be able to compute baseline fairness values:
 
 ```shell
@@ -222,7 +227,7 @@ for batch in "01" "02" "03" "04" "05" "06" "07" "08"; do
   sleep 5
 done
 ```
-Once the data is being sent, return to  Observe -> Metrics page and watch the SPD and Identity metric values change.
+Once the data is being sent, return to  Observe -> Metrics page and watch the [SPD](Statistical-Parity-Difference.md) and Identity metric values change.
 
 ## Results
 Let's first look at our two models' fairness:
