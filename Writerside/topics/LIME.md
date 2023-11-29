@@ -1,3 +1,0 @@
-# LIME
-
-Start typing here...
