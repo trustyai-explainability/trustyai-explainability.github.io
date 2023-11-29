@@ -1,3 +1,0 @@
-# Counterfactuals
-
-Start typing here...

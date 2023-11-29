@@ -1,0 +1,20 @@
+= Overview
+
+== What is TrustyAI?
+
+TrustyAI is, at its core, a Java library and service for Explainable AI (XAI).
+TrustyAI offers fairness metrics, explainable AI algorithms, and link:Features.md[various other XAI tools] at a library-level as well as a containerized service and Kubernetes deployment.
+TrustyAI consists of several link:Components.md[components], including:
+
+* link:TrustyAI-core.md[TrustyAI core], the core TrustyAI Java module, containing fairness metrics, AI explainers, and other XAI utilities.
+* link:TrustyAI-service.md[TrustyAI service], TrustyAI-as-a-service, a REST service for fairness metrics and explainability algorithms including ModelMesh integration.
+* link:TrustyAI-operator.md[TrustyAI operator], a Kubernetes operator for TrustyAI service.
+* link:TrustyAI-Python.md[Python TrustyAI], a Python library allowing the usage of TrustyAI's toolkit from Jupyter notebooks
+
+A more detailed explanation of all the components is available in the link:Components.md[Components page].
+
+== Glossary
+
+[horizontal]
+XAI:: Explainable AI
+Fairness:: This is the definition of the second term.

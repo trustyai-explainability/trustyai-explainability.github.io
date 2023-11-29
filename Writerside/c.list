@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE categories
-        SYSTEM "https://resources.jetbrains.com/writerside/1.0/categories.dtd">
-<categories>
-    <category id="wrs" name="Writerside documentation" order="1"/>
-    <category id="related" name="Related" order="2"/>
-    <category id="repos" name="Repositories" order="3"/>
-    <category id="api" name="API" order="4"/>
-</categories>

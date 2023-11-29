@@ -1,0 +1,14 @@
+site:
+  title: TrustyAI
+  start_page: trustyai-site::main.adoc
+content:
+  sources:
+  - url: https://gitlab.com/antora/demo/demo-component-a.git
+    branches: HEAD
+  - url: .
+    start_path: docs
+ui:
+  bundle:
+    url: ./ui-bundle
+output:
+  clean: true
