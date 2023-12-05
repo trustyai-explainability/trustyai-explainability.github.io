@@ -54,7 +54,9 @@ image::model_namespace_pods.png[]
 +
 .. Once the TrustyAI Service registers the deployed models, you will see the `modelmesh-serving-ovms-1.x-xxxxx` pods get re-deployed.
 .. Verify that the models are registered with TrustyAI by selecting one of the `modelmesh-serving-ovms-1.x-xxxxx` pods.
-.. In the Environment tab, if the field `MM_PAYLOAD_PROCESSORS` is set, then your models are successfully registered with TrustyAI: image::model_environment.png[]
+.. In the Environment tab, if the field `MM_PAYLOAD_PROCESSORS` is set, then your models are successfully registered with TrustyAI: 
++
+image::model_environment.png[]
 
 == Send Training Data to Models
 
@@ -72,8 +74,11 @@ This will take a few minutes. The script will print out verification messages in
 . Navigate to Observe -> Metrics in the OpenShift console.
 . Set the time window to 5 minutes (top left) and the refresh interval to 15 seconds (top right)
 . In the "Expression" field, enter `trustyai_model_observations_total` and hit "Run Queries". 
-   You should see both models listed, each reporting around 2250 observed inferences: image::observed_inferences.png[]. 
-   This means that TrustyAI has catalogued 2250 inputs and outputs for each of the two models, more than enough to begin analysis.
+  You should see both models listed, each reporting around 2250 observed inferences:
++
+image::observed_inferences.png[]
++   
+This means that TrustyAI has catalogued 2250 inputs and outputs for each of the two models, more than enough to begin analysis.
 
 == Examining TrustyAI's Model Metadata
 
@@ -237,8 +242,10 @@ The payload is structured as follows:
 . Set the time window to 5 minutes (top left) and the refresh interval to 15 seconds (top right)
 . In the "Expression" field, enter `trustyai_spd` or `trustyai_identity`
 . Explore the Metric Chart:
-  * image::initial_spd.png[Initial SPD]
-  * image::initial_identities.png[Initial Identities]
++  
+image::initial_spd.png[Initial SPD]
++
+image::initial_identities.png[Initial Identities]
 
 == Simulate Some Real World Data
 
@@ -257,20 +264,20 @@ Once the data is being sent, return to  Observe -> Metrics page and watch the li
 
 Let's first look at our two models' fairness:
 
-* image::final_spd.png[Final SPD Values]
+image::final_spd.png[Final SPD Values]
 
 Immediately, we notice that the two models have drastically different fairnesses over the real world data. Model Alpha (blue) remained within the "acceptably fair" range between -0.1 and 0.1, ending at around 0.09. However, Model Beta (yellow) plummeted out of the fair range, ending at -0.274, meaning that non-male-identifying applicants were _*27 percent*_ less likely to get a favorable outcome from the model than male-identifying applicants; clearly an unacceptable bias.
 
 We can investigate this further by examining our identity metrics, first looking at the inbound ratio of male-identifying to non-male-identufying applicants:
 
-* image::final_male_ident.png[Final Male-Identifying Values]
+image::final_male_ident.png[Final Male-Identifying Values]
 
 We can immediately see that in our training data, the ratio between male/non-male was around 0.8, but in the real-world data, it quickly dropped to _*0*_, meaning every single applicant was non-male. This is a strong indicator that our
 training data did not match our real-world data, which is very likely to indicate poor or biased model performance.
 
 Meanwhile, looking at the will-default to will-not-default ratio:
 
-* image::final_default.png[Final Default Prediction Values]
+image::final_default.png[Final Default Prediction Values]
 
 We can see that despite seeing only non-male applicants, Model Alpha (green) still provided varying outcomes to the various applicants, predicting "will-default" around 25% of the time. Model Beta (purple) predicted "will-default" 100% of the time: every single applicant was predicted to default on their loan. Again, this is a clear indicator that our model is performing poorly on the real-world data and/or has encoded a systematic bias from its training; it is predicting that every single non-male applicant will default.
 

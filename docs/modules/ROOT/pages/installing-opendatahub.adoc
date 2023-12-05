@@ -1,0 +1,156 @@
+= Installing on Open Data Hub
+
+This guide will walk through installing Open Data Hub and TrustyAI into your cluster. Starting from a completely
+blank cluster, you will be left with:
+
+. An Open Data Hub installation
+. A namespace to deploy models into
+. A link:TrustyAI-operator.md[TrustyAI Operator], to manage all instances of the link:TrustyAI-service.md[TrustyAI Service]
+. A TrustyAI Service, to monitor and analyze all the models deployed into your model namespace.
+
+== Definitions
+
+$ODH:: 
+Namespace to install ODH into.
+$PROJECT:: 
+Namespace to deploy models into.
+
+== Cluster Setup
+
+. Make sure you are `oc login`'d to your OpenShift cluster.
+. Create two projects, `$ODH` and `$PROJECT`.
++
+These names are arbitrary, but I'll be using them throughout the rest of this demo.
++
+[source,shell]
+----
+oc create project $ODH
+oc create project $PROJECT
+----
+. Prepare the `$PROJECT` for ODH's model serving.
++
+[source,shell]
+----
+oc label namespace $PROJECT "modelmesh-enabled=true" --overwrite=true
+----
++
+To enable ODH's monitoring stack, `user-workload-monitoring` must be configured.
+
+== Enable User-Workload-Monitoring
+
+. Enable user-workload-monitoring by creating the following `ConfigMap`.
++
+[source,yaml]
+----
+include::example$enable-uwm.yaml[]
+----
+. Apply the file using.
++
+[source,shell]
+----
+oc apply -f resources/enable_uwm.yaml
+----
+. Configure user-workload-monitoring to hold metric data for 15 days by creating the following `ConfigMap`.
++
+[source,yaml]
+----
+include::example$uwm_configmap.yaml[]
+----
+. And applying it with.
++
+[source,shell]
+----
+oc apply -f resources/uwm_configmap.yaml
+----
+
+Depending on how your cluster was created, you may need to enable a User Workload Monitoring setting from
+your cluster management UI (for example, on console.redhat.com).
+
+== Install ODH Operator
+
+. From the OpenShift Console, navigate to `Operators` > `OperatorHub`, and search for `Open Data Hub`.
++
+image::odh_operator_install.png[ODH in OperatorHub, border-effect=line]
+. Click on `Open Data Hub Operator`.
++
+--
+* If the "Show community Operator" warning opens, hit "Continue".
+* Hit "Install".
+--
+. From the "Install Operator" screen.
++
+--
+* Make sure "All namespaces on the cluster" in selected as the "Installation Mode".
+* Hit install.
+--
+. Wait for the Operator to finish installing.
+
+== ODH v2
+
+[NOTE]
+====
+Since ODH 2.3.0, TrustyAI is included as an ODH component.
+
+For versions prior to 2.3.0, use the <<_odh-v1,ODH v1>> method.
+====
+
+If the provided ODH version in your cluster's OperatorHub is version 2.3.0+, use the following steps:
+
+=== Install ODH (ODH v2.x)
+
+. Navigate to your `opendatahub` project.
+. From "Installed Operators", select "Open Data Hub Operator".
+. Navigate to the "Data Science Cluster" tab and hit "Create DataScienceCluster".
+. In the YAML view Make sure `trustyai` is set to `Managed`.
++
+image::odh_V2.png[ODH V2, border-effect=line]
+. Hit the "Create" button.
+. Within the "Pods" menu, you should begin to see various ODH components being created, including the `trustyai-service-operator-controller-manager-xxx`.
+
+=== Install a TrustyAI service
+
+. Navigate to your `model-namespace` project: `oc project model-namespace`.
+. Run `oc apply -f resources/trustyai_crd.yaml`.
++
+This will install the TrustyAI Service into your `model-namespace` project, which will then provide TrustyAI features to all subsequent models deployed into that project, such as explainability, fairness monitoring, and data drift monitoring.
+
+== ODH v1
+
+[NOTE]
+====
+If the provided ODH version in your cluster's OperatorHub is version 1.x, use the following steps.
+====
+
+=== Install ODH v1
+
+. Navigate to your `$ODH` project.
+. Go to `Installed Operators` > `Open Data Hub Operator` > `KfDef`.
+. 
+--
+* Hit "Create KfDef".
+* Hit "Create" without making any changes to the default configuration.
+--
+. Within the "Pods" menu, you should begin to see various ODH components being created.
+
+
+=== Install TrustyAI on ODH v1
+
+. Navigate to your `$ODH` project.
++
+[source,shell]
+----
+oc project $ODH
+----
+. Run `oc apply -f resources/trustyai_operator_kfdef.yaml`.
++
+This will install the TrustyAI Operator into your `$ODH` namespace alongside the ODH installation.
+. Within the "Pods" menu, you should see the TrustyAI Operator pod being created.
+. Navigate to your `$PROJECT` project.
++
+[source,shell]
+----
+oc project $PROJECT
+----
+. Run `oc apply -f resources/trustyai_crd.yaml`.
++
+This will install the TrustyAI Service into your `$PROJECT` project, which will then provide TrustyAI features to all subsequent models deployed into that project, such as explainability, fairness monitoring, and data drift monitoring.
