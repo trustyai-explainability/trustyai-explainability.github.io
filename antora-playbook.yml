@@ -2,6 +2,7 @@ site:
   title: TrustyAI
   start_page: trustyai-site::main.adoc
 content:
+  sources:
   - url: .
     start_path: docs
 ui:
