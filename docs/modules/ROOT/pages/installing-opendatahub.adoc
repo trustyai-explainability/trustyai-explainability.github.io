@@ -10,16 +10,16 @@ blank cluster, you will be left with:
 
 == Definitions
 
-[horizontal]
-$ODH:: Namespace to install ODH into
-$PROJECT:: Namespace to deploy models into
+$ODH:: 
+Namespace to install ODH into.
+$PROJECT:: 
+Namespace to deploy models into.
 
 == Cluster Setup
 
 . Make sure you are `oc login`'d to your OpenShift cluster.
 . Create two projects, `$ODH` and `$PROJECT`.
 +
---
 These names are arbitrary, but I'll be using them throughout the rest of this demo.
 +
 [source,shell]
@@ -27,14 +27,13 @@ These names are arbitrary, but I'll be using them throughout the rest of this de
 oc create project $ODH
 oc create project $PROJECT
 ----
---
 . Prepare the `$PROJECT` for ODH's model serving.
 +
 [source,shell]
 ----
 oc label namespace $PROJECT "modelmesh-enabled=true" --overwrite=true
 ----
-
++
 To enable ODH's monitoring stack, `user-workload-monitoring` must be configured.
 
 == Enable User-Workload-Monitoring
