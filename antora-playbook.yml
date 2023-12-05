@@ -10,3 +10,6 @@ ui:
     url: ./ui-bundle
 output:
   clean: true
+antora:
+  extensions:
+    - require: '@antora/lunr-extension'
