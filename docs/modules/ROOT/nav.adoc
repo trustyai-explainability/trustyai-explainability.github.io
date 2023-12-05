@@ -1,4 +1,10 @@
 * xref:main.adoc[]
+* xref:features.adoc[]
 * Tutorials
 ** xref:installing-opendatahub.adoc[]
 ** xref:bias-monitoring.adoc[]
+* Components
+** xref:trustyai-service.adoc[]
+** xref:trustyai-operator.adoc[]
+** xref:python-trustyai.adoc[]
+** xref:trustyai-core.adoc[]
