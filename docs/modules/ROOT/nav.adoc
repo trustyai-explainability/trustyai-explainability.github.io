@@ -1,5 +1,8 @@
 * xref:main.adoc[]
 * xref:features.adoc[]
+** xref:bias-metrics.adoc[]
+** xref:drift-metrics.adoc[]
+** xref:local-explainers.adoc[]
 * Tutorials
 ** xref:installing-opendatahub.adoc[]
 ** xref:bias-monitoring.adoc[]

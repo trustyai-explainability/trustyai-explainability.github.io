@@ -27,7 +27,7 @@ hold with us. Both models use the following information about the applicant to m
 * Length of Employment (in days)
 
 What we want to verify is that neither of our models are not biased over the gender field of `Is Male-Identifying?`. 
-To do this, we will monitor our models with link:Statistical-Parity-Difference.md[Statistical Parity Difference] (SPD) 
+To do this, we will monitor our models with xref:bias-metrics.adoc#statistical-parity-difference-spd[Statistical Parity Difference] (SPD) 
 metric, which will tell us how the difference between how often male-identifying and non-male-identifying applicants are 
 given favorable predictions (_i.e._, they are predicted to pay back their loans). 
 Ideally, the SPD value would be 0, indicating that both groups have equal likelihood of getting a good outcome. 

@@ -1,0 +1,42 @@
+= Bias metrics
+// Settings
+:idprefix:
+:idseparator: -
+:example-caption!:
+:stem: latexmath
+
+== Demographic Parity
+
+=== Statistical Parity Difference (SPD)
+
+The Statistical Parity Difference (SPD)  is the difference in the probability of prediction between the privileged and unprivileged groups. Typically:
+
+* stem:[SPD=0] means that the model is behaving fairly in regards of the selected attribute (e.g. race, gender)
+* Values between stem:[-0.1<SPD<0.1] mean that the model is reasonably fair and the score can be attributed to other factors, such as sample size.
+* An SPD outside this range would be an indicator of an unfair model relative to the protected attributes.
+    * A negative value of statistical parity difference indicates that the unprivileged group is at a disadvantage
+	* A positive value indicates that the privileged group is at a disadvantage.
+
+The formal definition of SPD is
+
+[stem]
+++++
+SPD=p(y=1|Du)-p(y=1|Dp)
+++++
+
+where y=1 is the favourable outcome and Du, Dp are respectively the privileged and unprivileged group data.
+
+=== Disparate Impact Ratio (DIR)
+
+Similarly to the Statistical Parity Difference, the Disparate Impact Ratio (DIR) measures imbalances in positive outcome predictions across privileged and unprivileged groups.
+Instead of calculating the difference, this metric calculates the ratio of such selection rates. Typically:
+
+* stem:[DIR=1] means that the model is fair with regards to the protected attribute.
+* stem:[0.8<DIR<1.2] means that the model is reasonably fair.
+
+The formal definition of the Disparate Impact Ratio is:
+
+[stem]
+++++
+DIR=p(y=1|Du)p(y=1|Dp)
+++++
