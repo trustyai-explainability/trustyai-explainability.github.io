@@ -1,1 +1,5 @@
 = TrustyAI operator
+
+The TrustyAI Kubernetes Operator aims at simplifying the deployment and management of the xref:trustyai-service.adoc[TrustyAI service] on Kubernetes and OpenShift clusters by watching for custom resources of kind `TrustyAIService` in the `trustyai.opendatahub.io` API group and manages deployments, services, and optionally, routes and `ServiceMonitors` corresponding to these resources.
+
+The operator ensures the service is properly configured, is discoverable by Prometheus for metrics scraping (on both Kubernetes and OpenShift), and is accessible via a `Route` on OpenShift.

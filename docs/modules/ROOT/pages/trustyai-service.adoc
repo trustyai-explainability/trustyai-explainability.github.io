@@ -1,5 +1,15 @@
 = TrustyAI service
 
+The TrustyAI service is a REST service that provides the integration between XAI and metrics algorithms provided by the xref:trustyai-core.adoc[TrustyAI core] and external models.
+
+[NOTE]
+====
+Although it can be used as a standalone service, it is designed to be used as part of Open Data Hub, deployed in OpenShift/Kubernetes and managed by the xref:trustyai-operator.adoc[TrustyAI operator].
+====
+
+The main functionality of the service is to provide a REST API to calculate metrics and explainability. The service can consume model data (inputs and outputs) for metrics calculation either via a consumer endpoint, or cloud events.
+
+To provide explanations, the service performs inferences to a ModelMesh/KServe-deployed model using gRPC.
 
 == External endpoints
 

@@ -1,1 +1,3 @@
 = TrustyAI core
+
+The TrustyAI core is a Java library that provides the core functionality of the TrustyAI framework. It is used by the xref:trustyai-service.adoc[TrustyAI service] and the xref:python-trustyai.adoc[Python TrustyAI library].
