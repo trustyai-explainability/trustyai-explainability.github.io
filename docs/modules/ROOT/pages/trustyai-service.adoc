@@ -1,1 +1,20 @@
 = TrustyAI service
+
+
+== External endpoints
+
+TrustyAI service external endpoints are only accessible by authenticated users. The authentication is done `oauth-proxy` service.
+
+This generally requires getting a user token (or a token from a service account with sufficient privileges) and passing it to the service.
+
+To get the token on OpenShift, you can use the following command:
+
+```bash
+TOKEN=$(oc whoami -t)
+```
+
+Then, you can pass the token to the service using the `Authorization` header:
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" $TRUSTYAI_ROUTE
+```

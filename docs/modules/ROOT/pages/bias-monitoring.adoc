@@ -82,6 +82,13 @@ This means that TrustyAI has catalogued 2250 inputs and outputs for each of the 
 
 == Examining TrustyAI's Model Metadata
 
+[NOTE]
+.Endpoint authentication
+====
+A TrustyAI's service external endpoints will only be accessible to authenticated users.
+Instruction on to access them are available in the xref:trustyai-service.adoc#_accessing_trustyai_service_endpoints[External endpoints] section.
+====
+
 We can also verify that TrustyAI sees the models via the `/info` endpoint:
 
 . Find the route to the TrustyAI Service: `TRUSTY_ROUTE=https://$(oc get route/trustyai-service --template={{.spec.host}})`
