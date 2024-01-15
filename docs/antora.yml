@@ -1,7 +1,7 @@
 name: trustyai-site
 title: TrustyAI
 start_page: main.adoc
-version: '0.10.0'
+version: 'main'
 asciidoc:
   attributes:
     source-language: asciidoc@
