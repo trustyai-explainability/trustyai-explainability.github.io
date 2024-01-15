@@ -1,6 +1,5 @@
 name: trustyai-site
 title: TrustyAI
-version: 0.8.0
 start_page: main.adoc
 asciidoc:
   attributes:
