@@ -7,7 +7,7 @@ content:
     start_path: docs
     branches: ['main', 0.8.0, 0.9.0, 0.10.0]
     worktrees: true
-    version: '0.10.0'
+    version: 'main'
 ui:
   bundle:
     url: ./ui-bundle
