@@ -1,1 +1,24 @@
 = Drift metrics
+
+== Data Drift
+
+Most machine learning models are highly sensitive to the _distribution_ of the data they receive; that is,
+how the individual values of various features in inbound data compare to the range of values seen during training.
+Often, models will perform poorly on data that looks distributionally different than the data it was 
+trained on. The analog here is studying for an exam; you'll likely perform well if the exam material matches
+what you studied, and you likely won't do particularly well if it doesn't match. A difference between
+the training data (the material you studied) and the real-world data received during deployment
+(the exam material) is called _data drift_.
+
+For a practical example, imagine a model designed to analyze MRI scans for abnormalities, trained on adult
+humans. If this model then receives a scan from, say, an elephant calf, it might be unable to 
+reconcile this anatomy against its learned intuition and therefore produce meaningless predictions. 
+
+However, when models are deployed to production, it can be hard to identify when they fall victim to
+data drift, unless you are manually inspecting their inference data. This would require you to a)
+have the time and manpower to sift through all the received data and b) understand what would constitute unfamiliar, 
+"drifted" data to your model, which is of course unfeasible at any sort of large scale. 
+
+Instead, we can turn to the _data drift monitoring metrics_ offered by TrustyAI, such as Mean-Shift, FourierMMD, or
+the Kolmogorov-Smirnov test, which provide a quantitative measure of the alignment between the training data and the
+inference data. 

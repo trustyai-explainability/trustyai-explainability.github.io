@@ -6,6 +6,7 @@
 * Tutorials
 ** xref:installing-opendatahub.adoc[]
 ** xref:bias-monitoring.adoc[]
+** xref:data-drift-monitoring.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
