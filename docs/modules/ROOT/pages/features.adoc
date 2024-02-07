@@ -1,1 +1,10 @@
 = Features
+
+== Metrics
+
+* xref:bias-metrics.adoc[Bias Metrics]
+* xref:drift-metrics.adoc[Drift Metrics]
+
+== Explainers
+
+* xref:local-explainers.adoc[Local Explainers]
