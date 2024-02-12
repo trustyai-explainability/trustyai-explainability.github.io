@@ -3,3 +3,40 @@
 The TrustyAI Kubernetes Operator aims at simplifying the deployment and management of the xref:trustyai-service.adoc[TrustyAI service] on Kubernetes and OpenShift clusters by watching for custom resources of kind `TrustyAIService` in the `trustyai.opendatahub.io` API group and manages deployments, services, and optionally, routes and `ServiceMonitors` corresponding to these resources.
 
 The operator ensures the service is properly configured, is discoverable by Prometheus for metrics scraping (on both Kubernetes and OpenShift), and is accessible via a `Route` on OpenShift.
+
+== Installation
+
+=== OpenShift installation
+
+Please refer to the xref:installing-opendatahub.adoc[] page.
+
+=== Kubernetes installation
+
+[NOTE]
+====
+TrustyAI's operator is designed and supported for OpenShift.
+
+Although _not officially supported_, it is however possible to install it on Kubernetes with a few modifications.
+====
+
+If installing the TrustyAI operator in Kubernetes, you will need to create the secrets necessary for each TrustyAI's service authenticated `Service`.
+
+OpenShift will automatically create the required secrets for you, whereas in Kubernetes you will need to create them manually.
+
+Assuming you have the TrustyAI operator already installed and wanted to install a TrustyAI service, called `$TRUSTYAI_SERVICE` in an already existing namespace `$NAMESPACE`, you'll need to:
+
+. (Optional) If you don't have the certificate and key in a file, you can create them (just an example):
++
+[source,shell]
+----
+openssl req -x509 -newkey rsa:4096 -keyout trustyai.pem -out trustyai.pem -days 365 -nodes -subj "/CN=example.com"
+----
++
+. Create the secret in the destination namespace:
++
+[source,shell]
+----
+kubectl create secret tls ${TRUSTYAI_SERVICE}-tls --cert=trustyai.pem --key=trustyai.pem --namespace $NAMESPACE
+----
+
+The TrustyAI service can now be created as usual.
