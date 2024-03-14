@@ -6,12 +6,20 @@ Python TrustyAI is a Python library for explainable AI. It is a wrapper around t
 
 The library is available on PyPi and can be installed with pip.
 
-```bash
+[source,shell]
+----
 pip install trustyai
-```
+----
 
 To install additional experimental features, the following command can be used:
 
-```bash
+[source,shell]
+----
 pip install trustyai[extras]
-```
+----
+
+== Service integration
+
+The Python TrustyAI library allows for interaction with a running xref:trustyai-service.adoc[TrustyAI service].
+
+For an example, please consult the xref:accessing-service-from-python.adoc[] tutorial.
