@@ -2,12 +2,14 @@
 * xref:features.adoc[]
 ** xref:bias-metrics.adoc[]
 ** xref:drift-metrics.adoc[]
+** xref:language-metrics.adoc[]
 ** xref:local-explainers.adoc[]
 * Tutorials
 ** xref:installing-opendatahub.adoc[]
 ** xref:bias-monitoring.adoc[]
 ** xref:data-drift-monitoring.adoc[]
 ** xref:accessing-service-from-python.adoc[]
+** xref:saliency-explanations.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
