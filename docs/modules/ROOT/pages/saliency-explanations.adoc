@@ -1,0 +1,193 @@
+= Saliency explanations
+
+This tutorial will walk you through setting up and using TrustyAI to provide saliency explanations for model predictions within a OpenShift environment using OpenDataHub. We will deploy a model, configure the environment, and demonstrate how to obtain predictions and their explanations.
+
+[NOTE]
+====
+Since TrustyAI explanations are not yet supported at the ODH Dashboard level, we will use the command line to interact with the models and TrustyAI service throughout this tutorial.
+====
+
+== Prerequisites
+- An operational OpenShift cluster.
+- The `oc` command-line tool installed.
+
+== Setup
+
+=== Install OpenDataHub and model server
+
+Start by setting up OpenDataHub using the installation guide provided in the project documentation. You can find the installation instructions here: xref:installing-opendatahub.adoc[OpenDataHub Installation Guide].
+
+. Create a new namespace specifically for your explainer tests. This isolates your resources from other deployments. We will refer to this namespace as `$NAMESPACE` throughout the tutorial.
++
+[source,shell]
+----
+export NAMESPACE="explainer-tests"
+oc new-project $NAMESPACE
+----
++
+. Label your new namespace to enable ModelMesh.
++
+[source,shell]
+----
+oc label namespace $NAMESPACE modelmesh-enabled=true --overwrite
+----
++
+. Deploy the serving runtime environment required for your models. We will be using an sklearn model. An example serving runtime can be found at xref:attachment$odh-mlserver-1.x.yaml[odh-mlserver-1.x.yaml].
++
+[source,shell]
+----
+oc apply -f odh-mlserver-1.x.yaml -n $NAMESPACE
+----
++
+. Apply the necessary storage configuration for ModelMesh. This could be an empty config such as
++
+[source,yaml]
+----
+include::example$storage-config.yaml[]
+----
++
+[source,shell]
+----
+oc apply -f storage-config.yaml -n $NAMESPACE
+----
+
+=== Deploy the Model and Service
+
+. Deploy the model you want to use for the explanations. Ensure the model configuration is correctly set in the `credit-score.yaml` file.
++
+[source,yaml]
+----
+include::example$credit-score.yaml[]
+----
++
+[source,shell]
+----
+oc apply -f credit-score.yaml -n $NAMESPACE
+----
++
+. Deploy the TrustyAI service, which will be used to obtain explanations.
++
+[source,yaml]
+----
+include::example$trustyai-cr.yaml[]
+----
++
+[source,shell]
+----
+oc apply -f trustyai-cr.yaml -n $NAMESPACE
+----
++
+. Check the status of the pods to ensure everything is running as expected.
++
+[source,shell]
+----
+oc get pods -n $NAMESPACE
+----
++
+
+You should expect to see the following pods running:
+
+[source,text]
+----
+NAME                                              READY   STATUS    RESTARTS   AGE
+modelmesh-serving-mlserver-1.x-7b89657544-45h89   5/5     Running   0          34m
+modelmesh-serving-mlserver-1.x-7b89657544-rf8qq   5/5     Running   0          34m
+trustyai-service-7895cbc447-wqrpf                 2/2     Running   0          34m
+----
+
+You can now make a note of the TrustyAI's pod name for future reference. We will also take the opportunity to get the model's and the TrustyAI service's route full URLs as well as the required authentication token.
+
+[source,shell]
+----
+export TRUSTYAI_POD=$(oc get pods -n $NAMESPACE | grep trustyai-service | awk '{print $1}')
+export MODEL_ROUTE=$(oc get route explainer-test  -n $NAMESPACE -o jsonpath='{.spec.host}')
+export TRUSTYAI_ROUTE=$(oc get route trustyai-service -n $NAMESPACE -o jsonpath='{.spec.host}')
+export TOKEN=$(oc whoami -t)
+----
+
+== Requesting Explanations
+
+=== Issue a Prediction
+
+In order to obtain an explanation, we first need to make a prediction.
+The explanation request will be based on this prediction ID.
+
+Start by sending an inference request to the model to get a prediction. Replace `${TOKEN}` with your actual authorization token.
+
+[source,shell]
+----
+curl -skv -H "Authorization: Bearer ${TOKEN}" \
+   https://${MODEL_ROUTE}/v2/models/explainer-test/infer \
+   -d '{"inputs": [{"name": "predict","shape": [1,5], "datatype": "FP64", "data": [1.0, 2.0, 1.0, 0.0, 1.0]}]}'
+----
+
+=== Get a Random Prediction ID
+
+Extract the latest prediction ID for use in obtaining an explanation.
+
+```shell
+export PREDICTION_ID=$(oc exec $TRUSTYAI_POD -n explainer-tests -c trustyai-service -- sh -c "awk -F',' '{print \$2}' /inputs/explainer-test-internal_data.csv | tail -n 1")
+```
+
+=== Request a LIME Explanation
+
+We will use LIME as our explainer for this tutorial. More information on LIME can be found xref:local-explainers.adoc#LIME[here].
+
+Request a LIME explanation for the selected prediction ID.
+
+[source,shell]
+----
+curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{
+    \"predictionId\": \"$PREDICTION_ID\",
+    \"modelConfig\": {
+        \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+        \"name\": \"explainer-test\",
+        \"version\": \"v1\"
+    }
+}" \
+    https://${TRUSTYAI_ROUTE}/explainers/local/lime
+----
+
+
+=== Results
+
+The output will show the saliency scores and confidence for each input feature used in the prediction.
+
+[source,json]
+----
+{
+    "timestamp": "2024-04-17T08:37:49.243+00:00",
+    "type": "explanation",
+    "saliencies": {
+        "predict-0": [
+            {
+                "name": "predict-0",
+                "score": 0.3411308951190848,
+                "confidence": 0.0
+            },
+            {
+                "name": "predict-1",
+                "score": 0.41833974453840533,
+                "confidence": 0.0
+            },
+            {
+                "name": "predict-2",
+                "score": 0.0,
+                "confidence": 0.0
+            },
+            {
+                "name": "predict-3",
+                "score": 0.0,
+                "confidence": 0.0
+            },
+            {
+                "name": "predict-4",
+                "score": 0.0,
+                "confidence": 0.0
+            }
+        ]
+    }
+}
+----

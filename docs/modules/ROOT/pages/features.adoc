@@ -4,6 +4,7 @@
 
 * xref:bias-metrics.adoc[Bias Metrics]
 * xref:drift-metrics.adoc[Drift Metrics]
+* xref:language-metrics.adoc[Language Metrics]
 
 == Explainers
 

@@ -1,0 +1,14 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "explainer-test"
+  annotations:
+    serving.kserve.io/deploymentMode: ModelMesh
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      protocolVersion: v2
+      runtime: mlserver-1.x
+      storageUri: https://github.com/trustyai-explainability/model-collection/raw/main/credit-score/model.joblib
