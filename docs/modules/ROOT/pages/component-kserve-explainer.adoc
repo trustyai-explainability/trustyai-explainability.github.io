@@ -1,0 +1,29 @@
+= KServe explainer
+
+image::trustyai-kserve-explainer.svg[TrustyAI KServe architecture diagram]
+
+The TrustyAI KServe Explainer is a component that provides explanations for predictions made by using the built-in KServe explainer support footnote:fn-kserveexplainer[Documentation available at https://kserve.github.io/website/0.12/modelserving/explainer/explainer/[KServe explainers section].]. It supports xref:local-explainers.adoc#lime[LIME] and xref:local-explainers.adoc#shap[SHAP] explanation methods, configurable directly within KServe `InferenceServices`.
+
+== Features
+
+- **Explainability**: Integrated support for xref:local-explainers.adoc#lime[LIME] and xref:local-explainers.adoc#shap[SHAP] explanation methods to interpret model predictions via the `:explain` endpoint.
+
+== Deployment on KServe
+
+The TrustyAI explainer can be added to KServe `InferenceServices` and can be configured to use either xref:local-explainers.adoc#lime[LIME] or xref:local-explainers.adoc#shap[SHAP] explanation methods by modifying the YAML configuration.
+
+When deployed, Istio manages the routing of requests to the appropriate container. Calls to `/v1/models/model:predict` will be sent to the predictor container, while calls to `/v1/models/model:explain` will be sent to the explainer container. The payloads for both endpoints are the same, but the `:predict` endpoint returns the model's prediction, while the `:explain` endpoint returns an explanation of the prediction.
+
+=== LIME Explainer
+
+By default, the TrustyAI KServe explainer uses the xref:local-explainers.adoc#lime[LIME] explainer. You can deploy the explainer by specifying the appropriate container image and any necessary configuration in the `InferenceService` YAML.
+
+=== SHAP Explainer
+
+To use the xref:local-explainers.adoc#shap[SHAP] explainer, you can deploy the explainer by specifying it as an environment variable in the `InferenceService` YAML configuration.
+
+== Interacting with the Explainer
+
+You can interact with the explainer using the `:explain` endpoint. By sending a JSON payload containing the necessary input data, you can retrieve an explanation for the model's prediction. The response structure includes the saliencies of each feature contributing to the prediction.
+
+A full tutorial on how to deploy the TrustyAI KServe explainer is available at xref:saliency-explanations-with-kserve.adoc[Saliency Explanations with KServe].

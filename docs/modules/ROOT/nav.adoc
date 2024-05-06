@@ -10,8 +10,11 @@
 ** xref:data-drift-monitoring.adoc[]
 ** xref:accessing-service-from-python.adoc[]
 ** xref:saliency-explanations.adoc[]
+*** xref:saliency-explanations-on-odh.adoc[]
+*** xref:saliency-explanations-with-kserve.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
 ** xref:python-trustyai.adoc[]
 ** xref:trustyai-core.adoc[]
+** xref:component-kserve-explainer.adoc[]

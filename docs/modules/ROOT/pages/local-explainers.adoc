@@ -28,9 +28,43 @@ encoded dataset stem:[E] is built by taking non-zero elements of stem:[x^{\prime
 original representation stem:[z \in \mathbb{R}^d] and then computing stem:[f(z)]. A weighted linear model stem:[g] (with weights provided via stem:[\pi_x]) is then trained upon the generated
 sparse dataset stem:[E] and the model weights stem:[w] are used as feature weights for the final explanation stem:[\xi(x)].
 
+== SHAP
+
+SHAP, presented by Scott Lundberg and Su-In Lee in 2017<<lundberg2017>>, seeks to unify a number of common explanation methods, notably LIME <<ribeiro2016>> and DeepLIFT <<shrikumar2017>>, under a common umbrella of additive feature attributions. These are explanation methods that explain how an input stem:[x = [x_1, x_2, ..., x_M ]] affects the output of some model stem:[f] by transforming stem:[x \in \mathbb{R}^M] into simplified inputs stem:[z^{\prime} \in 0, 1^M] , such that stem:[z^{\prime}_i] indicates the inclusion or exclusion of feature stem:[i]. These simplified inputs are then passed to an explanatory model stem:[g] that takes the following form:
+
+[stem]
+++++
+x = h_x(z^{\prime}) \\
+g(z^{\prime}) = \phi_0 + \sum_{i=1}^M \phi_i z_i^{\prime} \\
+\textbf{s.t.}\quad g(z^{\prime}) \approx f (h_x(z^{\prime}))
+++++
+
+In such a form, each value stem:[\phi_i] marks the contribution that feature stem:[i] had on the output model (called the attribution), and stem:[\phi_0] marks the null output of the model; the model output when every feature is excluded. Therefore, this presents an easily interpretable explanation of the importance of each feature and a framework to permute the various input features to establish their collection contributions.
+
+The final result of the algorithm are the Shapley values of each feature, which
+give an itemized "receipt" of all the contributing factors to the decision. For example, a SHAP explanation of a loan application might be as follows:
+
+[options="header"]
+|===
+|Feature | Shapley Value φ
+|Null Output | 50%
+|Income | +10%
+|# Children | -15%
+|Age | +22%
+|Own Home? | -30%
+|Acceptance% | 37%
+|Deny | 63%
+|===
+
+
+From this, the applicant can see that the biggest contributor to their denial was their home ownership status, which reduced their acceptance probability by 30 percentage points. Meanwhile, their number of children was of particular
+benefit, increasing their probability by 22 percentage points.
+
 [bibliography]
 == References
 
-* [[[ribeiro2016]]] Ribeiro, M.T., Singh, S., Guestrin, C.: ” why should i trust you?” explaining the predictions of any classifier. In: Proceedings of the 22nd ACM
-SIGKDD international conference on knowledge discovery and data mining,
+* [[[ribeiro2016]]] Ribeiro, M.T., Singh, S., Guestrin, C.: ” why should i trust you?” explaining the predictions of any classifier. In: Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining,
 pp. 1135–1144 (2016)
+* [[[lundberg2017]]], S., Lee, S.I.: A unified approach to interpreting model predictions. Advances in Neural Information Processing Systems (2017)
+* [[[shrikumar2017]]], Shrikumar, A., Greenside, P., Kundaje, A.: Learning important features
+through propagating activation differences. CoRR abs/1704.02685 (2017)
