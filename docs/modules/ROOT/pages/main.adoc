@@ -10,6 +10,7 @@ TrustyAI consists of several components, including:
 * xref:trustyai-service.adoc[TrustyAI service], TrustyAI-as-a-service, a REST service for fairness metrics and explainability algorithms including ModelMesh integration.
 * xref:trustyai-operator.adoc[TrustyAI operator], a Kubernetes operator for TrustyAI service.
 * xref:python-trustyai.adoc[Python TrustyAI], a Python library allowing the usage of TrustyAI's toolkit from Jupyter notebooks
+* xref:component-kserve-explainer.adoc[KServe explainer], a TrustyAI side-car that integrates with KServe's built-in explainability features.
 
 == Glossary
 

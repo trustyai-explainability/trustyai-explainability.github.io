@@ -1,0 +1,121 @@
+= Saliency explanations with KServe
+:source-highlighter: pygments
+
+This tutorial will walk you through setting up and using TrustyAI to provide saliency explanations for model predictions using the KServe builtin explainer capabilities. We will deploy a model, configure the environment, and demonstrate how to obtain predictions and their explanations.
+
+== Prerequisites
+- An operational Kubernetes cluster.
+- KServe 0.11 installed on the cluster. footnote:fn-kserveinstallation[You can find the installation instructions here: https://kserve.github.io/website/0.11/admin/serverless/serverless/[KServe Installation Guide].]
+- The `kubectl` command-line tool installed.
+
+== Setup
+
+=== Install `InferenceService`
+
+Create a new namespace for your explainer tests. We will refer to this namespace as `$NAMESPACE` throughout the tutorial.
+We will also assume that the namespace into which KServe was deployed is `kserve`.
+
+[source,shell]
+----
+export NAMESPACE="trustyai-test"
+export KSERVE_NAMESPACE="kserve"
+----
+
+We first verify that KServe is installed and running, by checking the status of its operator.
+
+[source,shell]
+----
+kubectl get pods -n $KSERVE_NAMESPACE -l control-plane=kserve-controller-manager
+----
+
+We can now proceed to create the model deployment namespace with
+
+[source,shell]
+----
+kubectl create namespace $NAMESPACE
+----
+
+The `InferenceService` to deploy will have a new key (`explainer`), and will be similar to the one in the following example.
+
+[,yaml,highlight=2..5]
+----
+include::example$inference-service-explainer-lime-k8s.yaml[]
+----
+<1> The `predictor` field is the same as you would use for a regular `InferenceService`.
+<2> In this case we are using an `sklearn` model, by specifying the URI location, but you can use any other model supported by KServe.
+<3> The `explainer` field is a new key that specifies the explainer to use. In this case, the `lime` explainer is used by default.
+<4> The image of the KServe TrustyAI explainer must be specified in the `explainer.image` field.
+
+We can deploy it with
+
+[source,shell]
+----
+kubectl apply -f inference-service-explainer-lime.yaml -n $NAMESPACE
+----
+
+And wait for the `InferenceService` to be ready.
+
+[source,shell]
+----
+kubectl get pods -n $NAMESPACE
+----
+
+[source,text]
+----
+NAME                                                              READY   STATUS    RESTARTS   AGE
+explainer-test-lime-explainer-00001-deployment-c6fff8b4-5x4qg     2/2     Running   0          41m
+explainer-test-lime-predictor-00001-deployment-dfd47bb47-lwl5b    2/2     Running   0          41m
+----
+
+You will see that in addition to the `predictor` pod, there is also an `explainer` pod running. These two pods are responsible for the prediction and explanation, respectively.
+
+== Making predictions
+
+Predictions are performed in the same way as with regular `InferenceService` deployments. We can use the `kubectl` command to send a request to the model.
+We leave the access mode to the `InferenceService` to the user's discretion, depending on the Kubernetes cluster configuration. Some possible options are available in the https://kserve.github.io/website/0.11/get_started/first_isvc/[KServe documentation]. For the rest of this tutorial, we will use port-forwarding to access the service, for simplicity and assume local access.
+
+We will use the following payload to make a prediction, which we know from the test data will produce a positive prediction. The payload is available for download xref:attachment$kserve-explainer-payload.json[here].
+
+[source,json]
+----
+include::example$kserve-explainer-payload.json[]
+----
+
+To request a prediction, we can use the following command:
+
+[source,shell]
+----
+curl -s -H "Host: explainer-test-lime.${NAMESPACE}.example.com" \
+    -H "Content-Type: application/json" \
+    "http://localhost:8080/v1/models/explainer-test-lime:predict" \
+    -d @payload.json
+----
+
+and the result should be:
+
+[source,json]
+----
+{"predictions":[1]}
+----
+
+== Requesting explanations
+
+To request an explanation, we can use the a very similar command and payload, simple replacing `predict` with `explain` in the URL.
+
+[source,shell]
+----
+curl -s -H "Host: explainer-test-lime.${NAMESPACE}.example.com" \
+    -H "Content-Type: application/json" \
+    "http://localhost:8080/v1/models/explainer-test-lime:explain" \ <1>
+    -d @payload.json
+----
+<1> The verb `predict` is replaced with `explain`.
+
+This produce a saliency map, similar to:
+
+[source,json]
+----
+include::example$kserve-explainer-lime-saliencies.json[]
+----
+
+From the above saliency map, we can see that the most important feature is `inputs-12`.
