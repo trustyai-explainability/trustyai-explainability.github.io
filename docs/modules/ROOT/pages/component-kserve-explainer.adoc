@@ -12,7 +12,7 @@ The TrustyAI KServe Explainer is a component that provides explanations for pred
 
 The TrustyAI explainer can be added to KServe `InferenceServices` and can be configured to use either xref:local-explainers.adoc#lime[LIME] or xref:local-explainers.adoc#shap[SHAP] explanation methods by modifying the YAML configuration.
 
-When deployed, Istio manages the routing of requests to the appropriate container. Calls to `/v1/models/model:predict` will be sent to the predictor container, while calls to `/v1/models/model:explain` will be sent to the explainer container. The payloads for both endpoints are the same, but the `:predict` endpoint returns the model's prediction, while the `:explain` endpoint returns an explanation of the prediction.
+When deployed, KServe manages the routing of requests to the appropriate container. Calls to `/v1/models/model:predict` will be sent to the predictor container, while calls to `/v1/models/model:explain` will be sent to the explainer container. The payloads for both endpoints are the same, but the `:predict` endpoint returns the model's prediction, while the `:explain` endpoint returns an explanation of the prediction.
 
 === LIME Explainer
 

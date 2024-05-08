@@ -39,7 +39,7 @@ The `InferenceService` to deploy will have a new key (`explainer`), and will be 
 
 [,yaml,highlight=2..5]
 ----
-include::example$inference-service-explainer-lime.yaml[]
+include::example$inference-service-explainer-lime-k8s.yaml[]
 ----
 <1> The `predictor` field is the same as you would use for a regular `InferenceService`.
 <2> In this case we are using an `sklearn` model, by specifying the URI location, but you can use any other model supported by KServe.
