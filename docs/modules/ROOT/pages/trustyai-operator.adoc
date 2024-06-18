@@ -32,11 +32,13 @@ Assuming you have the TrustyAI operator already installed and wanted to install 
 openssl req -x509 -newkey rsa:4096 -keyout trustyai.pem -out trustyai.pem -days 365 -nodes -subj "/CN=example.com"
 ----
 +
-. Create the secret in the destination namespace:
+. Create the secrets in the destination namespace, one for each service (`${TRUSTYAI_SERVICE}-tls` and `${TRUSTYAI_SERVICE}-internal`):
 +
 [source,shell]
 ----
 kubectl create secret tls ${TRUSTYAI_SERVICE}-tls --cert=trustyai.pem --key=trustyai.pem --namespace $NAMESPACE
+kubectl create secret tls ${TRUSTYAI_SERVICE}-internal --cert=trustyai.pem --key=trustyai.pem --namespace $NAMESPACE
+
 ----
 
 The TrustyAI service can now be created as usual.
