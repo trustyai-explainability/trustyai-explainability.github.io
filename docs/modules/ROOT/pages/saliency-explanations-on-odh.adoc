@@ -121,12 +121,32 @@ curl -skv -H "Authorization: Bearer ${TOKEN}" \
    -d '{"inputs": [{"name": "predict","shape": [1,5], "datatype": "FP64", "data": [1.0, 2.0, 1.0, 0.0, 1.0]}]}'
 ----
 
-=== Get a Random Prediction ID
+=== Getting an inference ID
+
+The TrustyAI service provides an endpoint to list stored inference ids.
+You can list all (non-synthetic or _organic_) ids by running:
+
+```shell
+curl -skv -H "Authorization: Bearer ${TOKEN}" \
+   https://${TRUSTYAI_ROUTE}/info/inference/ids/explainer-test?type=organic
+```
+
+The response will be similar to
+
+```json
+[
+  {
+    "id":"a3d3d4a2-93f6-4a23-aedb-051416ecf84f",
+    "timestamp":"2024-06-25T09:06:28.75701201"
+  }
+]
+```
 
 Extract the latest prediction ID for use in obtaining an explanation.
 
 ```shell
-export PREDICTION_ID=$(oc exec $TRUSTYAI_POD -n explainer-tests -c trustyai-service -- sh -c "awk -F',' '{print \$2}' /inputs/explainer-test-internal_data.csv | tail -n 1")
+export PREDICTION_ID=$(curl -skv -H "Authorization: Bearer ${TOKEN}" \
+  https://${TRUSTYAI_ROUTE}/info/inference/ids/explainer-test?type=organic | jq -r '.[-1].id')
 ```
 
 === Request a LIME Explanation
