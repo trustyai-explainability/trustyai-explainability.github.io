@@ -161,15 +161,40 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{
     \"predictionId\": \"$INFERENCE_ID\",
-    \"modelConfig\": {
-        \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
-        \"name\": \"explainer-test\",
-        \"version\": \"v1\"
+    \"config\": {
+        \"model\": {
+            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"name\": \"explainer-test\",
+            \"version\": \"v1\"
+        }
     }
 }" \
     https://${TRUSTYAI_ROUTE}/explainers/local/lime
 ----
 
+If the explainer needs to be configured, additional options can be added under `config.explainer`. For instance, to configure the number of samples used by LIME we can issue:
+
+[source,shell]
+----
+curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{
+    \"predictionId\": \"$INFERENCE_ID\",
+    \"config\": {
+        \"model\": {  <1>
+            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"name\": \"explainer-test\",
+            \"version\": \"v1\"
+        },
+        \"explainer\": {  <2>
+            \"n_samples\": 100
+        }
+    }
+}" \
+    https://${TRUSTYAI_ROUTE}/explainers/local/lime
+----
+<1> The `model` field specifies configuration regarding the model to be used.
+<2> The `explainer` field specifies the configuration of the explainer itself. In this instance, the number of samples.
 
 === Results
 
@@ -211,3 +236,28 @@ The output will show the saliency scores and confidence for each input feature u
     }
 }
 ----
+
+=== Request a SHAP Explanation
+
+Requesting a SHAP explanation is done using a similar call, but replacing the endpoint with SHAP's. For instance
+
+[source,shell]
+----
+curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{
+    \"predictionId\": \"$INFERENCE_ID\",
+    \"config\": {
+        \"model\": {
+            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"name\": \"explainer-test\",
+            \"version\": \"v1\"
+        },
+        \"explainer\": {
+            \"n_samples\": 100
+        }
+    }
+}" \
+    https://${TRUSTYAI_ROUTE}/explainers/local/shap <1>
+----
+<1> The endpoint now refers to SHAP, instead of LIME.
