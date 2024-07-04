@@ -18,3 +18,5 @@
 ** xref:python-trustyai.adoc[]
 ** xref:trustyai-core.adoc[]
 ** xref:component-kserve-explainer.adoc[]
+* Reference
+** xref:trustyai-service-api-reference.adoc[]
