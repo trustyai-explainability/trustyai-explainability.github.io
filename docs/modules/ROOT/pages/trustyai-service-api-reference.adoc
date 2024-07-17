@@ -1,4 +1,6 @@
 = TrustyAI service API
+team@openapitools.org
+999-SNAPSHOT
 :toc: left
 :numbered:
 :toclevels: 4
@@ -1571,6 +1573,90 @@ ifdef::internal-generation[]
 ===== Implementation
 
 // markup not found, no include::{specDir}metrics/dir/requests/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.DownloadEndpoint]
+=== DownloadEndpoint
+
+
+[.dataDownloadPost]
+==== dataDownloadPost
+
+`POST /data/download`
+
+
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}data/download/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| DataRequestPayload
+|  <<DataRequestPayload>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.HTTP Response Codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}data/download/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}data/download/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :data/download/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}data/download/POST/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -3664,6 +3750,86 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
+[.infoNamesDelete]
+==== infoNamesDelete
+
+`DELETE /info/names`
+
+
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}info/names/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+====== Body Parameter
+
+[cols="2,3,1,1,1"]
+|===
+|Name| Description| Required| Default| Pattern
+
+| body
+|  <<string>>
+| -
+| 
+| 
+
+|===
+
+
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.HTTP Response Codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}info/names/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}info/names/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :info/names/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}info/names/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
 [.infoNamesPost]
 ==== infoNamesPost
 
@@ -3744,6 +3910,73 @@ ifdef::internal-generation[]
 endif::internal-generation[]
 
 
+[.infoTagsGet]
+==== infoTagsGet
+
+`GET /info/tags`
+
+
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}info/tags/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.HTTP Response Codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}info/tags/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}info/tags/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :info/tags/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}info/tags/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
 [.infoTagsPost]
 ==== infoTagsPost
 
@@ -3819,6 +4052,73 @@ ifdef::internal-generation[]
 ===== Implementation
 
 // markup not found, no include::{specDir}info/tags/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.infoValuesGet]
+==== infoValuesGet
+
+`GET /info/values`
+
+
+
+===== Description
+
+
+
+
+// markup not found, no include::{specDir}info/values/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.HTTP Response Codes
+[cols="2,3,1"]
+|===
+| Code | Message | Datatype
+
+
+| 200
+| OK
+|  <<>>
+
+|===
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}info/values/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}info/values/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :info/values/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}info/values/GET/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -6055,7 +6355,7 @@ endif::internal-generation[]
 [#LimeExplainerConfig]
 === _LimeExplainerConfig_ 
 
-
+Configuration for the LIME explainer
 
 
 [.fields-LimeExplainerConfig]
@@ -6067,8 +6367,120 @@ endif::internal-generation[]
 | 
 | 
 |   Integer  
-| 
+| Number of samples to be generated for the local linear model training
 | int32    
+
+| separable_dataset_ratio
+| 
+| 
+|   Double  
+| Separable dataset ration
+| double    
+
+| retries
+| 
+| 
+|   Integer  
+| Number of retries
+| int32    
+
+| adaptive_variance
+| 
+| 
+|   Boolean  
+| Whether the explainer should adapt the variance in the generated (perturbed) data when it&#39;s not separable
+|     
+
+| penalize_balance_sparse
+| 
+| 
+|   Boolean  
+| Whether to penalize weights whose sparse features encoding is balanced with respect to target output
+|     
+
+| proximity_filter
+| 
+| 
+|   Boolean  
+| Whether to prefer filtering by proximity over weighting by proximity when generating samples for the linear model
+|     
+
+| proximity_threshold
+| 
+| 
+|   Double  
+| The proximity threshold used to filter samples when proximity filter is true
+| double    
+
+| proximity_kernel_width
+| 
+| 
+|   Double  
+| The width of the kernel used to calculate proximity of sparse vector instances
+| double    
+
+| encoding_cluster_threshold
+| 
+| 
+|   Double  
+| Encoding cluster threshold
+| double    
+
+| encoding_gaussian_filter_width
+| 
+| 
+|   Double  
+| Encoding Gaussian filter width
+| double    
+
+| normalize_weights
+| 
+| 
+|   Boolean  
+| Whether to normalize weights generated by LIME or not
+|     
+
+| high_score_feature_zones
+| 
+| 
+|   Boolean  
+| Whether to use high score feature zones for more accurate numeric features sampling
+|     
+
+| feature_selection
+| 
+| 
+|   Boolean  
+| Whether to operate feature selection
+|     
+
+| n_features
+| 
+| 
+|   Integer  
+| Number of features to use
+| int32    
+
+| track_counterfactuals
+| 
+| 
+|   Boolean  
+| Whether to track byproduct counterfactuals
+|     
+
+| use_wlr_model
+| 
+| 
+|   Boolean  
+| Whether to use a weighted linear regression model
+|     
+
+| filter_interpretable
+| 
+| 
+|   Boolean  
+| Whether to run proximity filter in the interpretable space
+|     
 
 |===
 
@@ -6077,7 +6489,7 @@ endif::internal-generation[]
 [#LimeExplanationConfig]
 === _LimeExplanationConfig_ 
 
-
+Configuration for the LIME explanation, including model and explainer parameters
 
 
 [.fields-LimeExplanationConfig]
@@ -6089,14 +6501,14 @@ endif::internal-generation[]
 | X
 | 
 | <<ModelConfig>>    
-| 
+| Model configuration
 |     
 
 | explainer
 | 
 | 
 | <<LimeExplainerConfig>>    
-| 
+| Explainer configuration
 |     
 
 |===
@@ -6128,15 +6540,27 @@ endif::internal-generation[]
 | 
 |     
 
-| explanationConfig
-| 
-| 
-| <<LimeExplanationConfig>>    
-| 
-|     
-
 |===
 
+
+
+[#LinkType]
+=== _LinkType_ 
+
+
+
+
+
+
+[.fields-LinkType]
+[cols="1"]
+|===
+| Enum Values
+
+| LOGIT
+| IDENTITY
+
+|===
 
 
 [#MeanshiftMetricRequest]
@@ -6516,6 +6940,28 @@ endif::internal-generation[]
 
 
 
+[#RegularizerType]
+=== _RegularizerType_ 
+
+
+
+
+
+
+[.fields-RegularizerType]
+[cols="1"]
+|===
+| Enum Values
+
+| AUTO
+| AIC
+| BIC
+| TOP_N_FEATURES
+| NONE
+
+|===
+
+
 [#RowMatcher]
 === _RowMatcher_ 
 
@@ -6555,7 +7001,7 @@ endif::internal-generation[]
 [#SHAPExplainerConfig]
 === _SHAPExplainerConfig_ 
 
-
+Configuration for the LIME explainer
 
 
 [.fields-SHAPExplainerConfig]
@@ -6567,8 +7013,36 @@ endif::internal-generation[]
 | 
 | 
 |   Integer  
-| 
+| Number of data samples to run when computing SHAP values
 | int32    
+
+| link
+| 
+| 
+|  <<LinkType>>  
+| Either LOGIT or IDENTITY. If you want the SHAP values to sum to the exact model output, use IDENTITYIf your model outputs probabilities and you want the SHAP values touse log-odds units, use LOGIT
+|    LOGIT, IDENTITY,  
+
+| regularizer
+| 
+| 
+|  <<RegularizerType>>  
+| The choice of regularizer to use when fitting data. This will select a certain fraction of features to use, based on which are most important to the regression
+|    AUTO, AIC, BIC, TOP_N_FEATURES, NONE,  
+
+| confidence
+| 
+| 
+|   Double  
+| The size of the confidence window to use for SHAP values
+| double    
+
+| track_counterfactuals
+| 
+| 
+|   Boolean  
+| Whether to track byproduct counterfactuals generated during explanation
+|     
 
 |===
 
@@ -6577,7 +7051,7 @@ endif::internal-generation[]
 [#SHAPExplanationConfig]
 === _SHAPExplanationConfig_ 
 
-
+Configuration for the SHAP explanation, including model and explainer parameters
 
 
 [.fields-SHAPExplanationConfig]
@@ -6589,14 +7063,14 @@ endif::internal-generation[]
 | X
 | 
 | <<ModelConfig>>    
-| 
+| Model configuration
 |     
 
 | explainer
 | 
 | 
 | <<SHAPExplainerConfig>>    
-| 
+| Explainer configuration
 |     
 
 |===
@@ -6623,13 +7097,6 @@ endif::internal-generation[]
 
 | config
 | X
-| 
-| <<SHAPExplanationConfig>>    
-| 
-|     
-
-| explanationConfig
-| 
 | 
 | <<SHAPExplanationConfig>>    
 | 

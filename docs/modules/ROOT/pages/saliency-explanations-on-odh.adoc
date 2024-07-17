@@ -155,6 +155,17 @@ We will use LIME as our explainer for this tutorial. More information on LIME ca
 
 Request a LIME explanation for the selected inference ID.
 
+[NOTE]
+====
+The URL of the model server's service must be specified in the `config.model.target` field.
+
+This field only accepts model servers in the same namespace as the TrustyAI service, with or without protocol or port number.
+
+- `http[s]://service[:port]`
+- `service[:port]`
+
+====
+
 [source,shell]
 ----
 curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
@@ -163,7 +174,7 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
     \"predictionId\": \"$INFERENCE_ID\",
     \"config\": {
         \"model\": {
-            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"target\": \"modelmesh-serving:8033\",
             \"name\": \"explainer-test\",
             \"version\": \"v1\"
         }
@@ -182,7 +193,7 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
     \"predictionId\": \"$INFERENCE_ID\",
     \"config\": {
         \"model\": {  <1>
-            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"target\": \"modelmesh-serving:8033\",
             \"name\": \"explainer-test\",
             \"version\": \"v1\"
         },
@@ -195,6 +206,11 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
 ----
 <1> The `model` field specifies configuration regarding the model to be used.
 <2> The `explainer` field specifies the configuration of the explainer itself. In this instance, the number of samples.
+
+[NOTE]
+====
+A detailed reference of all supported explainer configurations can be found  xref:trustyai-service-api-reference.adoc#LimeExplainerConfig[here for LIME] and xref:trustyai-service-api-reference.adoc#SHAPExplainerConfig[here for SHAP].
+====
 
 === Results
 
@@ -249,7 +265,7 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
     \"predictionId\": \"$INFERENCE_ID\",
     \"config\": {
         \"model\": {
-            \"target\": \"modelmesh-serving.${NAMESPACE}.svc.cluster.local:8033\",
+            \"target\": \"modelmesh-serving:8033\",
             \"name\": \"explainer-test\",
             \"version\": \"v1\"
         },
