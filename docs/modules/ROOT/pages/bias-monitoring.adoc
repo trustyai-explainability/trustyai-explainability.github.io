@@ -40,6 +40,17 @@ Follow the instructions within the link:Install-on-Open-Data-Hub.md[installation
 Afterwards, you should have an ODH installation, a link:TrustyAI-operator.md[TrustyAI operator], and a `model-namespace` project containing
 an instance of the link:TrustyAI-service.md[TrustyAI service].
 
+Once the installation is completed, navigate to the Bias Monitoring directory within the demo repository that was downloaded during the link:Install-on-Open-Data-Hub.md[Installation Tutorial]:
+[source,shell]
+----
+cd odh-trustyai-demos/2-BiasMonitoring
+----
+
+[NOTE]
+====
+All future commands within this tutorial should be run from this directory.
+====
+
 == Deploy Models
 
 . Navigate to the `model-namespace` created in the setup section: `oc project model-namespace`

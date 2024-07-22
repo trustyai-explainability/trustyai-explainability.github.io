@@ -17,6 +17,17 @@ Follow the instructions within the xref:installing-opendatahub.adoc[Installing o
 you should have an ODH installation, a TrustyAI Operator, and a `model-namespace` project containing
 an instance of the TrustyAI Service.
 
+Once the installation is completed, navigate to the Data Drift directory within the demo repository that was downloaded during the link:Install-on-Open-Data-Hub.md[Installation Tutorial]:
+[source,shell]
+----
+cd odh-trustyai-demos/3-DataDrift
+----
+
+[NOTE]
+====
+All future commands within this tutorial should be run from this directory.
+====
+
 [#deploy-model]
 == Deploy Model
 
