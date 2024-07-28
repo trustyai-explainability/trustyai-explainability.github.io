@@ -15,6 +15,25 @@ Namespace to install ODH into.
 $PROJECT:: 
 Namespace to deploy models into.
 
+== Environment Setup
+. Download the demo repository, which contains the various resource files you'll need for the tutorial:
++
+[source,shell]
+----
+git clone https://github.com/trustyai-explainability/odh-trustyai-demos
+----
+. Navigate to the Installation tutorial directory:
++
+[source,shell]
+----
+cd odh-trustyai-demos/1-Installation
+----
++
+[NOTE]
+====
+All future commands within this tutorial should be run from this directory.
+====
+
 == Cluster Setup
 
 . Make sure you are `oc login`'d to your OpenShift cluster.
