@@ -198,14 +198,15 @@ curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
             \"version\": \"v1\"
         },
         \"explainer\": {  <2>
-            \"n_samples\": 100
+            \"n_samples\": 100,
+            \"timeout\": 5
         }
     }
 }" \
     https://${TRUSTYAI_ROUTE}/explainers/local/lime
 ----
 <1> The `model` field specifies configuration regarding the model to be used.
-<2> The `explainer` field specifies the configuration of the explainer itself. In this instance, the number of samples.
+<2> The `explainer` field specifies the configuration of the explainer itself. In this instance, we configure the number of samples used by the explainer, as well as the maximum time (in seconds) we are willing to wait for an explanation, before it returns an HTTP time out (default value is 10 seconds).
 
 [NOTE]
 ====
