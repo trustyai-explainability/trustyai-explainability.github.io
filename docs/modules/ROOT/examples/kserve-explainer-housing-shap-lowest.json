@@ -1,0 +1,53 @@
+{
+  "timestamp": "2024-07-29T20:47:41.511+00:00",
+  "type": "explanation",
+  "saliencies": {
+    "predict-0": [
+      {
+        "name": "inputs-0",
+        "score": 0.05798290741077758,
+        "confidence": 0.12904453014228442
+      },
+      {
+        "name": "inputs-1",
+        "score": -0.02583508910348834,
+        "confidence": 0.144478542298868
+      },
+      {
+        "name": "inputs-2",
+        "score": 0.05414353021811688,
+        "confidence": 0.15250464517451795
+      },
+      {
+        "name": "inputs-3",
+        "score": -2.9211788608753814E-4,
+        "confidence": 0.1489221798898736
+      },
+      {
+        "name": "inputs-4",
+        "score": -0.010685071550586595,
+        "confidence": 0.13328783125568475
+      },
+      {
+        "name": "inputs-5",
+        "score": -0.3197132284493354,
+        "confidence": 0.1341401364621916
+      },
+      {
+        "name": "inputs-6",
+        "score": 0.4630318848137003,
+        "confidence": 0.13154033030120849
+      },
+      {
+        "name": "inputs-7",
+        "score": -1.0172981362310851,
+        "confidence": 0.3688144561620335
+      },
+      {
+        "name": "Background",
+        "score": 2.1364767908097266,
+        "confidence": 0.0
+      }
+    ]
+  }
+}

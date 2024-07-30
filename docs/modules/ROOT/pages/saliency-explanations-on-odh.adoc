@@ -53,16 +53,16 @@ oc apply -f storage-config.yaml -n $NAMESPACE
 
 === Deploy the Model and Service
 
-. Deploy the model you want to use for the explanations. Ensure the model configuration is correctly set in the `credit-score.yaml` file.
+. Deploy the model you want to use for the explanations. Ensure the model configuration is correctly set in the `is-housing.yaml` file.
 +
 [source,yaml]
 ----
-include::example$credit-score.yaml[]
+include::example$explainer-is-housing.yaml[]
 ----
 +
 [source,shell]
 ----
-oc apply -f credit-score.yaml -n $NAMESPACE
+oc apply -f is-housing.yaml -n $NAMESPACE
 ----
 +
 . Deploy the TrustyAI service, which will be used to obtain explanations.
@@ -103,22 +103,58 @@ export TRUSTYAI_POD=$(oc get pods -n $NAMESPACE | grep trustyai-service | awk '{
 export MODEL_ROUTE=$(oc get route explainer-test  -n $NAMESPACE -o jsonpath='{.spec.host}')
 export TRUSTYAI_ROUTE=$(oc get route trustyai-service -n $NAMESPACE -o jsonpath='{.spec.host}')
 export TOKEN=$(oc whoami -t)
+export MODEL="housing"
 ----
 
 == Requesting Explanations
 
 === Request an inference
 
-In order to obtain an explanation, we first need to make an inference.
-The explanation request will be based on this inference ID.
+In order to obtain an explanation, we first need to make some inferences.
+The explanation request will be based on the ID of an existing inference.
 
-Start by sending an inference request to the model to get an inference. Replace `${TOKEN}` with your actual authorization token.
+The file xref:attachment$explainer-data-housing.json[explainer-data-housing.json] contains a set of datapoints you can send to the model. Replace `${TOKEN}` with your actual authorization token.
 
 [source,shell]
 ----
 curl -skv -H "Authorization: Bearer ${TOKEN}" \
-   https://${MODEL_ROUTE}/v2/models/explainer-test/infer \
-   -d '{"inputs": [{"name": "predict","shape": [1,5], "datatype": "FP64", "data": [1.0, 2.0, 1.0, 0.0, 1.0]}]}'
+   https://${MODEL_ROUTE}/v2/models/${MODEL}/infer \
+   -d @explainer-data-housing.json
+----
+
+You can now verify that you have 1000 observations in TrustyAI's storage:
+
+[source, shell]
+----
+curl -sk -H "Authorization: Bearer ${TOKEN}" \
+  ${TRUSTYAI_ROUTE}/info | jq '.housing.data.observations'
+----
+
+Let's assume that inferences that result in highest and lowest predicted house prices are respectively:
++
+[source,yaml]
+----
+include::example$kserve-explainer-housing-highest.json[]
+----
++
+[source,shell]
+----
+include::example$kserve-explainer-housing-lowest.json[]
+----
+
+We will send these payloads to model so we can use them for our explanation.
+
+[source, shell]
+----
+curl -sk -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  ${MODEL_ROUTE}/v2/models/${MODEL}/infer \
+  -d @kserve-explainer-housing-highest.json
+
+curl -sk -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  ${MODEL_ROUTE}/v2/models/${MODEL}/infer \
+  -d @kserve-explainer-housing-lowest.json
 ----
 
 === Getting an inference ID
@@ -126,32 +162,36 @@ curl -skv -H "Authorization: Bearer ${TOKEN}" \
 The TrustyAI service provides an endpoint to list stored inference ids.
 You can list all (non-synthetic or _organic_) ids by running:
 
-```shell
+[source,shell]
+----
 curl -skv -H "Authorization: Bearer ${TOKEN}" \
-   https://${TRUSTYAI_ROUTE}/info/inference/ids/explainer-test?type=organic
-```
+   https://${TRUSTYAI_ROUTE}/info/inference/ids/${MODEL}?type=organic
+----
 
 The response will be similar to
 
-```json
+[source,json]
+----
 [
   {
     "id":"a3d3d4a2-93f6-4a23-aedb-051416ecf84f",
     "timestamp":"2024-06-25T09:06:28.75701201"
   }
 ]
-```
+----
 
-Extract the latest inference ID for use in obtaining an explanation.
+Assuming we did no other inference in the meantime, we will extract the two latest inference ID (highest and lowest predictions) for use in obtaining an explanation.
 
-```shell
-export INFERENCE_ID=$(curl -skv -H "Authorization: Bearer ${TOKEN}" \
-  https://${TRUSTYAI_ROUTE}/info/inference/ids/explainer-test?type=organic | jq -r '.[-1].id')
-```
+[source,shell]
+----
+export ID_LOWEST=$(curl -s ${TRUSTYAI_ROUTE}/info/inference/ids/${MODEL}?type=organic | jq -r '.[-1].id')
 
-=== Request a LIME Explanation
+export ID_HIGHEST=$(curl -s ${TRUSTYAI_ROUTE}/info/inference/ids/${MODEL}?type=organic | jq -r '.[-2].id')
+----
 
-We will use LIME as our explainer for this tutorial. More information on LIME can be found xref:local-explainers.adoc#LIME[here].
+=== Request Explanations
+
+We will use LIME and SHAP as our explainers for this tutorial. More information on LIME can be found xref:local-explainers.adoc#LIME[here].
 
 Request a LIME explanation for the selected inference ID.
 
@@ -168,20 +208,96 @@ This field only accepts model servers in the same namespace as the TrustyAI serv
 
 [source,shell]
 ----
-curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d "{
-    \"predictionId\": \"$INFERENCE_ID\",
+echo "Requesting SHAP for lowest"
+curl -sk -H "Authorization: Bearer ${TOKEN}" -X POST \
+-H "Content-Type: application/json" \
+-d "{
+    \"predictionId\": \"$ID_LOWEST\",
     \"config\": {
         \"model\": {
             \"target\": \"modelmesh-serving:8033\",
-            \"name\": \"explainer-test\",
+            \"name\": \"${MODEL}\",
             \"version\": \"v1\"
+        },
+        \"explainer\": {
+          \"n_samples\": 75
         }
     }
 }" \
-    https://${TRUSTYAI_ROUTE}/explainers/local/lime
+${TRUSTYAI_ROUTE}/explainers/local/shap
 ----
+
+The saliency explanation from SHAP should be similar to
+
+[source,yaml]
+----
+include::example$kserve-explainer-housing-shap-lowest.json[]
+----
+
+The process can be repeated, respectively, for the SHAP explanation for the highest prediction and LIME explanations for the highest and lowest predictions.
+
+[source,shell]
+----
+echo "Requesting SHAP for highest"
+curl -sk -H "Authorization: Bearer ${TOKEN}" -X POST \
+    -H "Content-Type: application/json" \
+    -d "{
+        \"predictionId\": \"$ID_HIGHEST\",
+        \"config\": {
+            \"model\": {
+                \"target\": \"modelmesh-serving:8033\",
+                \"name\": \"${MODEL}\",
+                \"version\": \"v1\"
+            },
+            \"explainer\": {
+              \"n_samples\": 75
+            }
+        }
+    }" \
+    ${TRUSTYAI_ROUTE}/explainers/local/shap
+
+echo "Requesting LIME for lowest"
+curl -s -H "Authorization: Bearer ${TOKEN}" -X POST \
+    -H "Content-Type: application/json" \
+    -d "{
+        \"predictionId\": \"$ID_LOWEST\",
+        \"config\": {
+            \"model\": {
+                \"target\": \"modelmesh-serving:8033\",
+                \"name\": \"${MODEL}\",
+                \"version\": \"v1\"
+            },
+            \"explainer\": {
+              \"n_samples\": 50,
+              \"normalize_weights\": \"false\",
+              \"feature_selection\": \"false\"
+            }
+        }
+    }" \
+    ${TRUSTYAI_ROUTE}/explainers/local/lime <1>
+
+
+echo "Requesting LIME for highest"
+curl -sk -H "Authorization: Bearer ${TOKEN}" -X POST \
+    -H "Content-Type: application/json" \
+    -d "{
+        \"predictionId\": \"$ID_HIGHEST\",
+        \"config\": {
+            \"model\": {
+                \"target\": \"modelmesh-serving:8033\",
+                \"name\": \"${MODEL}\",
+                \"version\": \"v1\"
+            },
+            \"explainer\": {
+              \"n_samples\": 50,
+              \"normalize_weights\": \"false\",
+              \"feature_selection\": \"false\"
+            }
+        }
+    }" \
+    ${TRUSTYAI_ROUTE}/explainers/local/lime
+----
+<1> The endpoint now refers to SHAP, instead of LIME.
 
 If the explainer needs to be configured, additional options can be added under `config.explainer`. For instance, to configure the number of samples used by LIME we can issue:
 
@@ -217,64 +333,6 @@ A detailed reference of all supported explainer configurations can be found  xre
 
 The output will show the saliency scores and confidence for each input feature used in the inference.
 
-[source,json]
-----
-{
-    "timestamp": "2024-04-17T08:37:49.243+00:00",
-    "type": "explanation",
-    "saliencies": {
-        "predict-0": [
-            {
-                "name": "predict-0",
-                "score": 0.3411308951190848,
-                "confidence": 0.0
-            },
-            {
-                "name": "predict-1",
-                "score": 0.41833974453840533,
-                "confidence": 0.0
-            },
-            {
-                "name": "predict-2",
-                "score": 0.0,
-                "confidence": 0.0
-            },
-            {
-                "name": "predict-3",
-                "score": 0.0,
-                "confidence": 0.0
-            },
-            {
-                "name": "predict-4",
-                "score": 0.0,
-                "confidence": 0.0
-            }
-        ]
-    }
-}
-----
+We can visualize the saliencies of LIME and SHAP, respectively for the highest and lowest predictions below.
 
-=== Request a SHAP Explanation
-
-Requesting a SHAP explanation is done using a similar call, but replacing the endpoint with SHAP's. For instance
-
-[source,shell]
-----
-curl -sk -X POST -H "Authorization: Bearer ${TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d "{
-    \"predictionId\": \"$INFERENCE_ID\",
-    \"config\": {
-        \"model\": {
-            \"target\": \"modelmesh-serving:8033\",
-            \"name\": \"explainer-test\",
-            \"version\": \"v1\"
-        },
-        \"explainer\": {
-            \"n_samples\": 100
-        }
-    }
-}" \
-    https://${TRUSTYAI_ROUTE}/explainers/local/shap <1>
-----
-<1> The endpoint now refers to SHAP, instead of LIME.
+image::kserve-explainer-housing-saliencies.png[S, border-effect=line]
