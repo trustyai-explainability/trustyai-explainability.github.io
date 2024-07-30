@@ -53,7 +53,19 @@ oc apply -f storage-config.yaml -n $NAMESPACE
 
 === Deploy the Model and Service
 
-. Deploy the model you want to use for the explanations. Ensure the model configuration is correctly set in the `is-housing.yaml` file.
+The model used for this example is an XGBoost regression model for the California Housing Datasetfootnote:[Pace, R. Kelley, and Ronald Barry, "Sparse Spatial Autoregressions," Statistics and Probability Letters, Volume 33, Number 3, May 5 1997, p. 291-297.] which aims at predicting a house's price (in $100k units) based on some household characteristics. Namely
+
+* `MedInc`, median income in block group
+* `HouseAge`, median house age in block group
+* `AveRooms`, average number of rooms per household
+* `AveBedrms`, average number of bedrooms per household
+* `Population`, block group population
+* `AveOccup`, average number of household members
+* `Latitude`, block group latitude
+* `Longitude`, block group longitude
+
+
+. Let's start by deploying the model you want to use for the explanations. Ensure the model configuration is correctly set in the `is-housing.yaml` file.
 +
 [source,yaml]
 ----
