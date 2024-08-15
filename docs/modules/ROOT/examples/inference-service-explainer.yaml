@@ -1,0 +1,20 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "explainer-test"
+  annotations:
+    sidecar.istio.io/inject: "true"
+    sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    serving.knative.openshift.io/enablePassthrough: "true"
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      protocolVersion: v2
+      runtime: kserve-sklearnserver
+      storageUri: https://github.com/trustyai-explainability/model-collection/raw/bank-churn/model.joblib
+  explainer:
+    containers:
+        - name: explainer
+          image: quay.io/trustyai/trustyai-kserve-explainer:latest

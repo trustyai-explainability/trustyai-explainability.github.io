@@ -39,18 +39,18 @@ The `InferenceService` to deploy will have a new key (`explainer`), and will be 
 
 [,yaml,highlight=2..5]
 ----
-include::example$inference-service-explainer-lime-k8s.yaml[]
+include::example$inference-service-explainer-k8s.yaml[]
 ----
 <1> The `predictor` field is the same as you would use for a regular `InferenceService`.
 <2> In this case we are using an `sklearn` model, by specifying the URI location, but you can use any other model supported by KServe.
-<3> The `explainer` field is a new key that specifies the explainer to use. In this case, the `lime` explainer is used by default.
+<3> The `explainer` field is a new key that specifies the explainer to use. In this case, the `lime` and `shap` explainers are used by default.
 <4> The image of the KServe TrustyAI explainer must be specified in the `explainer.image` field.
 
 We can deploy it with
 
 [source,shell]
 ----
-kubectl apply -f inference-service-explainer-lime.yaml -n $NAMESPACE
+kubectl apply -f inference-service-explainer.yaml -n $NAMESPACE
 ----
 
 And wait for the `InferenceService` to be ready.
@@ -63,8 +63,8 @@ kubectl get pods -n $NAMESPACE
 [source,text]
 ----
 NAME                                                              READY   STATUS    RESTARTS   AGE
-explainer-test-lime-explainer-00001-deployment-c6fff8b4-5x4qg     2/2     Running   0          41m
-explainer-test-lime-predictor-00001-deployment-dfd47bb47-lwl5b    2/2     Running   0          41m
+explainer-test-explainer-00001-deployment-c6fff8b4-5x4qg     2/2     Running   0          41m
+explainer-test-predictor-00001-deployment-dfd47bb47-lwl5b    2/2     Running   0          41m
 ----
 
 You will see that in addition to the `predictor` pod, there is also an `explainer` pod running. These two pods are responsible for the prediction and explanation, respectively.
@@ -85,9 +85,9 @@ To request a prediction, we can use the following command:
 
 [source,shell]
 ----
-curl -s -H "Host: explainer-test-lime.${NAMESPACE}.example.com" \
+curl -s -H "Host: explainer-test.${NAMESPACE}.example.com" \
     -H "Content-Type: application/json" \
-    "http://localhost:8080/v1/models/explainer-test-lime:predict" \
+    "http://localhost:8080/v1/models/explainer-test:predict" \
     -d @payload.json
 ----
 
@@ -104,9 +104,9 @@ To request an explanation, we can use the a very similar command and payload, si
 
 [source,shell]
 ----
-curl -s -H "Host: explainer-test-lime.${NAMESPACE}.example.com" \
+curl -s -H "Host: explainer-test.${NAMESPACE}.example.com" \
     -H "Content-Type: application/json" \
-    "http://localhost:8080/v1/models/explainer-test-lime:explain" \ <1>
+    "http://localhost:8080/v1/models/explainer-test:explain" \ <1>
     -d @payload.json
 ----
 <1> The verb `predict` is replaced with `explain`.
@@ -115,7 +115,16 @@ This produce a saliency map, similar to:
 
 [source,json]
 ----
-include::example$kserve-explainer-lime-saliencies.json[]
+include::example$kserve-explainer-saliencies.json[]
 ----
 
 From the above saliency map, we can see that the most important feature is `inputs-12`.
+
+== Additional configuration
+
+To get only `LIME` or `SHAP` explanations we simply add the following lines to the `InferenceService` spec:
+
+[source,json]
+----
+include::example$inference-service-explainer-lime.yaml[]
+----
