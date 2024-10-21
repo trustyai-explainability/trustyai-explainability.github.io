@@ -1,0 +1,3 @@
+= LM-Eval
+
+image::lm-eval-architecture.svg[LM-Eval architecture diagram]

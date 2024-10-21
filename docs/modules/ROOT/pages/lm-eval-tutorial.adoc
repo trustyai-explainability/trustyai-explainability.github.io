@@ -1,0 +1,462 @@
+= Getting started with LM-Eval
+
+xref:component-lm-eval.adoc[LM-Eval] is a service for large language model evaluation underpinned by two open-source projects: link:https://github.com/EleutherAI/lm-evaluation-harness[lm-evaluation-harness] and link:https://www.unitxt.ai[Unitxt]. LM-Eval is integrated into the xref:trustyai-operator.adoc[TrustyAI Kubernetes Operator]. In this tutorial, you will learn:
+
+- How to create an `LMEvalJob` CR to kick off an evaluation job and get the results
+
+[NOTE]
+====
+LM-Eval is only available in the `latest` community builds.
+In order to use if on Open Data Hub, you need to add the following `devFlag` to you `DataScienceCluster` resource:
+
+[source,yaml]
+----
+trustyai:
+  devFlags:
+    manifests:
+      - contextDir: config
+        sourcePath: ''
+        uri: https://github.com/trustyai-explainability/trustyai-service-operator/tarball/main
+  managementState: Managed
+----
+====
+
+== Global settings for LM-Eval
+
+There are some configurable global settings for LM-Eval services and they are stored in the TrustyAI's operator global `ConfigMap`, `trustyai-service-operator-config`, located in the same namespace as the operator. Here is a list of properties for LM-Eval:
+
+[cols="1,1,2", options="header"]
+|===
+|Setting |Default |Description
+
+|`lmes-detect-device`
+|`true/false`
+|Detect if there is available GPUs or not and assign the proper value for `--device` argument for lm-evaluation-harness. If GPU(s) is found, it uses `cuda` as the value for `--device`; otherwise, it uses `cpu`.
+
+|`lmes-pod-image`
+|`quay.io/trustyai/ta-lmes-job:latest`
+|The image for the LM-Eval job. The image contains the necessary Python packages for lm-evaluation-harness and Unitxt.
+
+|`lmes-driver-image`
+|`quay.io/trustyai/ta-lmes-driver:latest`
+|The image for the LM-Eval driver. Check `cmd/lmes_driver` directory for detailed information about the driver.
+
+|`lmes-image-pull-policy`
+|`Always`
+|The image-pulling policy when running the evaluation job.
+
+|`lmes-default-batch-size`
+|`8`
+|The default batch size when invoking the model inference API. This only works for local models.
+
+|`lmes-max-batch-size`
+|`24`
+|The maximum batch size that users can specify in an evaluation job.
+
+|`lmes-pod-checking-interval`
+|`10s`
+|The interval to check the job pod for an evaluation job.
+|===
+
+
+After updating the settings in the `ConfigMap`, the new values only take effect when the operator restarts.
+
+== LMEvalJob
+
+LM-Eval service defines a new Custom Resource Definition called: *`LMEvalJob`*. `LMEvalJob` objects are monitored by the xref:trustyai-operator.adoc[TrustyAI Kubernetes operator]. An LMEvalJob object represents an _evaluation job_. Therefore, to run an evaluation job, you need to create an `LMEvalJob` object with the needed information including model, model arguments, task, secret, etc. Once the `LMEvalJob` is created, the LM-Eval service will run the evaluation job and update the status and results to the `LMEvalJob` object when the information is available.
+
+Here is an example of an `LMEvalJob` object:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: google/flan-t5-base <1>
+  taskList:
+    taskRecipes:
+    - card:
+        name: "cards.wnli" <2>
+      template: "templates.classification.multi_class.relation.default" <3>
+  logSamples: true
+----
+
+<1> In this example, it uses the pre-trained `google/flan-t5-base` link:https://huggingface.co/google/flan-t5-base[model] from Hugging Face (model: hf)
+<2> The dataset is from the `wnli` subset of the link:https://huggingface.co/datasets/nyu-mll/glue[General Language Understanding Evaluation (GLUE)]. You can find the details of the Unitxt card `wnli` link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.wnli.html[here].
+<3> It also specifies the link:https://www.unitxt.ai/en/latest/catalog/catalog.tasks.classification.multi_class.relation.html[multi_class.relation] task from Unitxt and its default metrics are `f1_micro`, `f1_macro`, and `accuracy`.
+
+After you apply the example `LMEvalJob` above, you can check its state by using the following command:
+
+[source,shell]
+----
+oc get lmevaljob evaljob-sample
+----
+
+The output would be like:
+
+[source,text]
+----
+NAME             STATE
+evaljob-sample   Running
+----
+
+When its state becomes `Complete`, the evaluation results will be available. Both the model and dataset in this example are small. The evaluation job would be able to finish within 10 minutes on a CPU-only node.
+
+Use the following command to get the results:
+
+[source,shell]
+----
+oc get lmevaljobs.trustyai.opendatahub.io evaljob-sample \
+  -o template --template={{.status.results}} | jq '.results'
+----
+
+Here are the example results:
+
+[source,json]
+----
+{
+  "tr_0": {
+    "alias": "tr_0",
+    "f1_micro,none": 0.5633802816901409,
+    "f1_micro_stderr,none": "N/A",
+    "accuracy,none": 0.5633802816901409,
+    "accuracy_stderr,none": "N/A",
+    "f1_macro,none": 0.36036036036036034,
+    "f1_macro_stderr,none": "N/A"
+  }
+}
+----
+
+The `f1_micro`, `f1_macro`, and `accuracy` scores are 0.56, 0.36, and 0.56. The full results are stored in the `.status.results` of the `LMEvalJob` object as a JSON document. The command above only retrieves the `results` field of the JSON document.
+
+== Details of LMEvalJob
+
+In this section, let's review each property in the LMEvalJob and its usage.
+
+[cols="1,2a", options="header"]
+|===
+|Parameter |Description
+
+|`model`
+a|
+Specify which model type or provider is evaluated. This field directly maps to the `--model` argument of the lm-evaluation-harness. Supported model types and providers include:
+
+* `hf`: HuggingFace models
+* `openai-completions`: OpenAI Completions API models
+* `openai-chat-completions`: link:https://platform.openai.com/docs/guides/chat-completions[ChatCompletions API models]
+* `local-completions` and `local-chat-completions`: OpenAI API-compatible servers
+* `textsynth`: link:https://textsynth.com/documentation.html#engines[TextSynth APIs]
+
+|`modelArgs`
+a|
+A list of paired name and value arguments for the model type. Each model type or provider supports different arguments:
+
+* `hf` (HuggingFace): Check the link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/huggingface.py#L55[huggingface.py]
+* `local-completions` (OpenAI API-compatible server): Check the link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/openai_completions.py#L13[openai_completions.py] and link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/api_models.py#L55[tapi_models.py]
+* `local-chat-completions` (OpenAI API-compatible server): Check link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/openai_completions.py#L99[openai_completions.py] and link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/api_models.py#L55[tapi_models.py]
+* `openai-completions` (OpenAI Completions API models): Check link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/openai_completions.py#L177[openai_completions.py] and link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/api_models.py#L55[tapi_models.py]
+* `openai-chat-completions` (ChatCompletions API models): Check link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/openai_completions.py#L209[openai_completions.py] and link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/api_models.py#L55[tapi_models.py]
+* `textsynth` (TextSynth APIs): Check link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/models/textsynth.py#L52[textsynth.py]
+
+
+|`taskList.taskNames`
+|Specify a list of tasks supported by lm-evaluation-harness.
+
+
+|`taskList.taskRecipes`
+|
+Specify the task using the Unitxt recipe format:
+
+* `card`: Use the `name` to specify a Unitxt card or `custom` for a custom card
+** `name`: Specify a Unitxt card from the link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html[Unitxt catalog]. Use the card's ID as the value.
+  For example: The ID of link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.wnli.html[Wnli card] is `cards.wnli`.
+** `custom`: Define a custom card and use it. The value is a JSON string for a custom Unitxt card which contains the custom dataset.
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_dataset.html#adding-to-the-catalog[here] to compose a custom card, store it as a JSON file, and use the JSON content as the value here.
+    If the dataset used by the custom card needs an API key from an environment variable or a persistent volume, you have to
+    set up corresponding resources under the `pod` field. Check the `pod` field below.
+* `template`: Specify a Unitxt template from the link:https://www.unitxt.ai/en/latest/catalog/catalog.templates.__dir__.html[Unitxt catalog]. Use the template's ID as the value.
+* `task` (optional): Specify a Unitxt task from the link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html[Unitxt catalog]. Use the task's ID as the value.
+  A Unitxt card has a pre-defined task. Only specify a value for this if you want to run different task.
+* `metrics` (optional): Specify a list of Unitx metrics from the link:https://www.unitxt.ai/en/latest/catalog/catalog.metrics.__dir__.html[Unitxt catalog]. Use the metric's ID as the value.
+  A Unitxt task has a set of pre-defined metrics. Only specify a set of metrics if you need different metrics.
+* `format` (optional): Specify a Unitxt format from the link:https://www.unitxt.ai/en/latest/catalog/catalog.formats.__dir__.html[Unitxt catalog]. Use the format's ID as the value.
+* `loaderLimit` (optional): Specifies the maximum number of instances per stream to be returned from the loader (used to reduce loading time in large datasets).
+* `numDemos` (optional): Number of fewshot to be used.
+* `demosPoolSize` (optional): Size of the fewshot pool.
+
+|`numFewShot`
+|Sets the number of few-shot examples to place in context. If you are using a task from Unitxt, don't use this field. Use `numDemos` under the `taskRecipes` instead.
+
+|`limit`
+|Instead of running the whole dataset, set a limit to run the tasks. Accepts an integer, or a float between 0.0 and 1.0.
+
+|`genArgs`
+|Map to `--gen_kwargs` parameter for the lm-evaluation-harness. Here are the link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/docs/interface.md#command-line-interface[details].
+
+|`logSampes`
+|If this flag is passed, then the model's outputs, and the text fed into the model, will be saved at per-document granularity.
+
+|`batchSize`
+|Batch size for the evaluation. This is used by the models that run and are loaded locally and do not apply to the commercial APIs.
+
+|`pod`
+|
+Specify extra information for the lm-eval job's pod.
+
+* `container`: Extra container settings for the lm-eval container.
+** `env`: Specify environment variables. It uses the `EnvVar` data structure of kubernetes.
+** `volumeMounts`: Mount the volumes into the lm-eval container.
+** `resources`: Specify the resources for the lm-eval container.
+* `volumes`: Specify the volume information for the lm-eval and other containers. It uses the `Volume` data structure of kubernetes.
+* `sideCars`: A list of containers that run along with the lm-eval container. It uses the `Container` data structure of kubernetes.
+|===
+
+== Examples
+
+=== Environment Variables
+
+If the LMEvalJob needs to access a model on HuggingFace with the access token, you can set up the `HF_TOKEN` as one of the environment variables for the lm-eval container:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: huggingfacespace/model
+  taskList:
+    taskNames:
+    - unfair_tos
+  logSamples: true
+  pod:
+    container:
+      env:
+      - name: HF_TOKEN
+        value: "My HuggingFace token"
+----
+
+Or you can create a secret to store the token and refer the key from the secret object using the reference syntax:
+
+(only attach the env part)
+
+[source,yaml]
+----
+      env:
+      - name: HF_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: my-secret
+            key: hf-token
+----
+
+=== Custom Unitxt Card
+
+Pass a custom Unitxt Card in JSON format:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: google/flan-t5-base
+  taskList:
+    taskRecipes:
+    - template: "templates.classification.multi_class.relation.default"
+      card:
+        custom: |
+          {
+            "__type__": "task_card",
+            "loader": {
+              "__type__": "load_hf",
+              "path": "glue",
+              "name": "wnli"
+            },
+            "preprocess_steps": [
+              {
+                "__type__": "split_random_mix",
+                "mix": {
+                  "train": "train[95%]",
+                  "validation": "train[5%]",
+                  "test": "validation"
+                }
+              },
+              {
+                "__type__": "rename",
+                "field": "sentence1",
+                "to_field": "text_a"
+              },
+              {
+                "__type__": "rename",
+                "field": "sentence2",
+                "to_field": "text_b"
+              },
+              {
+                "__type__": "map_instance_values",
+                "mappers": {
+                  "label": {
+                    "0": "entailment",
+                    "1": "not entailment"
+                  }
+                }
+              },
+              {
+                "__type__": "set",
+                "fields": {
+                  "classes": [
+                    "entailment",
+                    "not entailment"
+                  ]
+                }
+              },
+              {
+                "__type__": "set",
+                "fields": {
+                  "type_of_relation": "entailment"
+                }
+              },
+              {
+                "__type__": "set",
+                "fields": {
+                  "text_a_type": "premise"
+                }
+              },
+              {
+                "__type__": "set",
+                "fields": {
+                  "text_b_type": "hypothesis"
+                }
+              }
+            ],
+            "task": "tasks.classification.multi_class.relation",
+            "templates": "templates.classification.multi_class.relation.all"
+          }
+  logSamples: true
+----
+
+Inside the custom card, it uses the HuggingFace dataset loader:
+
+----
+            "loader": {
+              "__type__": "load_hf",
+              "path": "glue",
+              "name": "wnli"
+            },
+----
+
+You can use other link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#module-unitxt.loaders[loaders] and use the `volumes` and `volumeMounts` to mount the dataset from persistent volumes. For example, if you use link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#unitxt.loaders.LoadCSV[LoadCSV], you need to mount the files to the container and make the dataset accessible for the evaluation process.
+
+=== Using an `InferenceService`
+
+[NOTE]
+====
+This example assumes vLLM model already deployed in your cluster.
+====
+
+==== Define your LMEvalJob CR
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob
+spec:
+  model: local-completions
+  taskList:
+    taskNames:
+      - mmlu
+  logSamples: true
+  batchSize: 1
+  modelArgs:
+    - name: model
+      value: granite
+    - name: base_url
+      value: $ROUTE_TO_MODEL/v1/completions <1>
+    - name: num_concurrent
+      value:  "1"
+    - name: max_retries
+      value:  "3"
+    - name: tokenized_requests
+      value: "False"
+    - name: tokenizer
+      value: ibm-granite/granite-7b-instruct
+  envSecrets:
+    - env: OPENAI_TOKEN
+      secretRef: <2>
+        name: $SECRET_NAME_THAT_CONTAINS_TOKEN <3>
+        key: token <4>
+----
+<1> `base_url` should be set to the route/service URL of your model. Make sure to include the `/v1/completions` endpoint in the URL.
+<2> `envSecrets.secretRef` should point to a secret that contains a token that can authenticate to your model. `secretRef.name` should be the secret's name in the namespace, while `secretRef.key` should point at the token's key within the secret.
+<3> `secretRef.name` can equal the output of
++
+[source,shell]
+----
+oc get secrets -o custom-columns=SECRET:.metadata.name --no-headers | grep user-one-token
+----
++
+<4> `secretRef.key` should equal `token`
+
+
+Then, apply this CR into the same namespace as your model. You should see a pod spin up in your
+model namespace called `evaljob`. In the pod terminal, you can see the output via `tail -f output/stderr.log`
+
+=== Integration with Kueue
+
+[NOTE]
+====
+TrustyAI and LM-Eval **do not require** Kueue to work.
+However, if Kueue is available on the cluster, it can be used from LM-Eval.
+To enable Kueue on Open Data Hub, add the following to your `DataScienceCluster` resource:
+
+[source,yaml]
+----
+keue:
+  managementState: Managed
+----
+====
+
+To Enable job suspend for link:https://kueue.sigs.k8s.io/[Kueue] integration, create a job in suspended state. Verify the job is in suspended state and the job's pod is not running.
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  labels:
+    app.kubernetes.io/name: fms-lm-eval-service
+  name: evaljob-sample
+spec:
+  suspend: true <1>
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: EleutherAI/pythia-70m
+  taskList:
+    taskNames:
+    - unfair_tos
+  logSamples: true
+  limit: "5"
+----
+<1> This will set the LM-Eval job's state as suspended
+
+Set `suspend` to `false` and verify job's pod getting created and running:
+
+[source,shell]
+----
+oc patch lmevaljob evaljob-sample --patch '{"spec":{"suspend":false}}' --type merge
+----

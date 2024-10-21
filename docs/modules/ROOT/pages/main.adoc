@@ -2,15 +2,16 @@
 
 == What is TrustyAI?
 
-TrustyAI is, at its core, a Java library and service for Explainable AI (XAI).
-TrustyAI offers fairness metrics, explainable AI algorithms, and xref:features.adoc[various other XAI tools] at a library-level as well as a containerized service and Kubernetes deployment.
-TrustyAI consists of several components, including:
+TrustyAI is a set of components and services for Responsible AI.
+TrustyAI offers fairness and drift metrics, explainable AI algorithms, evaluation and xref:features.adoc[various other XAI tools] at a library-level as well as a containerized service and Kubernetes deployment.
+TrustyAI includes:
 
 * xref:trustyai-core.adoc[TrustyAI core], the core TrustyAI Java module, containing fairness metrics, AI explainers, and other XAI utilities.
 * xref:trustyai-service.adoc[TrustyAI service], TrustyAI-as-a-service, a REST service for fairness metrics and explainability algorithms including ModelMesh integration.
 * xref:trustyai-operator.adoc[TrustyAI operator], a Kubernetes operator for TrustyAI service.
 * xref:python-trustyai.adoc[Python TrustyAI], a Python library allowing the usage of TrustyAI's toolkit from Jupyter notebooks
 * xref:component-kserve-explainer.adoc[KServe explainer], a TrustyAI side-car that integrates with KServe's built-in explainability features.
+* xref:component-lm-eval.adoc[LM-Eval], generative text model benchmark and evaluation service, leveraging lm-evaluation-harness and Unitxt
 
 == Glossary
 
