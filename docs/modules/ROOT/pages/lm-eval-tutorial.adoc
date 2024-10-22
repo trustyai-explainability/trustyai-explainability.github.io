@@ -202,7 +202,7 @@ Specify the task using the Unitxt recipe format:
 |If this flag is passed, then the model's outputs, and the text fed into the model, will be saved at per-document granularity.
 
 |`batchSize`
-|Batch size for the evaluation. This is used by the models that run and are loaded locally and do not apply to the commercial APIs.
+|Batch size for the evaluation. The `auto:N` batch size is not used for API models, but numeric batch sizes are used for APIs. Only `int` batch size supported at the moment.
 
 |`pod`
 |
