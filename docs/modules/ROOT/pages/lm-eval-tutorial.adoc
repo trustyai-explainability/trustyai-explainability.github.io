@@ -6,8 +6,8 @@ xref:component-lm-eval.adoc[LM-Eval] is a service for large language model evalu
 
 [NOTE]
 ====
-LM-Eval is only available in the `latest` community builds.
-In order to use if on Open Data Hub, you need to add the following `devFlag` to you `DataScienceCluster` resource:
+LM-Eval is only available since TrustyAI's 1.28.0 community builds.
+In order to use it on Open Data Hub, you need to use either ODH 2.20 (or newer) or add the following `devFlag` to you `DataScienceCluster` resource:
 
 [source,yaml]
 ----
@@ -214,6 +214,17 @@ Specify extra information for the lm-eval job's pod.
 ** `resources`: Specify the resources for the lm-eval container.
 * `volumes`: Specify the volume information for the lm-eval and other containers. It uses the `Volume` data structure of kubernetes.
 * `sideCars`: A list of containers that run along with the lm-eval container. It uses the `Container` data structure of kubernetes.
+
+|`outputs`
+|This sections defines custom output locations for the evaluation results storage. At the moment only Persistent Volume Claims (PVC) are supported.
+
+|`outputs.pvcManaged`
+|Create an operator-managed PVC to store this job's results. The PVC will be named `<job-name>-pvc` and will be owned by the `LMEvalJob`. After job completion, the PVC will still be available, but it will be deleted upon deleting the `LMEvalJob`. Supports the following fields:
+
+* `size`: The PVC's size, compatible with standard PVC syntax (e.g. `5Gi`)
+
+|`outputs.pvcName`
+|Binds an existing PVC to a job by specifying its name. The PVC must be created separately and must already exist when creating the job.
 |===
 
 == Examples
@@ -359,6 +370,66 @@ Inside the custom card, it uses the HuggingFace dataset loader:
 
 You can use other link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#module-unitxt.loaders[loaders] and use the `volumes` and `volumeMounts` to mount the dataset from persistent volumes. For example, if you use link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#unitxt.loaders.LoadCSV[LoadCSV], you need to mount the files to the container and make the dataset accessible for the evaluation process.
 
+=== Using PVCs as storage
+
+To use a PVC as storage for the `LMEvalJob` results, there are two supported modes, at the moment, managed and existing PVCs.
+
+Managed PVCs, as the name implies, are managed by the TrustyAI operator. To enable a managed PVC simply specify its size:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  # other fields omitted ...
+  outputs: <1>
+    pvcManaged: <2>
+      size: 5Gi <3>
+----
+<1> `outputs` is the section for specifying custom storage locations
+<2> `pvcManaged` will create an operator-managed PVC
+<3> `size` (compatible with standard PVC syntax) is the only supported value
+
+This will create a PVC named `<job-name>-pvc` (in this case `evaljob-sample-pvc`) which will be available after the job finishes, but will be deleted when the `LMEvalJob` is deleted.
+
+To use an already existing PVC you can pass its name as a reference.
+The PVC must already exist when the `LMEvalJob` is created. Start by creating a PVC, for instance:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "my-pvc"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+----
+
+And then reference it from the `LMEvalJob`:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  # other fields omitted ...
+  outputs:
+    pvcName: "my-pvc" <1>
+----
+<1> `pvcName` references the already existing PVC `my-pvc`.
+
+In this case, the PVC is not managed by the TrustyAI operator, so it will be available even after deleting the `LMEvalJob`.
+
+In the case where both managed and existing PVCs are referenced in `outputs`, the TrustyAI operator will prefer the managed PVC and ignore the existing one.
+
 === Using an `InferenceService`
 
 [NOTE]
@@ -394,22 +465,23 @@ spec:
       value: "False"
     - name: tokenizer
       value: ibm-granite/granite-7b-instruct
-  envSecrets:
-    - env: OPENAI_TOKEN
-      secretRef: <2>
-        name: $SECRET_NAME_THAT_CONTAINS_TOKEN <3>
-        key: token <4>
+ env:
+   - name: OPENAI_TOKEN
+     valueFrom:
+          secretKeyRef: <2>
+            name: <secret-name> <3>
+            key: token <4>
 ----
 <1> `base_url` should be set to the route/service URL of your model. Make sure to include the `/v1/completions` endpoint in the URL.
-<2> `envSecrets.secretRef` should point to a secret that contains a token that can authenticate to your model. `secretRef.name` should be the secret's name in the namespace, while `secretRef.key` should point at the token's key within the secret.
-<3> `secretRef.name` can equal the output of
+<2> `env.valueFrom.secretKeyRef.name` should point to a secret that contains a token that can authenticate to your model. `secretRef.name` should be the secret's name in the namespace, while `secretRef.key` should point at the token's key within the secret.
+<3> `secretKeyRef.name` can equal the output of
 +
 [source,shell]
 ----
 oc get secrets -o custom-columns=SECRET:.metadata.name --no-headers | grep user-one-token
 ----
 +
-<4> `secretRef.key` should equal `token`
+<4> `secretKeyRef.key` should equal `token`
 
 
 Then, apply this CR into the same namespace as your model. You should see a pod spin up in your
