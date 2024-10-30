@@ -198,7 +198,7 @@ Specify the task using the Unitxt recipe format:
 |`genArgs`
 |Map to `--gen_kwargs` parameter for the lm-evaluation-harness. Here are the link:https://github.com/EleutherAI/lm-evaluation-harness/blob/main/docs/interface.md#command-line-interface[details].
 
-|`logSampes`
+|`logSamples`
 |If this flag is passed, then the model's outputs, and the text fed into the model, will be saved at per-document granularity.
 
 |`batchSize`
