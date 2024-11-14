@@ -250,10 +250,11 @@ spec:
   logSamples: true
   pod:
     container:
-      env:
+      env: <1>
       - name: HF_TOKEN
         value: "My HuggingFace token"
 ----
+<1> `spec.pod.env` fields are passed directly to the LMEvalJob's container as environment variables.
 
 Or you can create a secret to store the token and refer the key from the secret object using the reference syntax:
 
@@ -465,23 +466,26 @@ spec:
       value: "False"
     - name: tokenizer
       value: ibm-granite/granite-7b-instruct
- env:
-   - name: OPENAI_TOKEN
-     valueFrom:
-          secretKeyRef: <2>
-            name: <secret-name> <3>
-            key: token <4>
+  pod:
+    container:
+      env:
+       - name: OPENAI_API_KEY <2>
+         valueFrom:
+              secretKeyRef: <3>
+                name: <secret-name> <4>
+                key: token <5>
 ----
 <1> `base_url` should be set to the route/service URL of your model. Make sure to include the `/v1/completions` endpoint in the URL.
-<2> `env.valueFrom.secretKeyRef.name` should point to a secret that contains a token that can authenticate to your model. `secretRef.name` should be the secret's name in the namespace, while `secretRef.key` should point at the token's key within the secret.
-<3> `secretKeyRef.name` can equal the output of
+<2> `OPENAI_API_KEY` values are passed directly to remote model servers, so they can also be used as general authentication bearer tokens.
+<3> `env.valueFrom.secretKeyRef.name` should point to a secret that contains a token that can authenticate to your model. `secretRef.name` should be the secret's name in the namespace, while `secretRef.key` should point at the token's key within the secret.
+<4> `secretKeyRef.name` can equal the output of
 +
 [source,shell]
 ----
 oc get secrets -o custom-columns=SECRET:.metadata.name --no-headers | grep user-one-token
 ----
 +
-<4> `secretKeyRef.key` should equal `token`
+<5> `secretKeyRef.key` should equal field name holding the token value, in this example `token`
 
 
 Then, apply this CR into the same namespace as your model. You should see a pod spin up in your
@@ -497,7 +501,7 @@ To enable Kueue on Open Data Hub, add the following to your `DataScienceCluster`
 
 [source,yaml]
 ----
-keue:
+kueue:
   managementState: Managed
 ----
 ====
