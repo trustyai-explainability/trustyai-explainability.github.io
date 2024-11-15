@@ -1,6 +1,6 @@
 = Welcome to TrustyAI 👋
 
-image::../images/trustyai_icon.svg[Static,300]
+image::../../_/img/trustyai-logo.svg[Static,300]
 
 https://trustyai-explainability.github.io/trustyai-site/main/main.html[TrustyAI] is an open source Responsible AI toolkit supported by Red Hat and IBM. TrustyAI provides tools for a variety of responsible AI workflows, such as:
 
@@ -62,7 +62,7 @@ TrustyAI uses the https://github.com/opendatahub-io/opendatahub-community/blob/m
 * https://github.com/orgs/trustyai-explainability/projects/10[Roadmap]
 
 
-== Glossary
+== 📖 Glossary 📖
 [horizontal]
 XAI::
 XAI refers to artificial intelligence systems designed to provide clear, understandable explanations of their decisions and actions to human users.
