@@ -1,11 +1,19 @@
-= Overview
+= Welcome to TrustyAI 👋
 
-== What is TrustyAI?
+image::../images/trustyai_icon.svg[Static,300]
 
-TrustyAI is a set of components and services for Responsible AI.
-TrustyAI offers fairness and drift metrics, explainable AI algorithms, evaluation and xref:features.adoc[various other XAI tools] at a library-level as well as a containerized service and Kubernetes deployment.
-TrustyAI includes:
+https://trustyai-explainability.github.io/trustyai-site/main/main.html[TrustyAI] is an open source Responsible AI toolkit supported by Red Hat and IBM. TrustyAI provides tools for a variety of responsible AI workflows, such as:
 
+* Local and global model explanations
+* Fairness metrics
+* Drift metrics
+* Text detoxification
+* Language model benchmarking
+* Language model guardrails
+
+TrustyAI is a default component of https://opendatahub.io/[Open Data Hub] and https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai[Red Hat Openshift AI], and has integrations with projects like https://github.com/kserve/kserve[KServe], https://github.com/caikit/caikit[Caikit], and https://github.com/vllm-project/vllm[vLLM].
+
+== 🗂️ Our Projects 🗂️
 * xref:trustyai-core.adoc[TrustyAI core], the core TrustyAI Java module, containing fairness metrics, AI explainers, and other XAI utilities.
 * xref:trustyai-service.adoc[TrustyAI service], TrustyAI-as-a-service, a REST service for fairness metrics and explainability algorithms including ModelMesh integration.
 * xref:trustyai-operator.adoc[TrustyAI operator], a Kubernetes operator for TrustyAI service.
@@ -13,10 +21,51 @@ TrustyAI includes:
 * xref:component-kserve-explainer.adoc[KServe explainer], a TrustyAI side-car that integrates with KServe's built-in explainability features.
 * xref:component-lm-eval.adoc[LM-Eval], generative text model benchmark and evaluation service, leveraging lm-evaluation-harness and Unitxt
 
-== Glossary
 
+
+==   📖 Resources 📖
+### Documentation
+The Components tab in the side bar provides documentation for a number of TrustyAI components. Also check out:
+
+- https://opendatahub.io/docs/monitoring-data-science-models/#configuring-trustyai_monitor[Open Data Hub Documentation]
+- https://trustyai-explainability-python.readthedocs.io/en/latest/[TrustyAI Python Documentation]
+
+### Tutorials
+- https://trustyai-explainability.github.io/trustyai-site/main/installing-opendatahub.html[The Tutorials sidebar tab] provides walkthroughs of a variety of different TrustyAI flows, like bias monitoring, drift monitoring, and language model evaluation.
+- https://github.com/trustyai-explainability/trustyai-explainability-python-examples[trustyai-explainability-python-examples]: Examples on how to get started with the Python TrustyAI library.
+- https://github.com/trustyai-explainability/odh-trustyai-demos[trustyai-odh-demos]: Demos of the TrustyAI Service within Open Data Hub.
+
+### Demos
+- Coming Soon
+
+### Blog Posts
+- https://www.redhat.com/en/blog/introduction-trustyai[An Introduction to TrustyAI]
+- https://developers.redhat.com/articles/2024/08/01/trustyai-detoxify-guardrailing-llms-during-training[TrustyAI Detoxify: Guardrailing LLMs during training]
+
+### Papers
+- https://arxiv.org/abs/2104.12717[TrustyAI Explainability Toolkit]
+
+### Development Notes
+* https://github.com/trustyai-explainability/reference/tree/main[TrustyAI Reference] provides scratch notes on various common development and testing flows
+
+== 🤝 Join Us 🤝
+Check out our https://github.com/trustyai-explainability/community[community repository] for https://github.com/orgs/trustyai-explainability/discussions[discussions] and our https://github.com/trustyai-explainability/community?tab=readme-ov-file#community-meetings[Community Meeting information].
+
+The https://github.com/orgs/trustyai-explainability/projects/10[project roadmap] offers a view on new tools and integration the project developers are planning to add.
+
+TrustyAI uses the https://github.com/opendatahub-io/opendatahub-community/blob/master/governance.md[ODH governance model] and https://github.com/opendatahub-io/opendatahub-community/blob/master/CODE_OF_CONDUCT.md[code of conduct].
+
+### Links
+* https://github.com/trustyai-explainability/community?tab=readme-ov-file#community-meetings[Community Meeting Info]
+* https://github.com/orgs/trustyai-explainability/discussions[Discussion Forum]
+* https://github.com/trustyai-explainability/trustyai-explainability/blob/main/CONTRIBUTING.md[Contribution Guidelines]
+* https://github.com/orgs/trustyai-explainability/projects/10[Roadmap]
+
+
+== Glossary
 [horizontal]
 XAI::
 XAI refers to artificial intelligence systems designed to provide clear, understandable explanations of their decisions and actions to human users.
 Fairness::
 AI fairness refers to the design, development, and deployment of AI systems in a way that ensures they operate equitably and do not include biases or discrimination against any individual or group.
+
