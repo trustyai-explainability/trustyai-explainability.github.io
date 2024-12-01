@@ -1,7 +1,7 @@
 apiVersion: "serving.kserve.io/v1beta1"
 kind: "InferenceService"
 metadata:
-  name: "explainer-test-lime"
+  name: "explainer-test"
 spec:
   predictor: <1>
     model:
