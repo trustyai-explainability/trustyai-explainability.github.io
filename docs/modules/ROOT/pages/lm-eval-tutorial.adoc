@@ -56,6 +56,14 @@ There are some configurable global settings for LM-Eval services and they are st
 |`lmes-pod-checking-interval`
 |`10s`
 |The interval to check the job pod for an evaluation job.
+
+|`lmes-allow-online`
+|`true`
+|Whether LMEval jobs can set the online mode on.
+
+|`lmes-code-execution`
+|`true`
+|Whether LMEval jobs can set the trust remote code mode on.
 |===
 
 
@@ -74,6 +82,7 @@ kind: LMEvalJob
 metadata:
   name: evaljob-sample
 spec:
+  allowOnline: true
   model: hf
   modelArgs:
   - name: pretrained
@@ -225,6 +234,15 @@ Specify extra information for the lm-eval job's pod.
 
 |`outputs.pvcName`
 |Binds an existing PVC to a job by specifying its name. The PVC must be created separately and must already exist when creating the job.
+
+|`allowOnline`
+|If set to `true`, the LMEval job will download artifacts as needed (e.g. models, datasets or tokenizers). If set to `false`, these will not be downloaded and will be used from local storage. See `offline`.
+
+|`allowCodeExecution`
+|If set to `true`, the LMEval job will execute the necessary code for preparing models or datasets. If set to `false` it will not execute downloaded code.
+
+|`offline`
+|Mount a PVC as the local storage for models and datasets.
 |===
 
 == Examples
@@ -490,6 +508,42 @@ oc get secrets -o custom-columns=SECRET:.metadata.name --no-headers | grep user-
 
 Then, apply this CR into the same namespace as your model. You should see a pod spin up in your
 model namespace called `evaljob`. In the pod terminal, you can see the output via `tail -f output/stderr.log`
+
+=== Using GPUs
+
+Typically, when using an Inference Service, GPU acceleration will be performed at the model server level. However, when using local mode, i.e. running the evaluation locally on the LMEval Job, you might want to use available GPUs. To do so, we can add a resource configuration directly on the job's definition:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  model: hf
+  modelArgs:
+    - name: pretrained
+      value: google/flan-t5-base
+  taskList:
+    taskNames:
+      - "qnlieu"
+  logSamples: true
+  allowOnline: true
+  allowCodeExecution: true
+  pod: <1>
+    container:
+      resources:
+          limits: <2>
+            cpu: '1'
+            memory: 8Gi
+            nvidia.com/gpu: '1'
+          requests:
+            cpu: '1'
+            memory: 8Gi
+            nvidia.com/gpu: '1'
+----
+<1> The `pod` section allows adding specific resource definitions to the LMEval Job.
+<2> In this case we are adding `cpu: 1`, `memory: 8Gi` and `nvidia.com/gpu: 1`, but these can be adjusted to your cluster's availability.
 
 === Integration with Kueue
 
