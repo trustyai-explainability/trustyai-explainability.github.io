@@ -1,0 +1,214 @@
+= Getting Started with GuardrailsOrchestrator
+
+xref:component-gorch.adoc[GuardrailsOrchestrator] is a service for large language model guardrailing underpinned by the open-source project link:https://github.com/foundation-model-stack/fms-guardrails-orchestrator[fms-guardrails-orchestrator]. GuardrailsOrchestrator is a component of the xref:trustyai-operator.adoc[TrustyAI Kubernetes Operator]. In this tutorial, you will learn how to create a `GuardrailsOrchestrator` CR to
+perform detections on text generation output
+
+[NOTE]
+GuardrailsOrchestrator is only available in TrustyAI's 1.30.0 community builds and later via KServe Raw Deployment mode.
+
+In order to use it on Open Data Hub or OpenShift AI, first enable `KServe Raw Deployment`. In the `DataScienceIntialization` resource, set the value of `managementState` for the `serviceMesh` component to `Removed`.
+
+[source,yaml]
+---
+serviceMesh:
+auth:
+    audiences:
+    - 'https://kubernetes.default.svc'
+controlPlane:
+    metricsCollection: Istio
+    name: data-science-smcp
+    namespace: istio-system
+managementState: Removed
+---
+
+Next, in the `DataScienceCluster` resource,under the spec.components section, set the value of of kserve.serving.managementState to `Removed` and add the following `devFlag`:
+
+[source,yaml]
+---
+trustyai:
+  devFlags:
+    manifests:
+      - contextDir: config
+        sourcePath: ''
+        uri: https://github.com/trustyai-explainability/trustyai-service-operator/tarball/main
+  managementState: Managed
+---
+
+== The GuardrailsOrchestrator
+
+The GuardrailsOrchestrator service defines a new Custom Resource Definition called: *`GuardrailsOrchestrator`*. `GuardrailsOrchestrator` objects are monitored by the xref:trustyai-operator.adoc[TrustyAI Kubernetes operator]. A GuardrailsOrchestrator object represents an orchestration service that invokes detectors on text generation input/output and standalone detections. Therefore, to run an orchestration service, you need to create a `GuardrailsOrchestrator` object with ...
+
+Here is a minimal example of a `GuardrailsOrchestrator` object:
+
+[source,yaml]
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
+metadata:
+  name: gorch-sample
+spec:
+  orchestratorConfig: "fms-orchestr8-config-nlp" <1>
+  replicas: 1 <2>
+---
+
+<1> The orchestratorConfig field specifies a ConfigMap object that contains generator, detector, and chunker arguments.
+<2> The replicas field specifies the number of replicas for the orchestrator.
+
+Here is a minimal example of an ochestratorConfig object:
+[source,yaml]
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-nlp
+data:
+  config.yaml: |
+    generation: <1>
+      service:
+        hostname: llm-predictor.guardrails-test.svc.cluster.local
+        port: 8032
+    detectors: <2>
+      regex:
+        type: text_contents
+        service:
+            hostname: "127.0.0.1"
+            port: 8080
+        chunker_id: whole_doc_chunker
+        default_threshold: 0.5
+---
+
+<1> The generation field specifies the hostname and port of the large language model predictor service.
+<2> The detectors field specifies the hostname and port of the detector service, the chunker ID, and the default threshold.
+
+After you apply the example `orchestratorConfig` and `GuardrailsOrchestrator` above, you can check its readiness by using the following command:
+
+[source,shell]
+---
+oc get pods | grep gorch-sample
+---
+
+The expected output is:
+[source,shell]
+---
+gorch-sample-6776b64c58-xrxq9                    3/3     Running   0          4h19m
+---
+
+== Details of GuardrailsOrchestrator
+In this section, let's review all the possible parameters for the `GuardrailsOrchestrator` object and their usage.
+
+[cols="1,2a", options="header"]
+|===
+|Parameter |Description
+|`replicas`| The number of orchestrator pods to spin up
+|`orchestratorConfig`| The name of the ConfigMap object that contains generator, detector, and chunker arguments
+|`vLLMGatewayConfig **(optional)**`| The name of the ConfigMap object that contains VLLM gateway arguments
+|`otelExporter **(optional)**`| List of paired name and value arguments for configuring OpenTelemetry traces and/or metrics
+
+* `protocol` - sets the protocol for all the OTLP endpoints. Acceptable values are `grpc` or`http`
+* `tracesProtocol` - overrides the protocol for traces. Acceptable values are `grpc` or `http`
+* `metricsProtocol` - overrides the protocol for metrics. Acceptable values are either `grpc` or `http`
+* `otlpEndpoint` - sets the OTLP endpoint. Defaults are  `gRPC localhost:4317` and `HTTP localhost:4318`
+* `metricsEndpoint` - overrides the OTLP endpoint for metrics
+* `tracesEndpoint` -  overrides the OTLP endpoint for traces
+* `otlpExport` - specifies a list of data types to export. Acceptable values are `traces`, `metrics`, or `traces,metrics`
+|===
+
+== Optional Configurations for GuardrailsOrchestrator
+
+== Configuring the Regex Detector and vLLM Gateway
+The regex detector and vLLM gateway are two sidecar images that can be used with the GuardrailsOrchestrator service. To enable them, the user must (1) specify their images in a ConfigMap (2) specify detectors they wish to use as well as the routes (3) reference the ConfigMap in the `GuardrailsOrchestrator` object:
+
+Here is an example of a ConfigMap that references the regex detector and vLLM gateway images:
+[source,yaml]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gorch-sample-config
+data:
+  regexDetectorImage: 'quay.io/csantiago/regex-detector@sha256:2dbfa4680938a97d0e0cac75049c43687ad163666cf2c6ddc37643c4f516d144' <1>
+  vllmGatewayImage: 'quay.io/csantiago/vllm-orchestrator-gateway@sha256:493ac4679d50db9c2c59967dcaa6737a995cd19f319727f33c40f159db6817db <2>
+---
+
+<1> The regex detector is a sidecar image that provides regex-based detections
+<2> The vLLM gateway is a sidecar image that emulates the vLLM chat completions API and saves preset detector configurations
+
+Here is an example of a vLLM gateway ConfigMap named `fms-orchestr8-config-gateway`:
+[source,yaml]
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-gateway
+  labels:
+    app: fmstack-nlp
+data:
+  config.yaml: |
+    orchestrator:
+      host: "localhost"
+      port: 8032
+    detectors:
+      - name: regex
+        detector_params:
+          regex:
+            - email
+            - ssn
+      - name: other_detector
+    routes:
+      - name: pii
+        detectors:
+          - regex
+      - name: passthrough
+        detectors:
+---
+
+Let's review all the required arguments for the regex detector:
+
+[cols="1,2a", options="header"]
+|===
+|Parameter |Description
+|`orchestrator`| The orchestrator service
+|`detectors`| A list of preconfigured regexes for common detection actions
+|`routes`| The resulting endpoints for detections
+|===
+
+Here is an example of a corresponding `GuardrailsOrchestrator` object that references the vLLM Gateway ConfigMap:
+
+[source,yaml]
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
+metadata:
+  name: gorch-sample
+spec:
+  orchestratorConfig: "fms-orchestr8-config-nlp"
+  vllmGatewayConfig: "fms-orchestr8-config-gateway"
+  replicas: 1
+---
+
+== Configuring the OpenTelemetry Exporter for Metrics & Tracing
+Traces and metrics are provided for the observability of the GuardrailsOrchestrator service via the OpenTelemetry Operator.
+
+Pre-requisites:
+
+* Install the Red Hat OpenShift distributed tracing platform from the OperatorHub. Create a Jaeger instance using the default settings.
+
+* Install the Red Hat build of OpenTelemetry from the OperatorHub. Create an OpenTelemetry instance
+
+Here is a minimal example of a `GuardrailsOrchestrator` object that has OpenTelemetry configured:
+
+[source,yaml]
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
+metadata:
+  name: gorch-test
+spec:
+  orchestratorConfig: "fms-orchestr8-config-nlp"
+  vllmGatewayConfig: "fms-orchestr8-config-gateway"
+  replicas: 1
+  otelExporter:
+    protocol: "http"
+    otlpEndpoint: "localhost:4318"
+    otlpExport: "metrics"
+---
