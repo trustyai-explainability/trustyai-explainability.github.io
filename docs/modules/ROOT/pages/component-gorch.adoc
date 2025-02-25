@@ -1,0 +1,3 @@
+= GuardrailsOrchestrator
+
+image::gorch-architecture.svg[GuardrailsOrchestrator architecture diagram]

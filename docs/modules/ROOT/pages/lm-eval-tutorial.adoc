@@ -7,7 +7,7 @@ xref:component-lm-eval.adoc[LM-Eval] is a service for large language model evalu
 [NOTE]
 ====
 LM-Eval is only available since TrustyAI's 1.28.0 community builds.
-In order to use it on Open Data Hub, you need to use either ODH 2.20 (or newer) or add the following `devFlag` to you `DataScienceCluster` resource:
+In order to use it on Open Data Hub, you need to use either ODH 2.20 (or newer) or add the following `devFlag` to your `DataScienceCluster` resource:
 
 [source,yaml]
 ----
