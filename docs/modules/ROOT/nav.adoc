@@ -13,6 +13,7 @@
 *** xref:saliency-explanations-on-odh.adoc[]
 *** xref:saliency-explanations-with-kserve.adoc[]
 ** xref:lm-eval-tutorial.adoc[]
+** xref:gorch-tutorial.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
@@ -20,5 +21,6 @@
 ** xref:trustyai-core.adoc[]
 ** xref:component-kserve-explainer.adoc[]
 ** xref:component-lm-eval.adoc[]
+** xref:component-gorch.adoc[]
 * Reference
 ** xref:trustyai-service-api-reference.adoc[]
