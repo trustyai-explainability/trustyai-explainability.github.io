@@ -181,14 +181,16 @@ A list of paired name and value arguments for the model type. Each model type or
 |
 Specify the task using the Unitxt recipe format:
 
-* `card`: Use the `name` to specify a Unitxt card or `custom` for a custom card
+* `card`: Use the `name` to specify a Unitxt card or `ref` to refer to a custom card:
 ** `name`: Specify a Unitxt card from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html++[Unitxt catalog]. Use the card's ID as the value.
   For example: The ID of link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.wnli.html[Wnli card] is `cards.wnli`.
-** `custom`: Define a custom card and use it. The value is a JSON string for a custom Unitxt card which contains the custom dataset.
-    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_dataset.html#adding-to-the-catalog[here] to compose a custom card, store it as a JSON file, and use the JSON content as the value here.
-    If the dataset used by the custom card needs an API key from an environment variable or a persistent volume, you have to
-    set up corresponding resources under the `pod` field. Check the `pod` field below.
-* `template`: Specify a Unitxt template from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.templates.__dir__.html++[Unitxt catalog]. Use the template's ID as the value.
+** `ref`: Specify the reference name of a custom card as defined in the `custom` section below
+* `template`: Use `name` to specify a Unitxt catalog template or `ref` to refer to a custom template:
+** `name`: Specify a Unitxt template from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.templates.__dir__.html++[Unitxt catalog]. Use the template's ID as the value.
+** `ref`: Specify the reference name of a custom template as defined in the `custom` section below
+* `systemPrompt`: Use `name` to specify a Unitxt catalog system prompt or `ref` to refer to a custom prompt:
+** `name`: Specify a Unitxt system prompt from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.system_prompts.__dir__.html++[Unitxt catalog]. Use the system prompt's ID as the value.
+** `ref`: Specify the reference name of a custom system prompt as defined in the `custom` section below
 * `task` (optional): Specify a Unitxt task from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html++[Unitxt catalog]. Use the task's ID as the value.
   A Unitxt card has a pre-defined task. Only specify a value for this if you want to run different task.
 * `metrics` (optional): Specify a list of Unitx metrics from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.metrics.__dir__.html++[Unitxt catalog]. Use the metric's ID as the value.
@@ -197,6 +199,29 @@ Specify the task using the Unitxt recipe format:
 * `loaderLimit` (optional): Specifies the maximum number of instances per stream to be returned from the loader (used to reduce loading time in large datasets).
 * `numDemos` (optional): Number of fewshot to be used.
 * `demosPoolSize` (optional): Size of the fewshot pool.
+
+|`taskList.custom`
+| Define one or more custom resources that will be referenced in a task recipe. Custom cards, custom templates, and 
+  custom system prompts are currently supported:
+
+* `cards`: Define custom cards to use, each with a `name` and `value` field:
+** `name`: The name of this custom card that will be referenced in the `card.ref` field of a task recipe.
+** `value`: A JSON string for a custom Unitxt card which contains the custom dataset.
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_dataset.html#adding-to-the-catalog[here] 
+    to compose a custom card, store it as a JSON file, and use the JSON content as the value here. If the dataset 
+    used by the custom card needs an API key from an environment variable or a persistent volume, you have to
+    set up corresponding resources under the `pod` field. Check the `pod` field below.
+* `templates`:  Define custom templates to use, each with a `name` and `value` field:
+** `name`: The name of this custom template that will be referenced in the `template.ref` field of a  task recipe.
+** `value`: A JSON string for a custom Unitxt template.
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_template.html#adding-a-new-template[here] 
+    to compose a custom template, then use the documentation link:https://www.unitxt.ai/en/latest/docs/saving_and_loading_from_catalog.html[here] to store it as a JSON file and use the JSON content as the value of this field.
+* `systemPrompts`: Define custom system prompts to use, each with a `name` and `value` field:
+** `name`: The name of this custom system prompt that will be referenced in the `systemPrompt.ref` field of a task recipe.
+** `value`: A string for a custom Unitxt system prompt.
+    The documentation link:https://www.unitxt.ai/en/latest/docs/adding_format.html#formats[here] 
+    provides an overview of the different components that make up a prompt format, including the system prompt.
+
 
 |`numFewShot`
 |Sets the number of few-shot examples to place in context. If you are using a task from Unitxt, don't use this field. Use `numDemos` under the `taskRecipes` instead.
