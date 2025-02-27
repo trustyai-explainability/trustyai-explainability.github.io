@@ -30,7 +30,9 @@ jobs:
     - name: Install Antora
       run: npm i antora
     - name: Generate Site
-      run: npx antora antora-playbook.yml
+      run: |
+        mkdir -p build/site
+        npx antora antora-playbook.yml
     - name: Upload Artifacts
       uses: actions/upload-pages-artifact@v3
       with:
@@ -38,3 +40,5 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v2
+      with:
+        artifact_name: github-pages
