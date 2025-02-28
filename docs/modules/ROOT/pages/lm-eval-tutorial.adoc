@@ -21,7 +21,7 @@ trustyai:
 ----
 ====
 
-== Global settings for LM-Eval
+== Global settings for LM-Eval [[global_settings]]
 
 There are some configurable global settings for LM-Eval services and they are stored in the TrustyAI's operator global `ConfigMap`, `trustyai-service-operator-config`, located in the same namespace as the operator. Here is a list of properties for LM-Eval:
 
@@ -174,7 +174,7 @@ A list of paired name and value arguments for the model type. Each model type or
 
 
 |`taskList.taskNames`
-|Specify a list of tasks supported by lm-evaluation-harness.
+|Specify a list of tasks supported by lm-evaluation-harness. See the link:#list_tasks[useful commands section] of this page to get a list of built-in tasks.
 
 
 |`taskList.taskRecipes`
@@ -590,3 +590,18 @@ Set `suspend` to `false` and verify job's pod getting created and running:
 ----
 oc patch lmevaljob evaljob-sample --patch '{"spec":{"suspend":false}}' --type merge
 ----
+
+== Useful Commands & References
+
+=== List all available tasks [[list_tasks]]
+
+As mentioned above, LMEvalJob supports running both Unitxt tasks (via recipes or custom JSON) **and** the built-in tasks that are available out-of-the-box with `lm-evaluation-harness`. To see a list of available built-in tasks, run the following command. `LMES-POD-IMAGE` is the same as listed link:#global_settings[here].
+
+[source,shell]
+----
+oc exec <<LMES-POD-IMAGE>> -- bash -c "lm_eval --tasks list"
+----
+
+It is recommended to pipe this output to a file as there are several thousand built-in tasks.
+
+Note: the output of the task list command will include some Unitxt tasks that have been directly contributed to  `lm-evaluation-harness`. You can run these tasks by specifying the task name in the `taskList` property of the job definition as you would with any built-in task.
