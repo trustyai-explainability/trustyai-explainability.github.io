@@ -305,8 +305,8 @@ status:
   * `New`: The job was just created
   * `Scheduled`: The job is scheduled and waiting for available resources to run
   * `Running`: The job is currently running
-  * `Complete`: The job is complete. This may correspond to either the `Succeeded` or `Failed` reason.
-  * `Cancelled`: The job has been cancelled
+  * `Complete`: The job is complete. This may correspond to either the `Succeeded`, `Failed`, or `Cancelled` reason.
+  * `Cancelled`: Job cancellation has been initiated. The `state` will update to `Complete` once the cancellation has been processed by the job controller.
   * `Suspended`: The job has been suspended
 
 === `results` section
