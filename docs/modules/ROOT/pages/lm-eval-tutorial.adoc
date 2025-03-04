@@ -141,7 +141,7 @@ Here are the example results:
 }
 ----
 
-The `f1_micro`, `f1_macro`, and `accuracy` scores are 0.56, 0.36, and 0.56. The full results are stored in the `.status.results` of the `LMEvalJob` object as a JSON document. The command above only retrieves the `results` field of the JSON document.
+The `f1_micro`, `f1_macro`, and `accuracy` scores are 0.56, 0.36, and 0.56. The full results are stored in the `.status.results` of the `LMEvalJob` object as a JSON document. The command above only retrieves the `results` field of the JSON document. See <<output>> for more details.
 
 == Details of LMEvalJob [[crd]]
 
@@ -245,18 +245,82 @@ Specify extra information for the lm-eval job's pod.
 |Mount a PVC as the local storage for models and datasets.
 |===
 
-== Output of LMEvalJob
+== Output of LMEvalJob [[output]]
 
-The output of an LMEvalJob is the direct output of an `lm-evaluation-harness` run. Below is an example of the file that is returned after an evaluation run. This file may look slightly different depending on what link:#crd[options] are passed.
+The output of an LMEvalJob is a YAML document with several fields. The `status` section provides the relevant information about the current status and, if the job successfully completes, the results for an evaluation.
 
-The example shown here is of a Unitxt task called `my_task` that corresponds to the custom Unitxt task that is shown in link:#custom_card[this section].
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"trustyai.opendatahub.io/v1alpha1","kind":"LMEvalJob","metadata":{"annotations":{},"name":"lmeval-test","namespace":"test"},"spec":{"allowCodeExecution":true,"allowOnline":true,"logSamples":true,"model":"hf","modelArgs":[{"name":"pretrained","value":"google/flan-t5-base"}],"taskList":{"taskRecipes":[{"card":{"name":"cards.wnli"},"template":"templates.classification.multi_class.relation.default"}]}}}
+  creationTimestamp: "2025-02-06T18:13:35Z"
+  finalizers:
+  - trustyai.opendatahub.io/lmes-finalizer
+  generation: 1
+  name: lmeval-test
+  namespace: test
+  resourceVersion: "19604113"
+  uid: e1d29da2-bf3e-4f46-8907-6018e5741eb4
+spec:
+  allowCodeExecution: true
+  allowOnline: true
+  logSamples: true
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: google/flan-t5-base
+  taskList:
+    taskRecipes:
+    - card:
+        name: cards.wnli
+      template: templates.classification.multi_class.relation.default
+status:
+  completeTime: "2025-02-06T18:31:20Z"
+  lastScheduleTime: "2025-02-06T18:13:35Z"
+  message: job completed <1>
+  podName: lmeval-test
+  reason: Succeeded <2>
+  results: |- <3>
+    {
+      ...
+    }
+  state: Complete <4>
+----
+
+<1> A `message` provides an explanation related to the current or final status of an LMEvalJob. If the job reason is `Failed`, the related error message will be shown here.
+<2> A one-word `reason` that corresponds to the given `state` of the job at this time. Possible values are:
+
+  * `NoReason`: The job is still running
+  * `Succeeded`: The job finished successfully
+  * `Failed`: The job failed
+  * `Cancelled`: The job was cancelled
+
+<3> The `results` field is the direct output of an `lm-evaluation-harness` run. It has been omitted here to avoid repetition. The link:#output[next section] gives an example of the contents of this section. This section will be empty if the job is not completed.
+<4> The current `state` of this job. The `reason` for a particular state is given in the `reason` field. Possible values are: 
+
+  * `New`: The job was just created
+  * `Scheduled`: The job is scheduled and waiting for available resources to run
+  * `Running`: The job is currently running
+  * `Complete`: The job is complete. This may correspond to either the `Succeeded` or `Failed` reason.
+  * `Cancelled`: The job has been cancelled
+  * `Suspended`: The job has been suspended
+
+=== `results` section
+
+The `results` field is the direct output of an `lm-evaluation-harness` run. Below is an example of the file that is returned after an `lm-evaluation-harness` evaluation run and, consequently, the contents of the `results` dictionary of the LMEvalJob output YAML. This file may look slightly different depending on what link:#crd[options] are passed.
+
+The example shown here is of a Unitxt task called `tr_0` that corresponds to the custom Unitxt task that is shown in link:#custom_card[this section].
 
 [source,json]
 ----
 {
   "results": { <1>
-    "my_task": {
-      "alias": "my_task",
+    "tr_0": {
+      "alias": "tr_0",
       "f1_micro,none": 0.5,
       "f1_micro_stderr,none": "N/A",
       "accuracy,none": 0.5,
@@ -266,11 +330,11 @@ The example shown here is of a Unitxt task called `my_task` that corresponds to 
     }
   },
   "group_subtasks": { <2>
-    "my_task": []
+    "tr_0": []
   },
   "configs": { <3>
-    "my_task": {
-      "task": "my_task",
+    "tr_0": {
+      "task": "tr_0",
       "dataset_name": "card=cards.wnli,template=templates.classification.multi_class.relation.default",
       "unsafe_code": false,
       "description": "",
@@ -292,20 +356,20 @@ The example shown here is of a Unitxt task called `my_task` that corresponds to 
     }
   },
   "versions": { <4>
-    "my_task": 0
+    "tr_0": 0
   },
   "n-shot": { <4>
-    "my_task": 0
+    "tr_0": 0
   },
   "higher_is_better": { <5>
-    "my_task": {
+    "tr_0": {
       "f1_micro": true,
       "accuracy": true,
       "f1_macro": true
     }
   },
   "n-samples": { <5>
-    "my_task": {
+    "tr_0": {
       "original": 71,
       "effective": 10
     }
@@ -366,7 +430,7 @@ The example shown here is of a Unitxt task called `my_task` that corresponds to 
 <2> `group_subtasks` is a dictionary of tasks keyed by name with the value for each being a list of strings corresponding to subtasks for this task. `group_subtasks` is empty in this example because there are no subtasks.
 <3> `configs` is a dictionary of tasks keyed by task name that shows the configuration options for each task run. These key-value pairs are provided by the task definition (or default values) and will vary depending on the type of task run.
 <4> `versions` and `n-shot` are flat dictionaries with one key for each task run. The value in the `versions` dictionary is the version of the given task (or 0 by default). The value in the `n-shot` dictionary is the number of few-shot examples that were placed in context when running the task. This information is also available in the `configs` dictionary.
-<5> `higher_is better` and `n-samples` are dictionaries with one key-dictionary pair for each task run. The former provides information as to whether a higher score is considered better for each metric that was evaluated for that task. The latter gives, for each task, the number of samples used during evaluation. In this example, the `--limit` property was set to 10, making the `effective` number of samples 10.
+<5> `higher_is_better` and `n-samples` are dictionaries with one key-dictionary pair for each task run. The former provides information as to whether a higher score is considered better for each metric that was evaluated for that task. The latter gives, for each task, the number of samples used during evaluation. In this example, the `--limit` property was set to 10, making the `effective` number of samples 10.
 <6> `config` is a dictionary that provides key-value pairs corresponding to the evaluation job as a whole. This includes information on the type of model run, the `model_args`, and link:#crd[other settings] used for the run. Many of the values in this dictionary in this example are the default values defined by `lm-evaluation-harness`.
 <7> Given at the very end are three fields describing the start, end, and total evaluation time for this job.
 
