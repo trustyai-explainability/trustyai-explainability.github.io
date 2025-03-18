@@ -669,6 +669,11 @@ In the case where both managed and existing PVCs are referenced in `outputs`, th
 
 [NOTE]
 ====
+When using Kserve `InferenceServices`, only HuggingFace- and VLLM-based model serving runtimes are supported with the following method. Additionally, ensure DNS is set up for your cluster, as there is currently no method to pass additional request headers to a served model in `lm-evaluation-harness`.
+====
+
+[NOTE]
+====
 This example assumes vLLM model already deployed in your cluster.
 ====
 
