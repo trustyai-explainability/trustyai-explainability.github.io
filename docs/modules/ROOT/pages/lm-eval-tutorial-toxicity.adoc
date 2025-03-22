@@ -1,0 +1,121 @@
+# Toxicity Measurement
+:description: Learn how to evaluate model toxicity using LMEval and understand various toxicity metrics
+:keywords: LMEval, toxicity, model evaluation, Toxigen, content safety
+
+== Prerequisites
+
+* TrustyAI operator installed in your cluster
+
+== Overview
+
+This tutorial demonstrates how to evaluate the toxicity of a language model using LMEval. Language models can exhibit various forms of toxic behavior, including:
+
+* Hate speech and discriminatory content
+* Harmful or dangerous content
+* Inappropriate or offensive language
+* Biased or unfair responses
+
+LMEval provides several metrics for measuring these different aspects of toxicity. In this tutorial, we'll explore one such metric - Toxigen - using the `openai-community/gpt2-xl` model footnote:[Refer to the model repo at https://huggingface.co/openai-community/gpt2-xl] as our example. This model is suitable for raw generative behaviour with little toxicity filtering.
+
+== Available Toxicity Metrics
+
+LMEval supports various toxicity evaluation metrics, each designed to capture different aspects of potentially harmful content:
+
+* xref:#toxigen-evaluation[Toxigen]: Specialized for detecting toxicity and hate speech
+
+== Setting up a Toxicity Evaluation
+
+The basic structure for any toxicity evaluation job is:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: <evaluation-name>
+spec:
+  allowOnline: true
+  allowCodeExecution: true
+  model: hf  # or other supported model types
+  modelArgs:
+    - name: pretrained
+      value: <model-name>
+  taskList:
+    taskNames:
+    - <toxicity-metric>
+  logSamples: true
+----
+
+[[toxigen-evaluation]]
+== Toxigen Evaluation
+
+=== Configuration
+
+Here's an xref::attachment$toxigen-eval-job.yaml[example configuration] for evaluating a model using Toxigen:
+
+[source,yaml]
+----
+include::attachment$toxigen-eval-job.yaml[]
+----
+
+=== Retrieving Results
+
+Once the LMEvalJob completes, retrieve the results using (assuming you're using the `test` namespace):
+
+[source,bash]
+----
+oc get lmevaljobs.trustyai.opendatahub.io evaljob-sample -n test \
+  -o template --template={{.status.results}} | jq '.results'
+----
+
+=== Example Results
+
+A Toxigen evaluation will produce results similar to:
+
+[source,json]
+----
+{
+  "toxigen": {
+    "alias": "toxigen",
+    "acc,none": 0.41702127659574467,
+    "acc_stderr,none": 0.016090615719426056,
+    "acc_norm,none": 0.4319148936170213,
+    "acc_norm_stderr,none": 0.016164899004911828
+  }
+}
+----
+
+=== Understanding Toxigen Scores
+
+Toxigen specifically focuses on detecting toxicity and hate speech in text. The results include:
+
+* `acc,none` (~0.417 or 41.7%): The raw toxicity score. Lower scores indicate less toxic content. The current score suggests moderate levels of toxicity in the model's outputs, which is higher than desirable for most applications.
+
+* `acc_stderr,none` (~0.016): The standard error of the toxicity measurement, indicating high confidence in the measurement with a relatively small uncertainty range of ±1.6%.
+
+* `acc_norm,none` (~0.432 or 43.2%): The normalized toxicity score, which accounts for baseline adjustments and context. Similar to the raw score, lower values indicate less toxicity. This normalized score confirms the moderate toxicity levels detected in the raw score.
+
+* `acc_norm_stderr,none` (~0.016): The standard error for the normalized score, showing consistent measurement precision with the raw score's uncertainty.
+
+[NOTE]
+====
+General advice when evaluating models toxicity:
+
+* Lower toxicity scores indicates safer content
+* Monitor both raw and normalized scores for a better assessment
+* Standard errors inform about evaluation reliability
+* Using multiple toxicity metrics provides a more comprehensive assessment
+====
+
+== Post-evaluation
+
+If your model shows toxicity scores above your acceptable threshold:
+
+1. Fine-tune with detoxification datasets
+2. Implement content filtering and safety layers (e.g. using xref:gorch-tutorial.adoc[Guardrails])
+3. Combine multiple toxicity metrics for more robust safety measures
+
+== See Also
+
+* xref:trustyai-operator.adoc[TrustyAI Operator]
+* xref:lm-eval-tutorial.adoc[Getting started with LM-Eval]

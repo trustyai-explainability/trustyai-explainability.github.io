@@ -13,6 +13,7 @@
 *** xref:saliency-explanations-on-odh.adoc[]
 *** xref:saliency-explanations-with-kserve.adoc[]
 ** xref:lm-eval-tutorial.adoc[]
+*** xref:lm-eval-tutorial-toxicity.adoc[Toxicity Measurement]
 ** xref:gorch-tutorial.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]

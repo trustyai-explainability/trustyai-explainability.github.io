@@ -4,26 +4,9 @@ xref:component-lm-eval.adoc[LM-Eval] is a service for large language model evalu
 
 - How to create an `LMEvalJob` CR to kick off an evaluation job and get the results
 
-[NOTE]
-====
-LM-Eval is only available since TrustyAI's 1.28.0 community builds.
-In order to use it on Open Data Hub, you need to use either ODH 2.20 (or newer) or add the following `devFlag` to your `DataScienceCluster` resource:
+== Global settings for LM-Eval
 
-[source,yaml]
-----
-trustyai:
-  devFlags:
-    manifests:
-      - contextDir: config
-        sourcePath: ''
-        uri: https://github.com/trustyai-explainability/trustyai-service-operator/tarball/main
-  managementState: Managed
-----
-====
-
-== Global settings for LM-Eval [[global_settings]]
-
-There are some configurable global settings for LM-Eval services and they are stored in the TrustyAI's operator global `ConfigMap`, `trustyai-service-operator-config`, located in the same namespace as the operator. Here is a list of properties for LM-Eval:
+There are some configurable global settings for LM-Eval services, and they are stored in the TrustyAI's operator global `ConfigMap`, `trustyai-service-operator-config`, located in the same namespace as the operator. Here is a list of properties for LM-Eval:
 
 [cols="1,1,2", options="header"]
 |===
@@ -66,8 +49,31 @@ There are some configurable global settings for LM-Eval services and they are st
 |Whether LMEval jobs can set the trust remote code mode on.
 |===
 
+[NOTE]
+====
+After updating the settings in the `ConfigMap`, the new values only take effect when the operator restarts. For instance, to set the `lmes-allow-online` and `lmes-code-execution` to true, you can run
 
-After updating the settings in the `ConfigMap`, the new values only take effect when the operator restarts.
+[source,shell]
+----
+kubectl patch configmap trustyai-service-operator-config -n opendatahub --type=merge -p '
+{
+  "data": {
+    "lmes-allow-online": "true",
+    "lmes-allow-code-execution": "true"
+  }
+}'
+----
+
+and then redeploy the TrustyAI operator:
+
+[source,shell]
+----
+kubectl rollout restart deployment/trustyai-service-operator-controller-manager -n opendatahub
+----
+
+====
+
+
 
 == LMEvalJob
 
@@ -93,11 +99,23 @@ spec:
         name: "cards.wnli" <2>
       template: "templates.classification.multi_class.relation.default" <3>
   logSamples: true
+  pod:
+    container:
+      resources:
+          limits:
+            cpu: '1'
+            memory: 8Gi
+            nvidia.com/gpu: '1' <4>
+          requests:
+            cpu: '1'
+            memory: 8Gi
+            nvidia.com/gpu: '1' <4>
 ----
 
 <1> In this example, it uses the pre-trained `google/flan-t5-base` link:https://huggingface.co/google/flan-t5-base[model] from Hugging Face (model: hf)
 <2> The dataset is from the `wnli` subset of the link:https://huggingface.co/datasets/nyu-mll/glue[General Language Understanding Evaluation (GLUE)]. You can find the details of the Unitxt card `wnli` link:https://www.unitxt.ai/en/latest/catalog/catalog.cards.wnli.html[here].
 <3> It also specifies the link:https://www.unitxt.ai/en/latest/catalog/catalog.tasks.classification.multi_class.relation.html[multi_class.relation] task from Unitxt and its default metrics are `f1_micro`, `f1_macro`, and `accuracy`.
+<4> This example assumes you have a GPU available. If that's not the case, the `nvidia.com/gpu` fields above can be removed and the LMEval job will run on CPU.
 
 After you apply the example `LMEvalJob` above, you can check its state by using the following command:
 
@@ -201,25 +219,25 @@ Specify the task using the Unitxt recipe format:
 * `demosPoolSize` (optional): Size of the fewshot pool.
 
 |`taskList.custom`
-| Define one or more custom resources that will be referenced in a task recipe. Custom cards, custom templates, and 
+| Define one or more custom resources that will be referenced in a task recipe. Custom cards, custom templates, and
   custom system prompts are currently supported:
 
 * `cards`: Define custom cards to use, each with a `name` and `value` field:
 ** `name`: The name of this custom card that will be referenced in the `card.ref` field of a task recipe.
 ** `value`: A JSON string for a custom Unitxt card which contains the custom dataset.
-    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_dataset.html#adding-to-the-catalog[here] 
-    to compose a custom card, store it as a JSON file, and use the JSON content as the value here. If the dataset 
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_dataset.html#adding-to-the-catalog[here]
+    to compose a custom card, store it as a JSON file, and use the JSON content as the value here. If the dataset
     used by the custom card needs an API key from an environment variable or a persistent volume, you have to
     set up corresponding resources under the `pod` field. Check the `pod` field below.
 * `templates`:  Define custom templates to use, each with a `name` and `value` field:
 ** `name`: The name of this custom template that will be referenced in the `template.ref` field of a  task recipe.
 ** `value`: A JSON string for a custom Unitxt template.
-    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_template.html#adding-a-new-template[here] 
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_template.html#adding-a-new-template[here]
     to compose a custom template, then use the documentation link:https://www.unitxt.ai/en/latest/docs/saving_and_loading_from_catalog.html[here] to store it as a JSON file and use the JSON content as the value of this field.
 * `systemPrompts`: Define custom system prompts to use, each with a `name` and `value` field:
 ** `name`: The name of this custom system prompt that will be referenced in the `systemPrompt.ref` field of a task recipe.
 ** `value`: A string for a custom Unitxt system prompt.
-    The documentation link:https://www.unitxt.ai/en/latest/docs/adding_format.html#formats[here] 
+    The documentation link:https://www.unitxt.ai/en/latest/docs/adding_format.html#formats[here]
     provides an overview of the different components that make up a prompt format, including the system prompt.
 
 
@@ -325,7 +343,7 @@ status:
   * `Cancelled`: The job was cancelled
 
 <3> The `results` field is the direct output of an `lm-evaluation-harness` run. It has been omitted here to avoid repetition. The link:#output[next section] gives an example of the contents of this section. This section will be empty if the job is not completed.
-<4> The current `state` of this job. The `reason` for a particular state is given in the `reason` field. Possible values are: 
+<4> The current `state` of this job. The `reason` for a particular state is given in the `reason` field. Possible values are:
 
   * `New`: The job was just created
   * `Scheduled`: The job is scheduled and waiting for available resources to run
@@ -459,7 +477,7 @@ The example shown here is of a Unitxt task called `tr_0` that corresponds to the
 <6> `config` is a dictionary that provides key-value pairs corresponding to the evaluation job as a whole. This includes information on the type of model run, the `model_args`, and link:#crd[other settings] used for the run. Many of the values in this dictionary in this example are the default values defined by `lm-evaluation-harness`.
 <7> Given at the very end are three fields describing the start, end, and total evaluation time for this job.
 
-The remaining key-value pairs define a variety of environment settings used for this evaluation job. 
+The remaining key-value pairs define a variety of environment settings used for this evaluation job.
 
 == Examples
 
