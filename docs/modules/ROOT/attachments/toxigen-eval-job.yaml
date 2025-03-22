@@ -1,0 +1,15 @@
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  allowOnline: true
+  allowCodeExecution: true
+  model: hf
+  modelArgs:
+  - name: pretrained
+    value: openai-community/gpt2-xl
+  taskList:
+    taskNames:
+    - toxigen
+  logSamples: true 
