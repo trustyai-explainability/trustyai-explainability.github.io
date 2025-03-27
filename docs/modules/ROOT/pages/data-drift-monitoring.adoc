@@ -98,7 +98,7 @@ You should see the message `1000 datapoints successfully added to gaussian-credi
 
 === The Data Upload Payload
 
-The data upload payload (an example of which is seen in https://raw.githubusercontent.com/trustyai-explainability/odh-trustyai-demos/main/3-DataDrift/data/training_data.json[training_data.json] contains four main fields:
+The data upload payload (an example of which is seen in https://raw.githubusercontent.com/trustyai-explainability/trustyai-explainability.github.io/refs/heads/main/docs/modules/ROOT/examples/training_data.json[training_data.json] contains four main fields:
 
 . `model_name`: The name of the model to correlate this data with. This should match the name of the model we provided in the model yaml, in this case `gaussian-credit-model`
 +
