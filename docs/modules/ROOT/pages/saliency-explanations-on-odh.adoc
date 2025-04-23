@@ -112,7 +112,7 @@ You can now make a note of the TrustyAI's pod name for future reference. We will
 [source,shell]
 ----
 export TRUSTYAI_POD=$(oc get pods -n $NAMESPACE | grep trustyai-service | awk '{print $1}')
-export MODEL_ROUTE=$(oc get route explainer-test  -n $NAMESPACE -o jsonpath='{.spec.host}')
+export MODEL_ROUTE=$(oc get route housing -n $NAMESPACE -o jsonpath='{.spec.host}')
 export TRUSTYAI_ROUTE=$(oc get route trustyai-service -n $NAMESPACE -o jsonpath='{.spec.host}')
 export TOKEN=$(oc whoami -t)
 export MODEL="housing"
