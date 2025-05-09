@@ -1,10 +1,10 @@
 = Getting Started with GuardrailsOrchestrator
 
 xref:component-gorch.adoc[GuardrailsOrchestrator] is a service for large language model guardrailing underpinned by the open-source project link:https://github.com/foundation-model-stack/fms-guardrails-orchestrator[fms-guardrails-orchestrator]. GuardrailsOrchestrator is a component of the xref:trustyai-operator.adoc[TrustyAI Kubernetes Operator]. In this tutorial, you will learn how to create a `GuardrailsOrchestrator` CR to
-perform detections on text generation output
+perform detections on text generation output.
 
 [NOTE]
-GuardrailsOrchestrator is only available in TrustyAI's 1.30.0 community builds and later via KServe Raw Deployment mode.
+GuardrailsOrchestrator is available in RHOAI 2.19+ via KServe Raw Deployment mode.
 
 In order to use it on Open Data Hub or OpenShift AI, first enable `KServe Raw Deployment`. In the `DataScienceIntialization` resource, set the value of `managementState` for the `serviceMesh` component to `Removed`.
 
@@ -21,22 +21,11 @@ controlPlane:
 managementState: Removed
 ---
 
-Next, in the `DataScienceCluster` resource,under the spec.components section, set the value of of kserve.serving.managementState to `Removed` and add the following `devFlag`:
+Next, in the `DataScienceCluster` resource,under the spec.components section, set the value of of kserve.serving.managementState to `Removed`.
 
-[source,yaml]
----
-trustyai:
-  devFlags:
-    manifests:
-      - contextDir: config
-        sourcePath: ''
-        uri: https://github.com/trustyai-explainability/trustyai-service-operator/tarball/main
-  managementState: Managed
----
+== The GuardrailsOrchestrator Service
 
-== The GuardrailsOrchestrator
-
-The GuardrailsOrchestrator service defines a new Custom Resource Definition called: *`GuardrailsOrchestrator`*. `GuardrailsOrchestrator` objects are monitored by the xref:trustyai-operator.adoc[TrustyAI Kubernetes operator]. A GuardrailsOrchestrator object represents an orchestration service that invokes detectors on text generation input/output and standalone detections. Therefore, to run an orchestration service, you need to create a `GuardrailsOrchestrator` object with ...
+The GuardrailsOrchestrator service defines a new Custom Resource Definition named *`GuardrailsOrchestrator`*. `GuardrailsOrchestrator` objects are monitored by the xref:trustyai-operator.adoc[TrustyAI Kubernetes operator]. A GuardrailsOrchestrator object represents an orchestration service that invokes detectors on text generation input/output and standalone detections.
 
 Here is a minimal example of a `GuardrailsOrchestrator` object:
 
@@ -54,7 +43,7 @@ spec:
 <1> The orchestratorConfig field specifies a ConfigMap object that contains generator, detector, and chunker arguments.
 <2> The replicas field specifies the number of replicas for the orchestrator.
 
-Here is a minimal example of an ochestratorConfig object:
+Here is a minimal example of an orchestratorConfig object:
 [source,yaml]
 ---
 kind: ConfigMap
@@ -66,31 +55,92 @@ data:
     generation: <1>
       service:
         hostname: llm-predictor.guardrails-test.svc.cluster.local
-        port: 8032
+        port: 8033
     detectors: <2>
-      regex:
-        type: text_contents
+      hap <2.1>:
         service:
-            hostname: "127.0.0.1"
-            port: 8080
+          hostname: http:/detector-host/api/v1/text/contents
+          port: 8000
         chunker_id: whole_doc_chunker
         default_threshold: 0.5
 ---
 
-<1> The generation field specifies the hostname and port of the large language model predictor service.
-<2> The detectors field specifies the hostname and port of the detector service, the chunker ID, and the default threshold.
+<1> The generation field specifies the hostname and port of the Large Language Model (LLM) predictor service.
+<2> The detectors field specifies the name, hostname, and port of the detector service, the chunker ID, and the default threshold.
+<2.1> The name of the detector. In this example, we are specifiying it as a Hateful and Profance (HAP) detector.
 
-After you apply the example `orchestratorConfig` and `GuardrailsOrchestrator` above, you can check its readiness by using the following command:
+After you apply the example `orchestratorConfig` ConfigMap and `GuardrailsOrchestrator` CR above, you can guardrail against your LLM inputs and outputs:
 
+Verify the orchestrator pod is up and running:
 [source,shell]
 ---
-oc get pods | grep gorch-sample
+oc get pods -n <TEST_NAMESPACE> | grep gorch-sample
 ---
 
 The expected output is:
 [source,shell]
 ---
 gorch-sample-6776b64c58-xrxq9                    3/3     Running   0          4h19m
+---
+
+Retrieve the external HTTP route for the orchestrator:
+[source,shell]
+---
+GORCH_ROUTE_HTTP=$(oc get routes gorch-sample-http -o jsonpath='{.spec.host}' -n <TEST_NAMESPACE>)
+---
+
+Send a request to the *v2/chat/completions-detection* endpoint, specifying detections against HAP content in input text and generated outputs.
+[source,shell]
+---
+curl -X 'POST' \
+ "https://$GORCH_ROUTE_HTTP/api/v2/chat/completions-detection" \
+ -H 'accept: application/json' \
+ -H 'Content-Type: application/json' \
+ -d '{
+   "model": "llm",
+   "messages": [
+       {
+           "content": "You dotard, I really hate this stuff",
+           "role": "user"
+       }
+   ],
+   "detectors": {
+       "input": {
+           "hap": {}
+       },
+       "output": {
+           "hap": {}
+       }
+   }
+}'
+---
+
+Example output with HAP content detected:
+[source,shell]
+---
+{"id":"086980692dc1431f9c32cd56ba607067",
+  "object":"",
+  "created":1743084024,
+  "model":"llm",
+  "choices":[],"
+  usage":{"prompt_tokens":0,"total_tokens":0,"completion_tokens":0},
+  "detections":{
+    "input":[{
+      "message_index":0,
+      "results":[{
+        "start":0,"end":36,"text":"<explicit_text>, I really hate this stuff",
+        "detection":"sequence_classifier",
+        "detection_type": "sequence_classification",
+        "detector_id":"hap",
+        "score":0.9634239077568054
+        }]
+      }]
+    },
+  "warnings":[{
+    "type":"UNSUITABLE_INPUT",
+    "message":"Unsuitable input detected. Please check the detected entities on your input and try again with the unsuitable input removed."
+  }]
+}
 ---
 
 == Details of GuardrailsOrchestrator
@@ -101,7 +151,9 @@ In this section, let's review all the possible parameters for the `GuardrailsOrc
 |Parameter |Description
 |`replicas`| The number of orchestrator pods to spin up
 |`orchestratorConfig`| The name of the ConfigMap object that contains generator, detector, and chunker arguments
-|`vLLMGatewayConfig **(optional)**`| The name of the ConfigMap object that contains VLLM gateway arguments
+|`enableRegexDetectors **(optional)**`| Boolean value to inject the regex detector sidecar container into the orchestrator pod. The regex detector is a lightweight HTTP server designed to parse text using predefined patterns or custom regular expressions.
+|`enableGuardrailsGateway **(optional)**`| Boolean value to enable controlled interaction with the orchestrator service by enforcing stricter access to its exposed endpoints. It provides a mechanism of configuring fixed detector pipelines, and then provides a unique /v1/chat/completions endpoint per configured detector pipeline.
+|`guardrailsGatewayConfig **(optional)**`| The name of the ConfigMap object that  specifies gateway configurations
 |`otelExporter **(optional)**`| List of paired name and value arguments for configuring OpenTelemetry traces and/or metrics
 
 * `protocol` - sets the protocol for all the OTLP endpoints. Acceptable values are `grpc` or`http`
@@ -115,25 +167,52 @@ In this section, let's review all the possible parameters for the `GuardrailsOrc
 
 == Optional Configurations for GuardrailsOrchestrator
 
-== Configuring the Regex Detector and vLLM Gateway
-The regex detector and vLLM gateway are two sidecar images that can be used with the GuardrailsOrchestrator service. To enable them, the user must (1) specify their images in a ConfigMap (2) specify detectors they wish to use as well as the routes (3) reference the ConfigMap in the `GuardrailsOrchestrator` object:
+== Configuring the Regex Detector and Guardrails Gateway
+The regex detector and guardrails gateway are two sidecar images that can be used with the GuardrailsOrchestrator service, either individually or together. They are enabled via the GuardrailsOrchestrator CR.
 
-Here is an example of a ConfigMap that references the regex detector and vLLM gateway images:
+Here is an example of a GuardrailsOrchestrator CR that references the regex detector and guardrails gateway images:
 [source,yaml]
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
 metadata:
-  name: gorch-sample-config
-data:
-  regexDetectorImage: 'quay.io/csantiago/regex-detector@sha256:2dbfa4680938a97d0e0cac75049c43687ad163666cf2c6ddc37643c4f516d144' <1>
-  vllmGatewayImage: 'quay.io/csantiago/vllm-orchestrator-gateway@sha256:493ac4679d50db9c2c59967dcaa6737a995cd19f319727f33c40f159db6817db <2>
+  name: gorch-sample
+spec:
+  orchestratorConfig: "fms-orchestr8-config-nlp"
+  enableBuiltInDetectors: True <1>
+  enableGuardrailsGateway: True <2>
+  guardrailsGatewayConfig: "fms-orchestr8-config-gateway" <3>
+  replicas: 1
 ---
 
-<1> The regex detector is a sidecar image that provides regex-based detections
-<2> The vLLM gateway is a sidecar image that emulates the vLLM chat completions API and saves preset detector configurations
+<1> The enabledBuiltInDetectors, if set to **True**, injects regex detectors as a sidecar container into the orchestrator pod
+<2> The enableGuardrailsGateway, if set to **True**, injects the vLLM gateway as a sidecar conatiner into the orchestrator pod
+<3> The guardrailsGatewayConfig field specifies a ConfigMap that reroutes the orchestrator and regex detector routes to specific paths
 
-Here is an example of a vLLM gateway ConfigMap named `fms-orchestr8-config-gateway`:
+Here is an example orchestratorConfig named `fms-orchestr8-config-nlp`. Please take note that it differs from the previous example:
+[source,yaml]
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-nlp
+data:
+  config.yaml: |
+    chat_generation:
+      service:
+        hostname: llm-predictor.guardrails-test.svc.cluster.local
+        port: 8032
+    detectors:
+      regex:
+        type: text_contents
+        service:
+            hostname: "127.0.0.1"
+            port: 8080
+        chunker_id: whole_doc_chunker
+        default_threshold: 0.5
+---
+
+Here is an example of a guardrailsGatewayConfig named `fms-orchestr8-config-gateway`:
 [source,yaml]
 ---
 kind: ConfigMap
@@ -150,6 +229,8 @@ data:
     detectors:
       - name: regex
         detector_params:
+          input: true
+          output: true
           regex:
             - email
             - ssn
@@ -162,7 +243,7 @@ data:
         detectors:
 ---
 
-Let's review all the required arguments for the regex detector:
+Let's review all the required arguments for the guardrailsGatewayConfig:
 
 [cols="1,2a", options="header"]
 |===
@@ -172,18 +253,81 @@ Let's review all the required arguments for the regex detector:
 |`routes`| The resulting endpoints for detections
 |===
 
-Here is an example of a corresponding `GuardrailsOrchestrator` object that references the vLLM Gateway ConfigMap:
-
-[source,yaml]
+Send a request to the */v1/chat/completions* endpoint, specifying detections against PII content in input text and generated outputs.
+[source,shell]
 ---
-apiVersion: trustyai.opendatahub.io/v1alpha1
-kind: GuardrailsOrchestrator
-metadata:
-  name: gorch-sample
-spec:
-  orchestratorConfig: "fms-orchestr8-config-nlp"
-  vllmGatewayConfig: "fms-orchestr8-config-gateway"
-  replicas: 1
+curl "https://$GORCH_ROUTE_HTTP/pii/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "Qwen/Qwen2.5-1.5B-Instruct",
+        "messages": [
+            {
+                "role": "user",
+                "content": "say hello to me at someemail@somedomain.com"
+            },
+            {
+                "role": "user",
+                "content": "btw here is my social 123456789"
+            }
+        ]
+    }'
+---
+
+Example output with PII content detected:
+[source,shell]
+---
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "audio": null,
+        "content": "I'm sorry, I'm afraid I can't do that.",
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1741182848,
+  "detections": {
+    "input": null,
+    "output": [
+      {
+        "choice_index": 0,
+        "results": [
+          {
+            "detection": "EmailAddress",
+            "detection_type": "pii",
+            "detector_id": "regex-language",
+            "end": 176,
+            "score": 1.0,
+            "start": 152,
+            "text": "someemail@somedomain.com"
+          }
+        ]
+      }
+    ]
+  },
+  "id": "16a0abbf4b0c431e885be5cfa4ff1c4b",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 83,
+    "prompt_tokens": 61,
+    "total_tokens": 144
+  },
+  "warnings": [
+    {
+      "message": "Unsuitable output detected.",
+      "type": "UNSUITABLE_OUTPUT"
+    }
+  ]
+}
 ---
 
 == Configuring the OpenTelemetry Exporter for Metrics & Tracing
@@ -205,7 +349,6 @@ metadata:
   name: gorch-test
 spec:
   orchestratorConfig: "fms-orchestr8-config-nlp"
-  vllmGatewayConfig: "fms-orchestr8-config-gateway"
   replicas: 1
   otelExporter:
     protocol: "http"
