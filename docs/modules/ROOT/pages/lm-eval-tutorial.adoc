@@ -709,7 +709,7 @@ spec:
     taskNames:
       - mmlu
   logSamples: true
-  batchSize: 1
+  batchSize: '1'
   modelArgs:
     - name: model
       value: granite
