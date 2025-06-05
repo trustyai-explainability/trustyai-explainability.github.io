@@ -209,10 +209,12 @@ Specify the task using the Unitxt recipe format:
 * `systemPrompt`: Use `name` to specify a Unitxt catalog system prompt or `ref` to refer to a custom prompt:
 ** `name`: Specify a Unitxt system prompt from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.system_prompts.__dir__.html++[Unitxt catalog]. Use the system prompt's ID as the value.
 ** `ref`: Specify the reference name of a custom system prompt as defined in the `custom` section below
-* `task` (optional): Specify a Unitxt task from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html++[Unitxt catalog]. Use the task's ID as the value.
-  A Unitxt card has a pre-defined task. Only specify a value for this if you want to run different task.
-* `metrics` (optional): Specify a list of Unitx metrics from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.metrics.__dir__.html++[Unitxt catalog]. Use the metric's ID as the value.
-  A Unitxt task has a set of pre-defined metrics. Only specify a set of metrics if you need different metrics.
+* `task` (optional): Specify a Unitxt task by `name` or `ref`. A Unitxt card has a pre-defined task. Only specify a value for this if you want to run different task.
+** `name`: from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.cards.__dir__.html++[Unitxt catalog]. Use the task's ID as the value.
+** `ref`: Specify the reference name of a custom task as defined in the `custom` section below
+* `metrics` (optional): Specify a list of Unitxt metrics by `name` or `ref`. A Unitxt task has a set of pre-defined metrics. Only specify a set of metrics if you need different metrics.
+** `name`: Specify a metric from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.metrics.__dir__.html++[Unitxt catalog]. Use the metric's ID as the value.
+** `ref`: Specify the reference name of a custom metric as defined in the `custom` section below
 * `format` (optional): Specify a Unitxt format from the link:++https://www.unitxt.ai/en/latest/catalog/catalog.formats.__dir__.html++[Unitxt catalog]. Use the format's ID as the value.
 * `loaderLimit` (optional): Specifies the maximum number of instances per stream to be returned from the loader (used to reduce loading time in large datasets).
 * `numDemos` (optional): Number of fewshot to be used.
@@ -239,6 +241,16 @@ Specify the task using the Unitxt recipe format:
 ** `value`: A string for a custom Unitxt system prompt.
     The documentation link:https://www.unitxt.ai/en/latest/docs/adding_format.html#formats[here]
     provides an overview of the different components that make up a prompt format, including the system prompt.
+* `tasks`: Define custom tasks to use, each with a `name` and `value` field:
+** `name`: The name of this custom task that will be referenced in the `tasks.ref` field of a task recipe.
+** `value`: A JSON string for a custom Unitxt metric.
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_task.html[here]
+    to compose a custom task, then use the documentation link:https://www.unitxt.ai/en/latest/docs/saving_and_loading_from_catalog.html[here] to store it as a JSON file and use the JSON content as the value of this field.
+* `metrics`: Define custom metrics to use, each with a `name` and `value` field:
+** `name`: The name of this custom metric that will be referenced in the `metrics.ref` field of a task recipe.
+** `value`: A JSON string for a custom Unitxt metric.
+    Use the documentation link:https://www.unitxt.ai/en/latest/docs/adding_metric.html[here]
+    to compose a custom metric, then use the documentation link:https://www.unitxt.ai/en/latest/docs/saving_and_loading_from_catalog.html[here] to store it as a JSON file and use the JSON content as the value of this field.
 
 
 |`numFewShot`
@@ -622,6 +634,151 @@ Inside the custom card, it uses the HuggingFace dataset loader:
 ----
 
 You can use other link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#module-unitxt.loaders[loaders] and use the `volumes` and `volumeMounts` to mount the dataset from persistent volumes. For example, if you use link:https://www.unitxt.ai/en/latest/unitxt.loaders.html#unitxt.loaders.LoadCSV[LoadCSV], you need to mount the files to the container and make the dataset accessible for the evaluation process.
+
+=== LLM-as-a-Judge Evaluation
+
+Certain LLM-as-a-Judge evaluations are possible by using custom Unitxt LLMaaJ metrics. See the link:https://www.unitxt.ai/en/latest/docs/llm_as_judge.html#llm-as-a-judge-metrics-guide[Unitxt metrics guide] for information on how to define custom metrics.
+
+An example of a custom card and metric for LLMaaJ evaluation is given below.
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: custom-llmaaj-metric
+spec:
+  allowOnline: true
+  allowCodeExecution: true
+  model: hf
+  modelArgs:
+    - name: pretrained
+      value: google/flan-t5-small
+  taskList:
+    taskRecipes:
+      - card:
+          custom: |
+            {
+                "__type__": "task_card",
+                "loader": {
+                    "__type__": "load_hf",
+                    "path": "OfirArviv/mt_bench_single_score_gpt4_judgement",
+                    "split": "train"
+                },
+                "preprocess_steps": [
+                    {
+                        "__type__": "rename_splits",
+                        "mapper": {
+                            "train": "test"
+                        }
+                    },
+                    {
+                        "__type__": "filter_by_condition",
+                        "values": {
+                            "turn": 1
+                        },
+                        "condition": "eq"
+                    },
+                    {
+                        "__type__": "filter_by_condition",
+                        "values": {
+                            "reference": "[]"
+                        },
+                        "condition": "eq"
+                    },
+                    {
+                        "__type__": "rename",
+                        "field_to_field": {
+                            "model_input": "question",
+                            "score": "rating",
+                            "category": "group",
+                            "model_output": "answer"
+                        }
+                    },
+                    {
+                        "__type__": "literal_eval",
+                        "field": "question"
+                    },
+                    {
+                        "__type__": "copy",
+                        "field": "question/0",
+                        "to_field": "question"
+                    },
+                    {
+                        "__type__": "literal_eval",
+                        "field": "answer"
+                    },
+                    {
+                        "__type__": "copy",
+                        "field": "answer/0",
+                        "to_field": "answer"
+                    }
+                ],
+                "task": "tasks.response_assessment.rating.single_turn",
+                "templates": [
+                    "templates.response_assessment.rating.mt_bench_single_turn"
+                ]
+            }
+        template:
+          ref: response_assessment.rating.mt_bench_single_turn
+        format: formats.models.mistral.instruction
+        metrics:
+        - ref: llmaaj_metric
+    custom:
+      templates:
+        - name: response_assessment.rating.mt_bench_single_turn
+          value: |
+            {
+                "__type__": "input_output_template",
+                "instruction": "Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below. Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of the response. Begin your evaluation by providing a short explanation. Be as objective as possible. After providing your explanation, you must rate the response on a scale of 1 to 10 by strictly following this format: \"[[rating]]\", for example: \"Rating: [[5]]\".\n\n",
+                "input_format": "[Question]\n{question}\n\n[The Start of Assistant's Answer]\n{answer}\n[The End of Assistant's Answer]",
+                "output_format": "[[{rating}]]",
+                "postprocessors": [
+                    "processors.extract_mt_bench_rating_judgment"
+                ]
+            }
+      tasks:
+        - name: response_assessment.rating.single_turn
+          value: |
+            {
+                "__type__": "task",
+                "input_fields": {
+                    "question": "str",
+                    "answer": "str"
+                },
+                "outputs": {
+                    "rating": "float"
+                },
+                "metrics": [
+                    "metrics.spearman"
+                ]
+            }
+      metrics:
+        - name: llmaaj_metric
+          value: |
+            {
+                "__type__": "llm_as_judge",
+                "inference_model": {
+                    "__type__": "hf_pipeline_based_inference_engine",
+                    "model_name": "mistralai/Mistral-7B-Instruct-v0.2",
+                    "max_new_tokens": 256,
+                    "use_fp16": true
+                },
+                "template": "templates.response_assessment.rating.mt_bench_single_turn",
+                "task": "rating.single_turn",
+                "format": "formats.models.mistral.instruction",
+                "main_score": "mistral_7b_instruct_v0_2_huggingface_template_mt_bench_single_turn"
+            }
+  logSamples: true
+  pod:
+    container:
+      env:
+      - name: HF_TOKEN
+        value: <HF_TOKEN>
+----
+
+There are also a handful of pre-existing link:https://www.unitxt.ai/en/latest/catalog/catalog.metrics.llm_as_judge.__dir__.html[LLMaaJ metrics] available in the Unitxt catalog.
+
 
 === Using PVCs as storage
 
