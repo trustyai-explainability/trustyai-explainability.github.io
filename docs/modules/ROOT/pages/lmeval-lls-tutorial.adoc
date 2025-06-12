@@ -1,0 +1,185 @@
+= Getting Started with LMEval Llama Stack External Eval Provider
+:description: Learn how to evaluate your language model using the LMEval Llama Stack External Eval Provider.
+:keywords: LMEval, Llama Stack, model evaluation
+
+== Prerequisites
+
+* Admin access to an OpenShift cluster
+* The TrustyAI operator installed in your OpenShift cluster
+* KServe set to Raw Deployment mode
+* A language model deployed on vLLM Serving Runtime in your OpenShift cluster
+
+== Overview
+
+This tutorial demonstrates how to evaluate a language model using the LMEval Llama Stack External Eval Provider. You will learn how to:
+
+* Configure a Llama Stack server to use the LMEval Eval provider
+* Register a benchmark dataset
+* Run a benchmark evaluation job on a language model
+
+== Usage
+Create and activate a virtual environment:
+
+[source,bash]
+----
+python3 -m venv .venv
+source .venv/bin/activate
+----
+
+Install the LMEval Llama Stack External Eval Provider from PyPi:
+
+[source,bash]
+----
+pip install llama-stack-provider-lmeval
+----
+
+== Configuing the Llama Stack Server
+Set the `VLLM_URL` and `TRUSTYAI_LM_EVAL_NAMESPACE` environment variables in your terminal. The `VLLM_URL` value should be the `v1/completions` endpoint of your model route and the `TRUSTYAI_LM_EVAL_NAMESPACE` should be the namespace where your model is deployed. For example:
+
+[source,bash]
+----
+export VLLM_URL=https://$(oc get $(oc get ksvc -o name | grep predictor) --template={{.status.url}})/v1/completions
+
+export TRUSTYAI_LM_EVAL_NAMESPACE=$(oc project | cut -d '"' -f2)
+----
+
+Download the `providers.d` directory and the `run.yaml` file:
+
+[source, bash]
+----
+curl --create-dirs --output providers.d/remote/eval/trustyai_lmeval.yaml https://raw.githubusercontent.com/trustyai-explainability/llama-stack-provider-lmeval/refs/heads/main/providers.d/remote/eval/trustyai_lmeval.yaml
+
+curl --create-dirs --output run.yaml https://raw.githubusercontent.com/trustyai-explainability/llama-stack-provider-lmeval/refs/heads/main/run.yaml
+----
+
+Start the Llama Stack server in a virtual environment:
+
+[source,bash]
+----
+llama stack run run.yaml --image-type venv
+----
+
+This will start a Llama Stack Server which will use port 8321 by default.
+
+== Running an Evaluation
+
+With the Llama Stack server running, create a Python script or Jupyter notebook to interact with the server and run an evaluation.
+
+Import the necessary libraries and modules:
+[source, python]
+----
+import os
+import subprocess
+
+import logging
+
+import time
+import pprint
+----
+
+
+Instantiate the Llama Stack Python client to interact with the running Llama Stack server:
+
+[source, python]
+----
+BASE_URL = "http://localhost:8321"
+
+def create_http_client():
+    from llama_stack_client import LlamaStackClient
+    return LlamaStackClient(base_url=BASE_URL)
+
+client = create_http_client()
+----
+
+Check the current list of available benchmarks:
+
+[source, python]
+----
+benchmarks = client.benchmarks.list()
+
+pprint.print(f"Available benchmarks: {benchmarks}")
+----
+
+Register the ARC-Easy, a dataset of grade-school level, multiple-choice science questions, as a benchmark:
+
+[source, python]
+----
+client.benchmarks.register(
+    benchmark_id="trustyai_lmeval::arc_easy",
+    dataset_id="trustyai_lmeval::arc_easy",
+    scoring_functions=["string"],
+    provider_benchmark_id="string",
+    provider_id="trustyai_lmeval",
+     metadata={
+        "tokenizer": "google/flan-t5-small"
+        "tokenized_requests": False,
+    }
+)
+----
+[NOTE]
+LMEval comes with 100+ out-of-the-box datasets for evaluation so feel free to experiment.
+
+Verify that the benchmark has been registered successfully:
+
+[source, python]
+----
+benchmarks = client.benchmarks.list()
+
+pprint.print(f"Available benchmarks: {benchmarks}")
+----
+
+Run a benchmark evaluation on your model:
+
+[source, python]
+----
+job = client.eval.run_eval(
+    benchmark_id="trustyai_lmeval::arc_easy",
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "phi-3",
+            "provider_id": "trustyai_lmeval",
+            "sampling_params": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 256
+            },
+        },
+        "num_examples": 1000,
+     },
+)
+
+print(f"Starting job '{job.job_id}'")
+----
+[NOTE]
+The `eval_candidate` section specifies the model to be evaluated, in this case, "phi-3". Replace it with the name of your deployed model.
+
+
+Monitor the status of the evaluation job. The job will run asynchronously, so you can check its status periodically:
+[source, python]
+----
+def get_job_status(job_id, benchmark_id):
+    return client.eval.jobs.status(job_id=job_id, benchmark_id=benchmark_id)
+
+while True:
+    job = get_job_status(job_id=job.job_id, benchmark_id="trustyai_lmeval::arc_easy")
+    print(job)
+
+    if job.status in ['failed', 'completed']:
+        print(f"Job ended with status: {job.status}")
+        break
+
+    time.sleep(20)
+----
+
+Once the job status reports back as `completed`, get the results of the evaluation job:
+
+[source, python]
+----
+pprint.pprint(client.eval.jobs.retrieve(job_id=job.job_id, benchmark_id="trustyai_lmeval::arc_easy").scores)
+----
+
+== Additional Resources
+* This tutorial provides a high level overview of how to use the LMEval Llama Stack External Eval Provider to evaluate language models. For a fulll end-to-end demo with explanations and output, please refer to https://github.com/trustyai-explainability/llama-stack-provider-lmeval/tree/main/demos[the official demos].
+
+* If you have any questions or improvements to contribute, please feel free to open an issue or a pull request on https://github.com/trustyai-explainability/llama-stack-provider-lmeval[the project's GitHub repository].

@@ -20,6 +20,7 @@ TrustyAI is a default component of https://opendatahub.io/[Open Data Hub] and ht
 * xref:python-trustyai.adoc[Python TrustyAI], a Python library allowing the usage of TrustyAI's toolkit from Jupyter notebooks
 * xref:component-kserve-explainer.adoc[KServe explainer], a TrustyAI side-car that integrates with KServe's built-in explainability features.
 * xref:component-lm-eval.adoc[LM-Eval], generative text model benchmark and evaluation service, leveraging lm-evaluation-harness and Unitxt
+* xref:component-gorch.adoc[Guardrails], generative text model guardrailing service, leveraging fms-guardrails-orchestrator
 
 
 
