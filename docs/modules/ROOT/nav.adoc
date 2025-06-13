@@ -15,7 +15,8 @@
 ** xref:lm-eval-tutorial.adoc[]
 *** xref:lm-eval-tutorial-toxicity.adoc[Toxicity Measurement]
 ** xref:gorch-tutorial.adoc[]
-** xref:lm-eval-lls-tutorial.adoc[]
+** xref:tutorials-llama-stack-section.adoc[]
+*** xref:lmeval-lls-tutorial.adoc[]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
