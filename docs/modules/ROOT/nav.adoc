@@ -18,6 +18,7 @@
 *** xref:hf-serving-runtime-tutorial.adoc[Using Hugging Face models with GuardrailsOrchestrator]
 ** xref:tutorials-llama-stack-section.adoc[]
 *** xref:lmeval-lls-tutorial.adoc[]
+*** xref:trustyai-fms-lls-tutorial.adoc[Getting started with trustyai_fms and llama-stack]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
