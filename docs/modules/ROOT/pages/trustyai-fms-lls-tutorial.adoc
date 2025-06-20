@@ -1,0 +1,597 @@
+= Using trustyai_fms with Llama Stack
+
+== Overview
+
+`trustyai_fms` is an out-of-tree remote safety provider for https://github.com/meta-llama/llama-stack[Llama Stack] that brings comprehensive AI safety and content filtering capabilities to your GenAI applications. This implementation combines the https://github.com/foundation-model-stack/fms-guardrails-orchestrator[FMS Guardrails Orchestrator] with a suite of community-developed detectors to provide robust content filtering and safety monitoring.
+
+The following detectors can be used with `trustyai_fms`:
+
+* **https://github.com/trustyai-explainability/guardrails-regex-detector[Regex Detectors]**: pattern-based content detection for structured safety rules
+* **https://github.com/trustyai-explainability/guardrails-detectors[Hugging Face Content Detectors]**: content detection compatible with most Hugging Face `AutoModelForSequenceClassification` models, such as https://huggingface.co/ibm-granite/granite-guardian-hap-38m[granite-guardian-hap-38m] or https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2[deberta-v3-base-prompt-injection-v2]
+* **https://github.com/foundation-model-stack/vllm-detector-adapter[vLLM Detector Adapter]**: content detection compatible with Hugging Face `AutoModelForCausalLM` models such as https://huggingface.co/ibm-granite/granite-guardian-3.1-2b[ibm-granite/granite-guardian-3.1-2b]
+
+== Prerequisites
+
+* **Local environment**:
+** Python >=3.12
+
+* **AI Platform**:
+** OpenDataHub 2.29 (or Red Hat OpenShift AI (2.20.0 provided by Red Hat, Inc.)):
+*** in the `DataScienceInitialization` resource, set the value of `managementState` for the `serviceMesh` component to `Removed`
+*** in the `default-dsc`, ensure:
+**** `trustyai` `managementState` is set to `Managed`
+**** `kserve` is set to:
++
+[source,yaml]
+----
+kserve:
+    defaultDeploymentMode: RawDeployment
+    managementState: Managed
+    nim:
+        managementState: Managed
+    rawDeploymentServiceConfig: Headless
+    serving:
+        ingressGateway:
+        certificate:
+            type: OpenshiftDefaultIngress
+        managementState: Removed
+        name: knative-serving
+----
+
+* **Model Serving**:
+** Red Hat OpenShift Service Mesh 2 (2.6.7-0 provided by Red Hat, Inc.)
+** Red Hat OpenShift Serverless (1.35.1 provided by Red Hat)
+
+* **Authentication**:
+** Red Hat - Authorino Operator (1.2.1 provided by Red Hat)
+
+== Minimal example
+
+This example shows to use the `built-in` detectors of the GuardrailsOrchestrator (see this tutorial on how to get started xref:gorch-tutorial.adoc[Getting Started with GuardrailsOrchestrator]) as Llama Stack safety guardrails. For simplicity, we will consider a local Llama Stack server running in a virtual environment. 
+
+=== Step 0: Set up the environment
+
+Ensure you have Python 3.12 or higher installed, then create and activate a virtual environment:
+
+[source,bash]
+----
+python -m venv .venv && source .venv/bin/activate
+----
+
+Install the required packages:
+
+[source,bash]
+----
+pip install llama-stack==0.2.11 llama-stack-provider-trustyai-fms==0.1.3
+----
+
+=== Step 1: Create a new OpenShift project
+
+[source,bash]
+----
+PROJECT_NAME="lls-minimal-example" && oc new-project $PROJECT_NAME
+----
+
+=== Step 2: Deploy the orchestrator with built-in regex detectors
+
+Deploy the GuardrailsOrchestrator with configuration for regex-based PII detection:
+
+[source,bash]
+----
+cat <<EOF | oc apply -f -
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-nlp
+data:
+  config.yaml: |
+    detectors:
+      regex:
+        type: text_contents
+        service:
+            hostname: "127.0.0.1"
+            port: 8080
+        chunker_id: whole_doc_chunker
+        default_threshold: 0.5
+---
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
+metadata:
+  name: guardrails-orchestrator
+spec:
+  orchestratorConfig: "fms-orchestr8-config-nlp"
+  enableBuiltInDetectors: true
+  enableGuardrailsGateway: false
+  replicas: 1
+EOF
+----
+
+=== Step 3: Create Llama Stack configuration
+
+Create the directory structure for the Llama Stack distribution:
+
+[source,bash]
+----
+mkdir -p lls-distribution/providers.d/remote/safety
+----
+
+Create the main configuration file:
+
+[source,bash]
+----
+cat <<EOF > lls-distribution/run.yaml
+version: '2'
+image_name: minimal_example
+apis:
+  - safety
+  - shields
+providers:
+  safety:
+    - provider_id: trustyai_fms
+      provider_type: remote::trustyai_fms
+      config:
+        orchestrator_url: \${env.FMS_ORCHESTRATOR_URL}
+        shields: {}           
+shields: []
+server:
+  port: 8321
+  tls_certfile: null
+  tls_keyfile: null
+external_providers_dir: lls-distribution/providers.d
+EOF
+----
+
+Create the provider configuration:
+
+[source,bash]
+----
+cat <<EOF > lls-distribution/providers.d/remote/safety/trustyai_fms.yaml
+adapter:
+  adapter_type: trustyai_fms
+  pip_packages: ["llama_stack_provider_trustyai_fms"]
+  config_class: llama_stack_provider_trustyai_fms.config.FMSSafetyProviderConfig
+  module: llama_stack_provider_trustyai_fms
+api_dependencies: ["safety"]
+optional_api_dependencies: ["shields"]
+EOF
+----
+
+=== Step 4: Start local the Llama Stack server
+
+Set the orchestrator URL and start the server:
+
+[source,bash]
+----
+export FMS_ORCHESTRATOR_URL="https://$(oc get routes guardrails-orchestrator -o jsonpath='{.spec.host}')"
+python -m llama_stack.distribution.server.server --config lls-distribution/run.yaml --port 8321
+----
+
+=== Step 5: Register the built-in regex detectors
+
+Ensure your server is running and in a separate terminal, dynamically register a shield that uses regex patterns to detect PII (personally identifiable information):
+
+[source,bash]
+----
+curl -X 'POST' \
+  'http://localhost:8321/v1/shields' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "shield_id": "regex_detector",
+    "provider_shield_id": "regex_detector",
+    "provider_id": "trustyai_fms",
+    "params": {
+      "type": "content",
+      "confidence_threshold": 0.5,
+      "message_types": ["system", "user"],
+      "detectors": {
+        "regex": {
+          "detector_params": {
+            "regex": ["email", "ssn", "credit-card"]
+          }
+        }
+      }
+    }
+  }'
+----
+
+=== Step 6: Inspect the registered shield
+
+[source,bash]
+----
+curl -s http://localhost:8321/v1/shields | jq '.'
+----
+
+You should see the following output, indicating that the shield has been registered successfully:
+[source,json]
+----
+{
+  "data": [
+    {
+      "identifier": "regex_detector",
+      "provider_resource_id": "regex_detector",
+      "provider_id": "trustyai_fms",
+      "type": "shield",
+      "params": {
+        "type": "content",
+        "confidence_threshold": 0.5,
+        "message_types": [
+          "system",
+          "user"
+        ],
+        "detectors": {
+          "regex": {
+            "detector_params": {
+              "regex": [
+                "email",
+                "ssn",
+                "credit-card"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+----
+
+=== Step 7: Test the shield with some sample messages
+
+==== Test email detection
+[source,bash]
+----
+curl -X POST http://localhost:8321/v1/safety/run-shield \
+-H "Content-Type: application/json" \
+-d '{
+  "shield_id": "regex_detector",
+  "messages": [
+    {
+      "content": "My email is test@example.com",
+      "role": "user"
+    }
+  ]
+}' | jq '.'
+----
+
+This should return a response indicating that the email was detected:
+[source,json]
+----
+{
+  "violation": {
+    "violation_level": "error",
+    "user_message": "Content violation detected by shield regex_detector (confidence: 1.00, 1/1 processed messages violated)",
+    "metadata": {
+      "status": "violation",
+      "shield_id": "regex_detector",
+      "confidence_threshold": 0.5,
+      "summary": {
+        "total_messages": 1,
+        "processed_messages": 1,
+        "skipped_messages": 0,
+        "messages_with_violations": 1,
+        "messages_passed": 0,
+        "message_fail_rate": 1.0,
+        "message_pass_rate": 0.0,
+        "total_detections": 1,
+        "detector_breakdown": {
+          "active_detectors": 1,
+          "total_checks_performed": 1,
+          "total_violations_found": 1,
+          "violations_per_message": 1.0
+        }
+      },
+      "results": [
+        {
+          "message_index": 0,
+          "text": "My email is test@example.com",
+          "status": "violation",
+          "score": 1.0,
+          "detection_type": "pii",
+          "individual_detector_results": [
+            {
+              "detector_id": "regex",
+              "status": "violation",
+              "score": 1.0,
+              "detection_type": "pii"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+----
+
+==== Test SSN detection
+[source,bash]
+----
+curl -X POST http://localhost:8321/v1/safety/run-shield \
+-H "Content-Type: application/json" \
+-d '{
+    "shield_id": "regex_detector",
+    "messages": [
+      {
+        "content": "My SSN is 123-45-6789",
+        "role": "user"
+      }
+    ]
+}' | jq '.'
+----
+
+This should return a response indicating that the SSN was detected:
+[source,json]
+----
+{
+  "violation": {
+    "violation_level": "error",
+    "user_message": "Content violation detected by shield regex_detector (confidence: 1.00, 1/1 processed messages violated)",
+    "metadata": {
+      "status": "violation",
+      "shield_id": "regex_detector",
+      "confidence_threshold": 0.5,
+      "summary": {
+        "total_messages": 1,
+        "processed_messages": 1,
+        "skipped_messages": 0,
+        "messages_with_violations": 1,
+        "messages_passed": 0,
+        "message_fail_rate": 1.0,
+        "message_pass_rate": 0.0,
+        "total_detections": 1,
+        "detector_breakdown": {
+          "active_detectors": 1,
+          "total_checks_performed": 1,
+          "total_violations_found": 1,
+          "violations_per_message": 1.0
+        }
+      },
+      "results": [
+        {
+          "message_index": 0,
+          "text": "My SSN is 123-45-6789",
+          "status": "violation",
+          "score": 1.0,
+          "detection_type": "pii",
+          "individual_detector_results": [
+            {
+              "detector_id": "regex",
+              "status": "violation",
+              "score": 1.0,
+              "detection_type": "pii"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+----
+
+==== Test credit card detection
+
+[source,bash]
+----
+curl -X POST http://localhost:8321/v1/safety/run-shield \
+-H "Content-Type: application/json" \
+-d '{
+    "shield_id": "regex_detector",
+    "messages": [       
+      {
+        "content": "My credit card number is 4111-1111-1111-1111",
+        "role": "user"
+      }
+    ] 
+}' | jq '.'
+----
+
+This should return a response indicating that the credit card number was detected:
+[source,json]
+----
+{
+  "violation": {
+    "violation_level": "error",
+    "user_message": "Content violation detected by shield regex_detector (confidence: 1.00, 1/1 processed messages violated)",
+    "metadata": {
+      "status": "violation",
+      "shield_id": "regex_detector",
+      "confidence_threshold": 0.5,
+      "summary": {
+        "total_messages": 1,
+        "processed_messages": 1,
+        "skipped_messages": 0,
+        "messages_with_violations": 1,
+        "messages_passed": 0,
+        "message_fail_rate": 1.0,
+        "message_pass_rate": 0.0,
+        "total_detections": 1,
+        "detector_breakdown": {
+          "active_detectors": 1,
+          "total_checks_performed": 1,
+          "total_violations_found": 1,
+          "violations_per_message": 1.0
+        }
+      },
+      "results": [
+        {
+          "message_index": 0,
+          "text": "My credit card number is 4111-1111-1111-1111",
+          "status": "violation",
+          "score": 1.0,
+          "detection_type": "pii",
+          "individual_detector_results": [
+            {
+              "detector_id": "regex",
+              "status": "violation",
+              "score": 1.0,
+              "detection_type": "pii"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+----
+
+== Key takeaways
+
+It is possible to register shields dynamically using the the `/v1/shields` endpoint once the server is running. 
+
+=== Shield Registration
+
+==== POST /v1/shields
+
+Registers a content shield for text analysis and violation detection.
+
+===== Request Body Schema
+
+[source,json]
+----
+{
+  "shield_id": "string",
+  "provider_shield_id": "string",
+  "provider_id": "trustyai_fms",
+  "params": {
+    "type": "content",
+    "confidence_threshold": 0.5,
+    "message_types": ["user", "system", "completion"],
+    "detectors": {
+      "detector_name": {
+        "detector_params": {
+          "param_key": "param_value"
+        }
+      }
+    }
+  }
+}
+----
+
+===== Parameters
+
+[cols="1,1,1,3"]
+|===
+|Parameter |Type |Required |Description
+
+|`shield_id`
+|string
+|Yes
+|Unique identifier for the shield
+
+|`provider_shield_id`
+|string
+|Yes
+|Internal provider identifier (typically same as shield_id)
+
+|`provider_id`
+|string
+|Yes
+|Must be `"trustyai_fms"`
+
+|`params.type`
+|string
+|Yes
+|Must be `"content"` for shields that expose https://foundation-model-stack.github.io/fms-guardrails-orchestrator/?urls.primaryName=Detector+API[api/v1/text/contents]
+
+|`params.confidence_threshold`
+|number
+|Optional
+|Threshold 0.0-1.0 to trigger violations
+
+|`params.message_types`
+|array
+|Yes
+|Message roles to analyze: `["user", "system", "completion", "tool"]`
+
+|`params.detectors`
+|object
+|Yes
+|Map of detector configurations
+|===
+
+=== Shield Execution
+
+==== POST /v1/safety/run-shield
+
+Executes a registered shield against messages.
+
+===== Request Body Schema
+
+[source,json]
+----
+{
+  "shield_id": "string",
+  "messages": [
+    {
+      "content": "string",
+      "role": "user|system|completion|tool"
+    }
+  ]
+}
+----
+
+===== Parameters
+
+[cols="1,1,1,3"]
+|===
+|Parameter |Type |Required |Description
+
+|`shield_id`
+|string
+|Yes
+|ID of registered shield to execute
+
+|`messages`
+|array
+|Yes
+|Messages to analyze
+
+|`messages[].content`
+|string
+|Yes
+|Text content to check
+
+|`messages[].role`
+|string
+|Yes
+|Message role (must match shield's message_types)
+|===
+
+===== Response Types
+
+**No Violation (Content Passed):**
+[source,json]
+----
+{
+  "violation": {
+    "violation_level": "info",
+    "user_message": "Content verified by shield shield_name (N messages processed)",
+    "metadata": {
+      "status": "pass",
+      "shield_id": "shield_name",
+      "confidence_threshold": 0.5,
+      "summary": { ... },
+      "results": [ ... ]
+    }
+  }
+}
+----
+
+**Violation Detected:**
+[source,json]
+----
+{
+  "violation": {
+    "violation_level": "error",
+    "user_message": "Content violation detected by shield shield_name (confidence: X.XX, N/N processed messages violated)",
+    "metadata": {
+      "status": "violation",
+      "shield_id": "shield_name",
+      "confidence_threshold": 0.5,
+      "summary": { ... },
+      "results": [ ... ]
+    }
+  }
+}
+----
+
