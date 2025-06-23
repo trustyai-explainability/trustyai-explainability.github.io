@@ -5,3 +5,5 @@ This section contains tutorials for working with Llama Stack in TrustyAI. These 
 == Available Tutorials
 
 * xref:lmeval-lls-tutorial.adoc[Getting Started with LMEval Llama Stack External Eval Provider] - Learn how to evaluate your language model using the LMEval Llama Stack External Eval Provider
+
+* xref:lmeval-lls-tutorial-custom-data.adoc[Running Custom Evaluations with LMEval Llama Stack External Eval Provider] - Learn how to evaluate your language model using the LMEval Llama Stack External Eval Provider over a custom task
