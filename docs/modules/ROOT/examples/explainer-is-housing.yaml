@@ -10,4 +10,5 @@ spec:
       modelFormat:
         name: xgboost
       runtime: mlserver-1.x
-      storageUri: "https://github.com/trustyai-explainability/model-collection/raw/housing-data/housing-data/model.json"
+      storageUri: "https://github.com/ruivieira/model-collection/raw/housing-dataset/housing-data/model.json"
+      
