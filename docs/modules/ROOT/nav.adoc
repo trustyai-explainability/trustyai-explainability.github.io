@@ -17,8 +17,9 @@
 ** xref:gorch-tutorial.adoc[]
 *** xref:hf-serving-runtime-tutorial.adoc[Using Hugging Face models with GuardrailsOrchestrator]
 ** xref:tutorials-llama-stack-section.adoc[]
-*** xref:lmeval-lls-tutorial.adoc[]
+*** xref:lmeval-lls-tutorial.adoc[Getting Started with LM-Eval on Llama-Stack]
 *** xref:trustyai-fms-lls-tutorial.adoc[Getting started with trustyai_fms and llama-stack]
+*** xref:lmeval-lls-tutorial-custom-data.adoc[Running Custom Evaluations with LMEval Llama Stack External Eval Provider]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]

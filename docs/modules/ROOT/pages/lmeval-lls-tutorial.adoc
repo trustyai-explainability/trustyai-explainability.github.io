@@ -33,7 +33,7 @@ Install the LMEval Llama Stack External Eval Provider from PyPi:
 pip install llama-stack-provider-lmeval
 ----
 
-== Configuing the Llama Stack Server
+== Configuring the Llama Stack Server
 Set the `VLLM_URL` and `TRUSTYAI_LM_EVAL_NAMESPACE` environment variables in your terminal. The `VLLM_URL` value should be the `v1/completions` endpoint of your model route and the `TRUSTYAI_LM_EVAL_NAMESPACE` should be the namespace where your model is deployed. For example:
 
 [source,bash]
