@@ -1,6 +1,7 @@
 site:
   title: TrustyAI
-  start_page: trustyai-site::main.adoc
+  url: https://trustyai.org
+  start_page: docs::main.adoc
 content:
   sources:
   - url: .
@@ -13,6 +14,8 @@ ui:
     url: ./ui-bundle
 output:
   clean: true
+urls:
+  html_extension_style: drop
 antora:
   extensions:
     - require: '@antora/lunr-extension'
