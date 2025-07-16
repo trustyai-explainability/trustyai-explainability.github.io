@@ -1,3 +1,50 @@
 = LM-Eval
 
 image::lm-eval-architecture.svg[LM-Eval architecture diagram]
+
+== LM-Eval Task Support
+TrustyAI supports a subset of LMEval tasks to ensure reproducibility and reliability of the evaluation results. Tasks are categorized into three tiers based on our level of support: *Tier 1*, *Tier 2*, and *Tier 3*.
+
+=== Tier 1 Tasks
+These tasks are fully supported by TrustyAI with guaranteed fixes and maintenance. They have been tested, validated, and monitored in the CI for reliability and reproducibility(footnote:[Tier 1 tasks were selected according their presence on the OpenLLM leaderboard or their popularity (>10,0000 downloads on HuggingFace).]).
+
+[cols="1,2a", options="header"]
+|===
+|Name |https://github.com/opendatahub-io/lm-evaluation-harness/tree/incubation/lm_eval/tasks[Task Group Description]
+| `arc_easy` | Tasks involving complex reasoning over a diverse set of questions.
+| `bbh` | Tasks focused on deep semantic understanding through hypothesization and reasoning.
+| `bbh_fewshot_snarks` | Tasks focused on deep semantic understanding through hypothesization and reasoning.
+| `belebele_ckb_Arab` | Language understanding tasks in a variety of languages and scripts.
+| `cb` | 	A suite of challenging tasks designed to test a range of language understanding skills.
+| `ceval-valid_law` | Tasks that evaluate language understanding and reasoning in an educational context.
+| `commonsense_qa` | CommonsenseQA, a multiple-choice QA dataset for measuring commonsense knowledge.
+| `gpqa_main_n_shot` | Tasks designed for general public question answering and knowledge verification.
+| `gsm8k` | A benchmark of grade school math problems aimed at evaluating reasoning capabilities.
+| `hellaswag` | Tasks to predict the ending of stories or scenarios, testing comprehension and creativity.
+| `humaneval` | Code generation task that measure functional correctness for synthesizing programs from docstrings.
+| `ifeval` | Interactive fiction evaluation tasks for narrative understanding and reasoning.
+| `kmmlu_direct_law` | Knowledge-based multi-subject multiple choice questions for academic evaluation.
+| `lambada_openai` |  Tasks designed to predict the endings of text passages, testing language prediction skills.
+| `lambada_standard` |
+Tasks designed to predict the endings of text passages, testing language prediction skills.
+| `leaderboard_math_algebra_hard` | Task group used by Hugging Face's Open LLM Leaderboard v2. Those tasks are static and will not change through time
+| `mbpp` | A benchmark designed to measure the ability to synthesize short Python programs from natural language descriptions.
+| `minerva_math_precalc` | 	Mathematics-focused tasks requiring numerical reasoning and problem-solving skills.
+| `mmlu_anatomy` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
+| `mmlu_pro_law` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
+| `mmlu_pro_plus_law` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
+| `openbookqa` | Open-book question answering tasks that require external knowledge and reasoning.
+| `piqa` | Physical Interaction Question Answering tasks to test physical commonsense reasoning.
+| `rte` | General Language Understanding Evaluation benchmark to test broad language abilities.
+| `sciq` | Science Question Answering tasks to assess understanding of scientific concepts.
+| `social_iqa` | Social Interaction Question Answering to evaluate common sense and social reasoning.
+| `triviaqa` | A large-scale dataset for trivia question answering to test general knowledge.
+| `truthfulqa_mc2` | A QA task aimed at evaluating the truthfulness and factual accuracy of model responses.
+| `wikitext` | wikitext	Tasks based on text from Wikipedia articles to assess language modeling and generation.
+| `winogrande` | A large-scale dataset for coreference resolution, inspired by the Winograd Schema Challenge.
+| `wmdp_bio` | wmdp	A benchmark with the objective of minimizing performance, based on potentially-sensitive multiple-choice knowledge questions.
+| `wsc273` | The Winograd Schema Challenge, a test of commonsense reasoning and coreference resolution.
+| `xlsum_es` | Collection of tasks in Spanish encompassing various evaluation areas.
+| `xnli_tr` | Cross-Lingual Natural Language Inference to test understanding across different languages.
+| `xwinograd_zh` | Cross-lingual Winograd schema tasks for coreference resolution in multiple languages.
+|===
