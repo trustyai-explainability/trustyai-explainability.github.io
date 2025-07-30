@@ -97,7 +97,8 @@ spec:
     taskRecipes:
     - card:
         name: "cards.wnli" <2>
-      template: "templates.classification.multi_class.relation.default" <3>
+      template:
+        name: "templates.classification.multi_class.relation.default" <3>
   logSamples: true
   pod:
     container:
@@ -332,7 +333,8 @@ spec:
     taskRecipes:
     - card:
         name: cards.wnli
-      template: templates.classification.multi_class.relation.default
+      template:
+        name: templates.classification.multi_class.relation.default
 status:
   completeTime: "2025-02-06T18:31:20Z"
   lastScheduleTime: "2025-02-06T18:13:35Z"
@@ -551,7 +553,8 @@ spec:
     value: google/flan-t5-base
   taskList:
     taskRecipes:
-    - template: "templates.classification.multi_class.relation.default"
+    - template:
+        ref: "templates.classification.multi_class.relation.default"
       card:
         custom: |
           {
