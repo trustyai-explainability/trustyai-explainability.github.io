@@ -15,7 +15,7 @@ These tasks are fully supported by TrustyAI with guaranteed fixes and maintenanc
 | `bbh` | Tasks focused on deep semantic understanding through hypothesization and reasoning.
 | `bbh_fewshot_snarks` | Tasks focused on deep semantic understanding through hypothesization and reasoning.
 | `belebele_ckb_Arab` | Language understanding tasks in a variety of languages and scripts.
-| `cb` | 	A suite of challenging tasks designed to test a range of language understanding skills.
+| `cb` | A suite of challenging tasks designed to test a range of language understanding skills.
 | `ceval-valid_law` | Tasks that evaluate language understanding and reasoning in an educational context.
 | `commonsense_qa` | CommonsenseQA, a multiple-choice QA dataset for measuring commonsense knowledge.
 | `gpqa_main_n_shot` | Tasks designed for general public question answering and knowledge verification.
@@ -24,12 +24,11 @@ These tasks are fully supported by TrustyAI with guaranteed fixes and maintenanc
 | `humaneval` | Code generation task that measure functional correctness for synthesizing programs from docstrings.
 | `ifeval` | Interactive fiction evaluation tasks for narrative understanding and reasoning.
 | `kmmlu_direct_law` | Knowledge-based multi-subject multiple choice questions for academic evaluation.
-| `lambada_openai` |  Tasks designed to predict the endings of text passages, testing language prediction skills.
-| `lambada_standard` |
-Tasks designed to predict the endings of text passages, testing language prediction skills.
+| `lambada_openai` | Tasks designed to predict the endings of text passages, testing language prediction skills.
+| `lambada_standard` | Tasks designed to predict the endings of text passages, testing language prediction skills.
 | `leaderboard_math_algebra_hard` | Task group used by Hugging Face's Open LLM Leaderboard v2. Those tasks are static and will not change through time
 | `mbpp` | A benchmark designed to measure the ability to synthesize short Python programs from natural language descriptions.
-| `minerva_math_precalc` | 	Mathematics-focused tasks requiring numerical reasoning and problem-solving skills.
+| `minerva_math_precalc` | Mathematics-focused tasks requiring numerical reasoning and problem-solving skills.
 | `mmlu_anatomy` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
 | `mmlu_pro_law` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
 | `mmlu_pro_plus_law` | Massive Multitask Language Understanding benchmark for broad domain language evaluation. Several variants are supported.
@@ -40,11 +39,63 @@ Tasks designed to predict the endings of text passages, testing language predict
 | `social_iqa` | Social Interaction Question Answering to evaluate common sense and social reasoning.
 | `triviaqa` | A large-scale dataset for trivia question answering to test general knowledge.
 | `truthfulqa_mc2` | A QA task aimed at evaluating the truthfulness and factual accuracy of model responses.
-| `wikitext` | wikitext	Tasks based on text from Wikipedia articles to assess language modeling and generation.
+| `wikitext` | Tasks based on text from Wikipedia articles to assess language modeling and generation.
 | `winogrande` | A large-scale dataset for coreference resolution, inspired by the Winograd Schema Challenge.
-| `wmdp_bio` | wmdp	A benchmark with the objective of minimizing performance, based on potentially-sensitive multiple-choice knowledge questions.
+| `wmdp_bio` | A benchmark with the objective of minimizing performance, based on potentially-sensitive multiple-choice knowledge questions.
 | `wsc273` | The Winograd Schema Challenge, a test of commonsense reasoning and coreference resolution.
 | `xlsum_es` | Collection of tasks in Spanish encompassing various evaluation areas.
 | `xnli_tr` | Cross-Lingual Natural Language Inference to test understanding across different languages.
 | `xwinograd_zh` | Cross-lingual Winograd schema tasks for coreference resolution in multiple languages.
+|===
+
+=== Tier 2 Tasks
+These tasks are functional but may lack full CI coverage and comprehensive testing. Community support with fixes will be provided as needed but are limited.(footnote:[Tier 2 tasks were selected according to their popularity (above the 70th percentile of downloads but <10,0000 downloads on HuggingFace).]).
+
+[cols="1,2a", options="header"]
+|===
+|Name |https://github.com/opendatahub-io/lm-evaluation-harness/tree/incubation/lm_eval/tasks[Task Group Description]
+| `mathqa` | The MathQA dataset, as a multiple choice dataset where the answer choices are not in context.
+| `logiqa` | Logical reasoning reading comprehension with multi-sentence passages and multiple-choice questions.
+| `arabicmmlu_driving_test` | Evaluates all ArabicMMLU tasks.
+| `drop` | A QA dataset which tests comprehensive understanding of paragraphs.
+| `leaderboard_musr_team_allocation` | A dataset for evaluating language models on multistep soft reasoning tasks specified in a natural language narrative.
+| `anli_r2` | A dataset collected via an iterative, adversarial human-and-model-in-the-loop procedure.
+| `iwslt2017-en-ar` | Machine translation from English to Arabic (IWSLT 2017).
+| `hrm8k_ksm` | Multistep quantitative reasoning problems in Korean standardized math.
+| `nq_open` | A Question Answering dataset based on aggregated user queries from Google Search.
+| `tinyMMLU` | A small, representative subset of MMLU for quick evaluation across subjects.
+| `race` | A dataset collected from English examinations in China, which are designed for middle school and high school students.
+| `kobest_wic` | Korean WiC (Word-in-Context) word sense disambiguation from the KoBEST benchmark.
+| `mgsm_en_cot_te` | Multilingual GSM English variant using chain-of-thought teacher signals for math word problems.
+| `kmmlu_hard_law` | Korean MMLU hard split focused on the Law subject category.
+| `blimp_passive_2` | BLiMP minimal pairs targeting English grammar acceptability for passive-voice constructions (set 2).
+| `pubmedqa` | Biomedical question answering from PubMed abstracts (yes/no/maybe).
+| `wmt14-en-fr` | Machine translation from English to French (WMT14).
+| `paws_zh` | PAWS-X Chinese paraphrase identification with high lexical overlap pairs.
+| `pile_uspto` | The Pile subset containing USPTO patent text for domain-specific language modeling.
+| `medqa_4options` | Multiple-choice medical QA (USMLE-style) with four answer options.
+| `xquad_tr` | XQuAD Turkish subset for cross-lingual extractive question answering.
+| `qasper_bool` | QASPER boolean-question subset over academic paper content.
+| `wmt16-en-de` | Machine translation from English to German (WMT16).
+| `haerae_history` | Korean history exam-style multiple-choice questions.
+| `cmmlu_arts` | Chinese MMLU category for Arts and Humanities.
+| `agieval_sat_en` | AGIEval SAT English section multiple-choice questions.
+| `flores_eu-ca` | FLORES machine translation from Basque (eu) to Catalan (ca).
+| `pile_10k` | 10k-sample slice of The Pile for faster, lightweight evaluation.
+| `gsm_plus` | Extended GSM-style math word problems emphasizing reasoning robustness.
+| `qa4mre_2013` | QA4MRE 2013 machine reading evaluation: multiple-choice QA over provided documents.
+| `xcopa_tr` | XCOPA Turkish subset for commonsense causal relation choice.
+| `mmlusr_answer_only_anatomy` | MMLU answer-only format for the Anatomy subject (short response).
+| `xstorycloze_en` | XStoryCloze English story ending prediction.
+| `leaderboard_bbh_snarks` | BIG-bench Hard Snarks subset used by the Open LLM Leaderboard.
+| `swag` | SWAG commonsense inference for selecting plausible continuations of a situation.
+| `medmcqa` | Large-scale medical multiple-choice QA covering diverse medical subjects.
+| `realtoxicityprompts` | RealToxicityPrompts for measuring toxicity in generated continuations.
+| `bigbench_gem_generate_until` | BIG-bench GEM task variant evaluating open-ended generation until a stop condition.
+| `tmlu_tour_guide` | A dataset that comprises 2,981 multiple-choice questions from 37 subjects.
+| `m_mmlu_fr` | Multilingual MMLU French subset across multiple subjects.
+| `tinyHellaswag` | Small, faster subset of HellaSwag for quick evaluation.
+| `leaderboard_ifeval` | A set of "verifiable instructions" such as "write in more than 400 words" and "mention the keyword of AI at least 3 times".
+| `coqa` | A large-scale dataset for building Conversational Question Answering systems.
+| `arithmetic_4da` | A small battery of 10 tests that involve asking language models a simple arithmetic problem in natural language.
 |===
