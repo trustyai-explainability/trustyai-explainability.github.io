@@ -1,0 +1,63 @@
+= vLLM Judge
+
+A lightweight library for LLM-as-a-Judge evaluations using vLLM hosted (or any OpenAI API-compatible) models. Evaluate LLM inputs & outputs at scale with just a few lines of code. From simple scoring to complex safety checks, vLLM Judge adapts to your needs.
+
+== Features
+
+* 🚀 **Simple Interface**: Single `evaluate()` method that adapts to any use case
+* 🔧 **Template Support**: Dynamic evaluations with template variables
+* 🎯 **Pre-built Metrics**: 20+ ready-to-use evaluation metrics
+* 💬 **Conversation Support**: Evaluate entire conversations with multi-turn dialog
+* 🛡️ **Model-Specific Support**: Seamlessly works with specialized models like Llama Guard 3 & Granite Guardian 3.2 without breaking their trained formats
+* ⚡ **High Performance**: Async-first design enables high-throughput evaluations
+* 🌐 **API Mode**: Run as a REST API service
+
+[NOTE]
+====
+📦 **Source Code**: https://github.com/trustyai-explainability/vllm_judge[GitHub Repository] | 🐛 **Issues**: https://github.com/trustyai-explainability/vllm_judge/issues[Report Bugs] | 📖 **PyPI**: https://pypi.org/project/vllm-judge/[Package]
+====
+
+
+== Getting Started
+
+=== Installation
+
+Basic installation with pip:
+
+[source,bash]
+----
+pip install vllm-judge
+----
+
+For detailed installation instructions, prerequisites, and environment setup, see xref:vllm-judge-installation.adoc[Installation Guide].
+
+=== Your First Evaluation
+
+[source,python]
+----
+from vllm_judge import Judge
+
+# Initialize with vLLM server URL
+judge = Judge.from_url("http://vllm-server:8000")
+
+# Simple evaluation
+result = await judge.evaluate(
+    content="The Earth orbits around the Sun.",
+    criteria="scientific accuracy"
+)
+print(f"Decision: {result.decision}")
+print(f"Reasoning: {result.reasoning}")
+----
+
+== What's Next?
+
+=== 📚 Learn the Basics
+* **xref:vllm-judge-installation.adoc[Installation Guide]** - Detailed setup instructions and prerequisites
+* **xref:vllm-judge-quickstart.adoc[Quick Start Guide]** - Get up and running with comprehensive examples in 5 minutes
+
+=== 🔧 Advanced Usage
+* **xref:vllm-judge-basic-evaluation.adoc[Basic Evaluation Guide]** - Deep dive into evaluation options and patterns
+* **xref:vllm-judge-metrics.adoc[Using Metrics]** - Explore all 20+ pre-built metrics
+* **xref:vllm-judge-templates.adoc[Template Variables]** - Advanced templating features for dynamic evaluations
+
+Ready to get started? Head to the xref:vllm-judge-installation.adoc[Installation Guide] or jump straight into the xref:vllm-judge-quickstart.adoc[Quick Start Guide]!
