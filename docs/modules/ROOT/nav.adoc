@@ -20,6 +20,12 @@
 *** xref:lmeval-lls-tutorial.adoc[Getting Started with LM-Eval on Llama-Stack]
 *** xref:trustyai-fms-lls-tutorial.adoc[Getting started with trustyai_fms and llama-stack]
 *** xref:lmeval-lls-tutorial-custom-data.adoc[Running Custom Evaluations with LMEval Llama Stack External Eval Provider]
+** xref:vllm-judge-tutorial.adoc[]
+*** xref:vllm-judge-installation.adoc[Installation]
+*** xref:vllm-judge-quickstart.adoc[Quick Start]
+*** xref:vllm-judge-basic-evaluation.adoc[Basic Evaluation Guide]
+*** xref:vllm-judge-metrics.adoc[Using Metrics]
+*** xref:vllm-judge-templates.adoc[Template Variables]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
