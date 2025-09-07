@@ -1,0 +1,344 @@
+= Red-Teaming with Llama Stack Garak (Inline)
+
+This tutorial demonstrates how to perform comprehensive security testing of Large Language Models using the TrustyAI Garak provider in Llama Stack's inline mode making it ideal for development and testing.
+
+== What You'll Learn
+
+* How to set up Garak inline scanning for LLM security testing
+* Running predefined security benchmarks (OWASP LLM Top 10, AVID taxonomy)
+* Creating custom security probes and scanning profiles
+* Interpreting vulnerability scores and security reports
+* Accessing scan reports and logs
+
+== Prerequisites
+
+Before starting this tutorial, ensure you have:
+
+* Python 3.12+ installed
+* A running OpenAI-compatible LLM inference endpoint (e.g., vLLM)
+
+== Installation & Setup
+
+. Clone the repository and install dependencies:
++
+[source,bash]
+----
+git clone https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak.git
+cd llama-stack-provider-trustyai-garak
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+----
+
+. Configure your model endpoint:
++
+[source,bash]
+----
+export VLLM_URL="http://your-model-endpoint/v1"
+export INFERENCE_MODEL="your-model-name"
+export BASE_URL="http://localhost:8321/v1" # Llama Stack server base url
+----
+
+. Start the Llama Stack server with Garak provider:
++
+[source,bash]
+----
+llama stack run run.yaml --image-type venv
+----
+
+The server will start on `http://localhost:8321`.
+
+== Step by Step Guide
+
+=== Step 1: Initialize the Client
+
+[source,python]
+----
+from llama_stack_client import LlamaStackClient
+from rich.pretty import pprint
+
+BASE_URL = "http://localhost:8321"
+client = LlamaStackClient(base_url=BASE_URL)
+
+# Verify the setup
+print("Available providers:")
+pprint(client.providers.list())
+
+print("\nAvailable models:")
+pprint(client.models.list())
+----
+
+=== Step 2: Explore Available Benchmarks
+
+List the predefined security benchmarks. Note all pre-defined trustyai garak benchmarks are prefixed with `trustyai_garak::`
+
+[source,python]
+----
+benchmarks = client.benchmarks.list()
+print("Available security benchmarks:")
+for benchmark in benchmarks:
+    # filter for trustyai garak benchmarks
+    if "trustyai_garak" in benchmark.identifier:
+        print(f"• Benchmark ID: {benchmark.identifier}")
+        if hasattr(benchmark, 'metadata'):
+            print(f"  Description: {benchmark.metadata.get('description', 'N/A')}")
+            print(f"  Probes: {benchmark.metadata.get('probes', 'N/A')}")
+            print(f"  Timeout: {benchmark.metadata.get('timeout', 0)} seconds\n")
+----
+
+=== Step 3: Run a Quick Security Scan
+
+Start with a quick 5-minute security assessment:
+
+[source,python]
+----
+# Run the quick security profile
+quick_job = client.eval.run_eval(
+    benchmark_id="trustyai_garak::quick",
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",  # replace with your model name
+            "sampling_params": {"max_tokens": 100}
+        }
+    }
+)
+
+print(f"Started quick security scan: {quick_job.job_id}")
+print(f"Status: {quick_job.status}")
+----
+
+=== Step 4: Monitor Scan Progress
+
+[source,python]
+----
+def monitor_job(job_id, benchmark_id):
+    """Monitor job progress with status updates"""
+    while True:
+        status = client.eval.jobs.status(job_id=job_id, benchmark_id=benchmark_id)
+        print(f"Status: {status.status}")
+        
+        if status.status == "completed":
+            print("✅ Scan completed successfully!")
+            return status
+        elif status.status == "failed":
+            print("❌ Scan failed!")
+            print(f"Error details: {status.metadata}")
+            return status
+        elif status.status in ["cancelled"]:
+            print(f"⚠️  Scan {status.status}")
+            return status
+            
+        time.sleep(10)  # check every 10 seconds
+
+# Monitor the quick scan
+final_status = monitor_job(quick_job.job_id, "trustyai_garak::quick")
+----
+=== Step 5: Analyze Security Results
+
+[source,python]
+----
+if final_status.status == "completed":
+    # Retrieve detailed results
+    job_result = client.eval.jobs.retrieve(job_id=job.job_id, benchmark_id="trustyai_garak::quick")
+    results = job_result.scores
+    aggregated_scores = {k: v.aggregated_results for k, v in results.items()}
+    
+    # Display aggregated vulnerability scores
+    print("\n🔍 Security Assessment Results:")
+    print("=" * 50)
+    
+    for probe, aggregated_result in aggregated_scores.items():
+        print(f"\n Probe: {probe}")
+        for agg_detector, agg_score in aggregated_result.items():
+            # Interpret vulnerability level
+            if agg_score >= 0.7:
+                risk_level = "🔴 HIGH RISK"
+            elif agg_score >= 0.5:
+                risk_level = "🟠 MEDIUM RISK"
+            elif agg_score >= 0.3:
+                risk_level = "🟡 LOW RISK"
+            else:
+                risk_level = "🟢 SECURE"
+            print(f"  Score: {agg_score:.3f}")
+            print(f"  Risk Level: {risk_level}")
+
+    # Show sample generations that triggered vulnerabilities
+    print(f"\n📝 Sample Interactions ({len(job_result.generations)} total):")
+    print("=" * 50)
+    
+    import random
+    sample_interactions = random.sample(job_result.generations, min(3, len(job_result.generations)))
+    
+    for i, generation in enumerate(sample_interactions, 1):
+        print(f"\nSample {i}:")
+        print(f"  Prompt: {generation['prompt']}")
+        print(f"  Response: {generation['response']}")
+        print("%"*100)
+----
+
+=== Step 6: Create Custom Security Benchmark
+
+Register a custom benchmark focusing on specific vulnerabilities:
+
+[source,python]
+----
+# Custom benchmark for prompt injection testing
+custom_benchmark_id = "custom_prompt_injection"
+
+client.benchmarks.register(
+    benchmark_id=custom_benchmark_id,
+    dataset_id="garak",  # placeholder
+    scoring_functions=["garak_scoring"],  # placeholder  
+    provider_benchmark_id=custom_benchmark_id,
+    provider_id="trustyai_garak",
+    metadata={
+        "probes": [
+            "promptinject.HijackHateHumans",
+            "promptinject.HijackKillHumans", 
+            "latentinjection.LatentJailbreak"
+        ],
+        "timeout": 900,  # 15 minutes
+    }
+)
+
+print(f"✅ Registered custom benchmark: {custom_benchmark_id}")
+----
+[NOTE]
+====
+Please refer to the Garak documentation for all the available probes: https://reference.garak.ai/en/latest/probes.html
+====
+
+=== Step 7: Run Custom Security Scan
+
+[source,python]
+----
+# Execute the custom benchmark
+custom_job = client.eval.run_eval(
+    benchmark_id=custom_benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",
+            "sampling_params": {
+                "max_tokens": 150
+            }
+        }
+    }
+)
+
+print(f"Started custom prompt injection scan: {custom_job.job_id}")
+
+# Monitor and analyze results
+custom_status = monitor_job(custom_job.job_id, custom_benchmark_id)
+
+if custom_status.status == "completed":
+    custom_results = client.eval.jobs.retrieve(
+        job_id=custom_job.job_id,
+        benchmark_id=custom_benchmark_id
+    )
+    
+    print("\n🎯 Custom Prompt Injection Results:")
+    aggregated_scores = {k: v.aggregated_results for k, v in custom_results.scores.items()}
+    pprint(aggregated_scores)
+
+----
+
+=== Step 8: Run Comprehensive OWASP Assessment
+
+For production readiness, run the full OWASP LLM Top 10 assessment:
+
+[source,python]
+----
+# Note: This scan takes ~10 hours, suitable for overnight runs
+owasp_job = client.eval.run_eval(
+    benchmark_id="trustyai_garak::owasp_llm_top10",
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model", 
+            "model": "your-model-name",
+            "sampling_params": {"max_tokens": 200}
+        }
+    }
+)
+----
+
+=== Step 9: Access Detailed Reports
+
+Garak generates comprehensive reports in multiple formats. There are 4 files that are generated:
+
+* `scan.report.jsonl` - detailed report containing all attempts and their results
+* `scan.hitlog.jsonl` - hitlog containing only vulnerable interactions
+* `scan.log` - detailed log of the scan
+* `scan.report.html` - human-readable report
+
+You can access them using the Llama Stack `files` API. Here's an example to view the scan log:
+
+[source,python]
+----
+log_content = client.files.content(job_status.metadata['scan.log'])
+log_lines = log_content.strip().split('\n')
+print(f"\n📋 Scan Log (last 5 lines):")
+for line in log_lines[-5:]:
+    print(f"  {line}")
+----
+
+== Best Practices
+
+=== Security Testing Strategy
+
+1. **Development Phase**: Use `trustyai_garak::quick` for rapid iteration
+2. **Pre-production**: Run `trustyai_garak::standard` for necessary coverage  
+3. **Production Readiness**: Execute full OWASP and AVID compliance scans
+4. **Continuous Monitoring**: Integrate security scans into CI/CD pipelines
+
+=== Performance Optimization
+
+[source,python]
+----
+# Optimize scan performance with parallel execution
+optimized_metadata = {
+    "probes": ["dan", "promptinject", "encoding"],
+    "parallel_attempts": 8,  # Increase parallelism
+    "timeout": 3600          # 1 hour timeout
+}
+----
+
+== Advanced Usage
+
+You can pass any of the following Garak command line arguments to the scan via the benchmark `metadata` parameter:
+
+* `parallel_attempts`
+* `generations`
+* `seed`
+* `deprefix`
+* `eval_threshold`
+* `probe_tags`
+* `probe_options`
+* `detectors`
+* `extended_detectors`
+* `detector_options`
+* `buffs`
+* `buff_options`
+* `harness_options`
+* `taxonomy`
+* `generate_autodan`
+
+Please refer to the Garak documentation for more details: https://reference.garak.ai/en/latest/cliref.html
+
+== Troubleshooting
+
+**Job stuck in 'scheduled' status:**
+
+* Check if the inference endpoint is accessible
+* Verify model name matches your deployment
+* Review server logs for connection errors
+
+**High memory usage during scans:**
+
+* Reduce `parallel_attempts` in metadata
+* Lower `max_tokens` in sampling parameters
+* Monitor system resources during long-running scans
+
+== Next Steps
+
+Explore xref:garak-lls-shields.adoc[shield testing] for guardrail evaluation.
