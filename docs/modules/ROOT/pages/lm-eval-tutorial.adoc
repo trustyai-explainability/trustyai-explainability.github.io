@@ -780,7 +780,7 @@ spec:
         value: <HF_TOKEN>
 ----
 
-There are also a handful of pre-existing link:https://www.unitxt.ai/en/latest/catalog/catalog.metrics.llm_as_judge.++__dir__++.html[LLMaaJ metrics] available in the Unitxt catalog.
+There are also a handful of pre-existing link:https://www.unitxt.ai/en/latest/catalog/catalog.metrics.llm_as_judge.$$__dir__$$.html[LLMaaJ metrics] available in the Unitxt catalog.
 
 
 === Using PVCs as storage
