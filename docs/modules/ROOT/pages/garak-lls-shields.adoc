@@ -1,0 +1,373 @@
+= Red-Teaming with Shields: Measuring Guardrail Effectiveness
+:page-partial:
+
+This tutorial demonstrates how to evaluate the effectiveness of AI safety shields and guardrails using the TrustyAI Garak provider. You'll learn to compare your model's security posture with and without protective measures, providing quantitative evidence of your safety infrastructure's impact.
+
+== What You'll Learn
+
+* How to configure input shields for security testing
+* Comparing LLM vulnerability scores with/without guardrails
+* Understanding single vs multiple shield configurations 
+* Setting up input and output shield mapping
+
+== Prerequisites
+
+* Complete the xref:garak-lls-inline.adoc[inline Garak tutorial] first
+* Llama Stack server running with safety and shields APIs enabled
+* Available shield models (e.g., Prompt-Guard-86M, Llama-Guard-3-8B)
+
+== Setup for Shield Testing
+
+=== Start Shield-Enabled Server
+
+[source,bash]
+----
+# Use the safety-enabled configuration
+llama stack run run-with-safety.yaml --image-type venv
+----
+
+The server now includes Safety and Shields APIs alongside the Garak evaluation capabilities.
+
+== Step by Step Guide
+
+=== Step 1: Verify Shield Availability
+
+[source,python]
+----
+from llama_stack_client import LlamaStackClient
+from rich.pretty import pprint
+
+BASE_URL = "http://localhost:8321"
+client = LlamaStackClient(base_url=BASE_URL)
+
+print("🛡️ Available Shields:")
+shields = client.shields.list()
+pprint(shields)
+
+print("\n🤖 Available Models:")  
+models = client.models.list()
+pprint(models)
+----
+
+=== Step 2: Baseline Security Scan (No Shields)
+
+First, establish baseline vulnerability without any protection:
+
+[source,python]
+----
+# Register baseline benchmark (no shields)
+baseline_benchmark_id = "prompt_injection_baseline"
+
+client.benchmarks.register(
+    benchmark_id=baseline_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_benchmark_id=baseline_benchmark_id,
+    provider_id="trustyai_garak",
+    metadata={
+        "probes": ["promptinject.HijackHateHumans"],
+        "timeout": 600,  # 10 minutes
+    }
+)
+
+# Run baseline scan
+print("🔍 Running baseline scan (no shields)...")
+baseline_job = client.eval.run_eval(
+    benchmark_id=baseline_benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",
+            "sampling_params": {"max_tokens": 150}
+        }
+    }
+)
+
+print(f"Baseline job started: {baseline_job.job_id}")
+----
+
+=== Step 3: Monitor Baseline Scan
+
+[source,python]
+----
+def monitor_job(job_id, benchmark_id, description="Job"):
+    """Monitor job progress with status updates"""
+    print(f"🔄 Monitoring {description}...")
+    
+    while True:
+        status = client.eval.jobs.status(job_id=job_id, benchmark_id=benchmark_id)
+        print(f"Status: {status.status}")
+        
+        if status.status in ['completed', 'failed', 'cancelled']:
+            print(f"✅ {description} {status.status}")
+            return status
+            
+        time.sleep(15)
+
+# Monitor the baseline scan
+baseline_status = monitor_job(baseline_job.job_id, baseline_benchmark_id, "Baseline scan")
+----
+
+=== Step 4: Extract Baseline Results
+
+[source,python]
+----
+if baseline_status.status == "completed":
+    # Get baseline results
+    baseline_results = client.eval.jobs.retrieve(
+        job_id=baseline_job.job_id, 
+        benchmark_id=baseline_benchmark_id
+    )
+    
+    # Extract aggregated scores
+    baseline_scores = {k: v.aggregated_results for k, v in baseline_results.scores.items()}
+    
+    print("📊 Baseline Vulnerability Scores (No Shields):")
+    pprint(baseline_scores)
+else:
+    print("❌ Baseline scan failed - check logs")
+----
+
+=== Step 5: Single Input Shield Protection
+
+Test the same attacks with a single input shield:
+
+[source,python]
+----
+# Register single input shield benchmark
+single_shield_benchmark_id = "prompt_injection_single_input_shield"
+
+client.benchmarks.register(
+    benchmark_id=single_shield_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"], 
+    provider_benchmark_id=single_shield_benchmark_id,
+    provider_id="trustyai_garak",
+    metadata={
+        "probes": ["promptinject.HijackHateHumans"],
+        "timeout": 600,
+        # Single input shield - all shield_ids are treated as input shields
+        "shield_ids": ["Prompt-Guard-86M"]
+    }
+)
+
+# Run single shield scan
+print("🛡️ Running scan with single input shield...")
+single_shield_job = client.eval.run_eval(
+    benchmark_id=single_shield_benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",
+            "sampling_params": {"max_tokens": 150}
+        }
+    }
+)
+
+print(f"Single shield job started: {single_shield_job.job_id}")
+
+# Monitor single shield scan
+single_shield_status = monitor_job(single_shield_job.job_id, single_shield_benchmark_id, "Single shield scan")
+----
+
+=== Step 6: Multiple Input Shield Protection
+
+Test with multiple input shields for enhanced protection:
+
+[source,python]
+----
+# Register multiple input shield benchmark
+multi_shield_benchmark_id = "prompt_injection_multi_input_shields"
+
+client.benchmarks.register(
+    benchmark_id=multi_shield_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_benchmark_id=multi_shield_benchmark_id,
+    provider_id="trustyai_garak",
+    metadata={
+        "probes": ["promptinject.HijackHateHumans"],
+        "timeout": 600,
+        # Multiple shields - all will be applied to inputs
+        "shield_ids": ["Prompt-Guard-86M", "Additional-Input-Guard"]
+    }
+)
+
+# Run multiple shield scan
+print("🛡️🛡️ Running scan with multiple input shields...")
+multi_shield_job = client.eval.run_eval(
+    benchmark_id=multi_shield_benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",
+            "sampling_params": {"max_tokens": 150}
+        }
+    }
+)
+
+print(f"Multiple shield job started: {multi_shield_job.job_id}")
+
+# Monitor multiple shield scan
+multi_shield_status = monitor_job(multi_shield_job.job_id, multi_shield_benchmark_id, "Multiple shield scan")
+----
+
+=== Step 7: Compare Shield Effectiveness
+
+Analyze how shields reduce vulnerability scores:
+
+[source,python]
+----
+def compare_shield_effectiveness(baseline_scores, shield_results, shield_name):
+    """Compare shield effectiveness against baseline"""
+    
+    print(f"\n📊 {shield_name} vs Baseline Comparison:")
+    print("=" * 50)
+    
+    # Extract shield scores
+    shield_scores = {k: v.aggregated_results for k, v in shield_results.scores.items()}
+    
+    print(f"🛡️ {shield_name} Scores:")
+    pprint(shield_scores)
+    
+    # Calculate effectiveness
+    print(f"\n🎯 Shield Effectiveness Analysis:")
+    for probe in baseline_scores:
+        if probe in shield_scores:
+            baseline_data = baseline_scores[probe]
+            shield_data = shield_scores[probe]
+            
+            print(f"\nProbe: {probe}")
+            for detector in baseline_data:
+                if detector in shield_data:
+                    baseline_score = baseline_data[detector]
+                    shield_score = shield_data[detector]
+                    
+                    if baseline_score > 0:
+                        reduction = ((baseline_score - shield_score) / baseline_score) * 100
+                        print(f"  {detector}:")
+                        print(f"    Baseline: {baseline_score:.3f}")
+                        print(f"    With Shield: {shield_score:.3f}")
+                        print(f"    Risk Reduction: {reduction:+.1f}%")
+                        
+                        if reduction >= 50:
+                            effectiveness = "🟢 Highly Effective"
+                        elif reduction >= 25:
+                            effectiveness = "🟡 Moderately Effective"
+                        elif reduction >= 10:
+                            effectiveness = "🟠 Somewhat Effective"
+                        else:
+                            effectiveness = "🔴 Limited Effect"
+                        
+                        print(f"    Rating: {effectiveness}")
+
+# Compare single shield results if completed
+if single_shield_status.status == "completed":
+    single_shield_results = client.eval.jobs.retrieve(
+        job_id=single_shield_job.job_id,
+        benchmark_id=single_shield_benchmark_id
+    )
+    compare_shield_effectiveness(baseline_scores, single_shield_results, "Single Input Shield")
+
+# Compare multiple shield results if completed  
+if multi_shield_status.status == "completed":
+    multi_shield_results = client.eval.jobs.retrieve(
+        job_id=multi_shield_job.job_id,
+        benchmark_id=multi_shield_benchmark_id
+    )
+    compare_shield_effectiveness(baseline_scores, multi_shield_results, "Multiple Input Shields")
+----
+
+== Advanced Shield Configuration
+
+=== Input and Output Shield Mapping
+
+For more granular control, use `shield_config` to specify input and output shields separately:
+
+[source,python]
+----
+# Register input + output shield benchmark
+io_shield_benchmark_id = "prompt_injection_input_output_shields"
+
+client.benchmarks.register(
+    benchmark_id=io_shield_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_benchmark_id=io_shield_benchmark_id,
+    provider_id="trustyai_garak",
+    metadata={
+        "probes": ["promptinject.HijackHateHumans"],
+        "timeout": 600,
+        # Explicit input/output shield mapping
+        "shield_config": {
+            "input": ["Prompt-Guard-86M"],      # Input shields
+            "output": ["Llama-Guard-3-8B"]      # Output shields  
+        }
+    }
+)
+
+print("🛡️➡️🛡️ Configured input and output shields")
+print("Input shields will filter prompts before they reach the model")
+print("Output shields will filter model responses before they reach the user")
+
+# Run input+output shield scan
+print("\n🔄 Running scan with input + output shields...")
+io_shield_job = client.eval.run_eval(
+    benchmark_id=io_shield_benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": "your-model-name",
+            "sampling_params": {"max_tokens": 150}
+        }
+    }
+)
+
+# Monitor and compare results
+io_shield_status = monitor_job(io_shield_job.job_id, io_shield_benchmark_id, "Input+Output shield scan")
+
+if io_shield_status.status == "completed":
+    io_shield_results = client.eval.jobs.retrieve(
+        job_id=io_shield_job.job_id,
+        benchmark_id=io_shield_benchmark_id
+    )
+    compare_shield_effectiveness(baseline_scores, io_shield_results, "Input + Output Shields")
+----
+
+[NOTE]
+====
+If both shield_ids and shield_config are provided, only shield_ids will be used.
+====
+
+== Troubleshooting
+
+=== Common Issues
+
+**Shields not working:**
+
+* Verify shields are listed in `client.shields.list()`
+* Check that server started with `run-with-safety.yaml`
+* Ensure shield models are properly loaded
+
+**No difference in scores:**
+
+* Check if shields are actually being applied
+* Verify shield configuration syntax
+* Try different probe types that shields are trained to detect
+
+**Shield configuration errors:**
+
+* Use either `shield_ids` OR `shield_config`, not both
+* Ensure shield names match available shields exactly
+* Check timeout values for longer shield processing
+
+== Next Steps
+
+After completing this shield evaluation tutorial:
+
+1. Try different probe types (jailbreaks, toxicity, bias) with your shields
+2. Experiment with different shield combinations for your use case
+3. Consider shield performance impact in production environments
+4. Explore xref:garak-lls-remote.adoc[remote garak execution] with Kubeflow
+
+This completes the streamlined shield evaluation tutorial. You now understand how to measure shield effectiveness using quantitative vulnerability score comparisons.
