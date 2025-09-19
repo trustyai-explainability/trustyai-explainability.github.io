@@ -13,3 +13,7 @@
 == Evaluation
 
 * xref:feature-lm-evaluation.adoc[LM Evaluation]
+
+== Red Teaming
+
+* xref:red-teaming-introduction.adoc[Red Teaming Guide]

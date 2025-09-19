@@ -9,3 +9,9 @@ This section contains tutorials for working with Llama Stack in TrustyAI. These 
 * xref:lmeval-lls-tutorial-custom-data.adoc[Running Custom Evaluations with LMEval Llama Stack External Eval Provider] - Learn how to evaluate your language model using the LMEval Llama Stack External Eval Provider over a custom task
 
 * xref:trustyai-fms-lls-tutorial.adoc[Using trustyai_fms with Llama Stack] - Learn how to apply content filtering to your language model using the trustyai_fms Llama Stack External Safety Provider
+
+* xref:garak-lls-inline.adoc[Red-Teaming with Llama Stack Garak (Inline)] - Learn how to perform security testing of Large Language Models using the TrustyAI Garak provider in Llama Stack's inline mode.
+
+* xref:garak-lls-shields.adoc[Red-Teaming with Shields: Measuring Guardrail Effectiveness] - Learn how to evaluate the effectiveness of AI safety shields and guardrails using the Llama Stack TrustyAI Garak provider.
+
+* xref:garak-lls-remote.adoc[Red-Teaming with Llama Stack Garak on Kubeflow Pipelines (Remote)] - Learn how to run the same security testing from the previous red-teaming tutorials using Kubeflow Pipelines for remote execution.
