@@ -26,7 +26,7 @@ When an InferenceService has OAuth protection enabled, the authentication flow w
 
 === Step 1: Create RBAC Permissions
 
-The service account needs permission to access InferenceServices in the namespace.
+The service account used by the LMEvalJob needs permission to access InferenceServices in the namespace.
 
 ==== Create the Role
 
@@ -255,7 +255,7 @@ kubectl auth can-i get inferenceservices.serving.kserve.io \
 Verify service account token:
 [source,bash]
 ----
-kubectl get secret lmeval-sa-token -n $NAMESPACE -o jsonpath='{.data.token}' | base64 -d | head -c 50
+kubectl get secret lmeval-sa-token -n $NAMESPACE -o jsonpath='{.data.token}' | base64 -d
 ----
 
 Test OAuth proxy connectivity:
