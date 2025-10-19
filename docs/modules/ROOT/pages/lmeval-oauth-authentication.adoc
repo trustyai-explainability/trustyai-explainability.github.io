@@ -212,44 +212,35 @@ OAuth-protected InferenceServices typically expose:
 
 === Common Issues
 
-==== OAuth Redirect Loop
-*302 redirects to OAuth authorisation endpoint*
+[cols="1,2,2"]
+|===
+|Problem |Causes |Solution
 
-*Causes*:
-
-* Missing RBAC permissions
+|OAuth Redirect Loop +
+*(302 redirects to OAuth authorisation endpoint)*
+a|* Missing RBAC permissions
 * Invalid service account token
 * Incorrect OAuth proxy configuration
-
-*Solutions*:
-
-* Verify RBAC permissions with `kubectl auth can-i`
+a|* Verify RBAC permissions with `kubectl auth can-i`
 * Check service account token validity
 * Ensure OAuth proxy allows programmatic access
 
-==== SSL Certificate Errors
-*SSL verification failures*
-
-*Solutions*:
-
-* Set `verify_certificate: "False"` in model arguments
+|SSL Certificate Errors +
+*(SSL verification failures)*
+|SSL certificate validation issues
+a|* Set `verify_certificate: "False"` in model arguments
 * Use proper CA certificates if available
 * Verify the correct HTTPS endpoint
 
-==== Connection Refused
-*Connection refused on port 8443*
-
-*Causes*:
-
-* Incorrect service endpoint
+|Connection Refused +
+*(Connection refused on port 8443)*
+a|* Incorrect service endpoint
 * OAuth proxy not running
 * Network policies blocking access
-
-*Solutions*:
-
-* Verify InferenceService is running: `kubectl get inferenceservice`
+a|* Verify InferenceService is running: `kubectl get inferenceservice`
 * Check service endpoints: `kubectl get svc`
 * Test connectivity from within cluster
+|===
 
 === Debugging Commands
 
@@ -280,7 +271,4 @@ Check LMEvalJob logs:
 kubectl logs -n $NAMESPACE -l job-name=oauth-eval-job
 ----
 
-This guide provides a complete setup for authenticating LMEvalJob with OAuth-protected KServe InferenceServices. 
-The key components are:
-
-Following these steps ensures secure, automated evaluation of models deployed with KServe OAuth protection.
+This guide provides a complete setup for authenticating LMEvalJob with OAuth-protected KServe InferenceServices.
