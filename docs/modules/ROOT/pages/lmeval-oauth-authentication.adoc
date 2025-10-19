@@ -1,0 +1,274 @@
+= LMEval Authentication with OAuth-Protected KServe InferenceServices
+:sectnums:
+:icons: font
+
+== Overview
+
+This guide explains how to configure LMEvalJob Custom Resources to authenticate with OAuth-protected KServe InferenceServices using service account tokens. When KServe InferenceServices are protected by OAuth proxy (`security.opendatahub.io/enable-auth: "true"`), they require proper authentication and RBAC permissions.
+
+== Prerequisites
+
+* OpenShift/Kubernetes cluster with KServe installed
+* TrustyAI Operator installed and LMEvalJob CRD available
+* OAuth-protected InferenceService deployed
+* `kubectl` access with sufficient permissions to create RBAC resources
+
+== Authentication Architecture
+
+When an InferenceService has OAuth protection enabled, the authentication flow works as follows:
+
+1. **OAuth Proxy**: Protects the InferenceService endpoint
+2. **Service Account Token**: Used for programmatic API access
+3. **RBAC Permissions**: Required for the service account to access InferenceServices
+4. **Subject Access Review (SAR)**: OAuth proxy validates permissions before allowing access
+
+== Step-by-Step Setup
+
+=== Step 1: Create RBAC Permissions
+
+The service account used by the LMEvalJob needs permission to access InferenceServices in the namespace.
+
+==== Create the Role
+
+Create `role.yaml`:
+
+[source,yaml]
+----
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: inferenceservice-reader
+rules:
+- apiGroups: ["serving.kserve.io"]
+  resources: ["inferenceservices"]
+  verbs: ["get", "list"]  # <1>
+----
+<1> `get` and `list` permissions are required for OAuth proxy validation
+
+Apply the Role:
+
+[source,bash]
+----
+kubectl apply -f role.yaml -n $NAMESPACE
+----
+
+==== Create the RoleBinding
+
+Create `rolebinding.yaml`:
+
+[source,yaml]
+----
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lmeval-inferenceservice-access
+subjects:
+- kind: ServiceAccount
+  name: default  # <1>
+roleRef:
+  kind: Role
+  name: inferenceservice-reader
+  apiGroup: rbac.authorization.k8s.io
+----
+<1> Using `default` service account; create a dedicated SA if needed
+
+Apply the RoleBinding:
+
+[source,bash]
+----
+kubectl apply -f rolebinding.yaml -n $NAMESPACE
+----
+
+=== Step 2: Create Service Account Token Secret
+
+Create a long-lived service account token for the LMEvalJob to use.
+
+Create `sa-token-secret.yaml`:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lmeval-sa-token
+  annotations:
+    kubernetes.io/service-account.name: default  # <1>
+type: kubernetes.io/service-account-token
+----
+<1> Reference to the service account with RBAC permissions
+
+Apply the Secret:
+
+[source,bash]
+----
+kubectl apply -f sa-token-secret.yaml -n $NAMESPACE
+----
+
+=== Step 3: Verify RBAC Permissions
+
+Verify that the service account has the necessary permissions:
+
+[source,bash]
+----
+kubectl auth can-i get inferenceservices.serving.kserve.io \
+  -n $NAMESPACE \
+  --as=system:serviceaccount:$NAMESPACE:default
+----
+
+Expected output: `yes`
+
+=== Step 4: Configure LMEvalJob
+
+Create an LMEvalJob that uses the service account token for authentication.
+
+Create `lmeval-job.yaml`:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: oauth-eval-job
+spec:
+  model: local-completions  # <1>
+  taskList:
+    taskNames: ["mmlu"]
+  logSamples: true
+  batchSize: "1"
+  allowOnline: true
+  allowCodeExecution: true
+  modelArgs:  # <2>
+    - name: model
+      value: granite
+    - name: base_url
+      value: $ROUTE/v1/completions  # <3>
+    - name: num_concurrent
+      value: "1"
+    - name: max_retries
+      value: "3"
+    - name: tokenized_requests
+      value: "false"
+    - name: tokenizer
+      value: ibm-granite/granite-7b-instruct
+    - name: verify_certificate
+      value: "False"  # <4>
+  pod:
+    container:
+      env:
+        - name: OPENAI_API_KEY  # <5>
+          valueFrom:
+            secretKeyRef:
+              name: lmeval-sa-token
+              key: token
+----
+<1> Use `local-completions` for OpenAI-compatible API endpoints
+<2> Model arguments configure the evaluation client
+<3> HTTPS endpoint of the OAuth-protected InferenceService
+<4> Disable SSL verification for self-signed certificates
+<5> Service account token injected as API key environment variable
+
+Apply the LMEvalJob:
+
+[source,bash]
+----
+kubectl apply -f lmeval-job.yaml -n $NAMESPACE
+----
+
+== Configuration Reference
+
+=== Required Model Arguments
+
+[cols="1,2,1"]
+|===
+|Argument |Description |Example
+
+|`model`
+|Model name for the evaluation
+|`granite`
+
+|`base_url`
+|HTTPS URL of the OAuth-protected InferenceService
+|`$ROUTE/v1/completions`
+
+|`verify_certificate`
+|Set to `"False"` for self-signed certificates
+|`"False"`
+
+|`tokenizer`
+|Tokenizer compatible with the model
+|`ibm-granite/granite-7b-instruct`
+|===
+
+=== OAuth Proxy Endpoints
+
+OAuth-protected InferenceServices typically expose:
+
+* **HTTPS Port**: `8443` (OAuth proxy)
+* **Health Check**: `/health`
+* **API Endpoint**: `/v1/completions`
+* **OAuth Callback**: `/oauth/callback`
+
+== Troubleshooting
+
+=== Common Issues
+
+[cols="1,2,2"]
+|===
+|Problem |Causes |Solution
+
+|OAuth Redirect Loop +
+*(302 redirects to OAuth authorisation endpoint)*
+a|* Missing RBAC permissions
+* Invalid service account token
+* Incorrect OAuth proxy configuration
+a|* Verify RBAC permissions with `kubectl auth can-i`
+* Check service account token validity
+* Ensure OAuth proxy allows programmatic access
+
+|SSL Certificate Errors +
+*(SSL verification failures)*
+|SSL certificate validation issues
+a|* Set `verify_certificate: "False"` in model arguments
+* Use proper CA certificates if available
+* Verify the correct HTTPS endpoint
+
+|Connection Refused +
+*(Connection refused on port 8443)*
+a|* Incorrect service endpoint
+* OAuth proxy not running
+* Network policies blocking access
+a|* Verify InferenceService is running: `kubectl get inferenceservice`
+* Check service endpoints: `kubectl get svc`
+* Test connectivity from within cluster
+|===
+
+=== Debugging Commands
+
+Check RBAC permissions:
+[source,bash]
+----
+kubectl auth can-i get inferenceservices.serving.kserve.io \
+  -n $NAMESPACE \
+  --as=system:serviceaccount:$NAMESPACE:default
+----
+
+Verify service account token:
+[source,bash]
+----
+kubectl get secret lmeval-sa-token -n $NAMESPACE -o jsonpath='{.data.token}' | base64 -d
+----
+
+Test OAuth proxy connectivity:
+[source,bash]
+----
+kubectl run debug-pod --image=curlimages/curl:latest --rm -it --restart=Never -n $NAMESPACE -- \
+  sh -c "curl -k -I $ROUTE/health"
+----
+
+Check LMEvalJob logs:
+[source,bash]
+----
+kubectl logs -n $NAMESPACE -l job-name=oauth-eval-job
+----
+
+This guide provides a complete setup for authenticating LMEvalJob with OAuth-protected KServe InferenceServices.

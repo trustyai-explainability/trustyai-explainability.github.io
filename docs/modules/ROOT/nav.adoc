@@ -14,6 +14,7 @@
 *** xref:saliency-explanations-on-odh.adoc[]
 *** xref:saliency-explanations-with-kserve.adoc[]
 ** xref:lm-eval-tutorial.adoc[]
+*** xref:lmeval-oauth-authentication.adoc[OAuth Authentication]
 *** xref:lm-eval-tutorial-toxicity.adoc[Toxicity Measurement]
 ** xref:gorch-tutorial.adoc[]
 *** xref:hf-serving-runtime-tutorial.adoc[Using Hugging Face models with GuardrailsOrchestrator]
