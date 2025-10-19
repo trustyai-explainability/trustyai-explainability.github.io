@@ -1,0 +1,305 @@
+= LMEvalJob with TLS Certificates from OAuth-Protected Models
+:sectnums:
+:icons: font
+
+== Overview
+
+This guide explains how to configure LMEvalJob Custom Resources to use TLS certificates from OAuth-protected KServe InferenceServices for proper SSL verification. Instead of disabling SSL verification (`verify_certificate: "False"`), this approach mounts the actual TLS certificates and CA bundle for secure communication.
+
+== TLS Certificate Architecture
+
+When using TLS certificates with OAuth-protected InferenceServices:
+
+1. **TLS Secret**: Contains the InferenceService's TLS certificate and private key
+2. **CA Bundle ConfigMap**: Contains the Certificate Authority bundle for trust chain
+3. **Volume Mounts**: Mount certificates into the evaluation pod
+4. **SSL Verification**: Configure evaluation client to use mounted certificates
+
+== Step-by-Step Setup
+
+=== Step 1: Identify TLS Resources
+
+First, identify the TLS secret and CA bundle for your InferenceService.
+
+==== Find the TLS Secret
+
+[source,bash]
+----
+kubectl get secret -n $NAMESPACE | grep serving-cert
+----
+
+Expected output shows secrets like `$MODEL-predictor-serving-cert`.
+
+==== Examine the TLS Secret Structure
+
+[source,bash]
+----
+kubectl get secret $MODEL-predictor-serving-cert -n $NAMESPACE -o yaml
+----
+
+The secret contains:
+
+- `tls.crt`: The TLS certificate
+- `tls.key`: The private key
+
+==== Verify CA Bundle ConfigMap
+
+[source,bash]
+----
+kubectl get configmap openshift-service-ca.crt -n openshift-config-managed -o yaml
+----
+
+This contains the `service-ca.crt` key with the Certificate Authority bundle.
+
+=== Step 2: Create LMEvalJob with TLS Configuration
+
+Create an LMEvalJob that mounts TLS certificates and configures SSL verification.
+
+Create `tls-lmeval-job.yaml`:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: tls-eval-job
+  namespace: $NAMESPACE  # <1>
+spec:
+  model: local-completions  # <2>
+  taskList:
+    taskNames: ["mmlu"]
+  logSamples: true
+  batchSize: "1"
+  allowOnline: true
+  allowCodeExecution: true
+  modelArgs:  # <3>
+    - name: model
+      value: granite
+    - name: base_url
+      value: https://$MODEL-predictor.$NAMESPACE.svc.cluster.local:8443/v1/completions  # <4>
+    - name: num_concurrent
+      value: "1"
+    - name: max_retries
+      value: "3"
+    - name: tokenized_requests
+      value: "false"
+    - name: tokenizer
+      value: ibm-granite/granite-7b-instruct
+    - name: verify_certificate
+      value: "/etc/ssl/certs/ca-bundle.crt"  # <5>
+  pod:
+    container:
+      env:
+        - name: OPENAI_API_KEY  # <6>
+          valueFrom:
+            secretKeyRef:
+              name: lmeval-sa-token
+              key: token
+      volumeMounts:  # <7>
+        - name: tls-certs
+          mountPath: /etc/ssl/certs/tls.crt
+          subPath: tls.crt
+          readOnly: true
+        - name: ca-bundle
+          mountPath: /etc/ssl/certs/ca-bundle.crt
+          subPath: service-ca.crt
+          readOnly: true
+    volumes:  # <8>
+      - name: tls-certs
+        secret:
+          secretName: $MODEL-predictor-serving-cert
+      - name: ca-bundle
+        configMap:
+          name: openshift-service-ca.crt
+----
+<1> Replace `$NAMESPACE` with your target namespace
+<2> Use `local-completions` for OpenAI-compatible API endpoints
+<3> Model arguments configure the evaluation client
+<4> HTTPS endpoint of the OAuth-protected InferenceService
+<5> Path to mounted CA bundle for SSL verification
+<6> Service account token for OAuth authentication
+<7> Mount TLS certificate and CA bundle into container
+<8> Define volumes for TLS secret and CA bundle ConfigMap
+
+Apply the LMEvalJob:
+
+[source,bash]
+----
+kubectl apply -f tls-lmeval-job.yaml -n $NAMESPACE
+----
+
+== Configuration Reference
+
+=== TLS Certificate Paths
+
+[cols="1,2,1"]
+|===
+|Mount Path |Description |Source
+
+|`/etc/ssl/certs/tls.crt`
+|InferenceService TLS certificate
+|Secret `tls.crt` key
+
+|`/etc/ssl/certs/ca-bundle.crt`
+|Certificate Authority bundle
+|ConfigMap `service-ca.crt` key
+
+|`/etc/ssl/certs/tls.key`
+|Private key (if needed)
+|Secret `tls.key` key
+|===
+
+=== SSL Verification Options
+
+[cols="1,2,1"]
+|===
+|Value |Description |Use Case
+
+|`"False"`
+|Disable SSL verification (insecure)
+|Development only
+
+|`"/etc/ssl/certs/ca-bundle.crt"`
+|Use mounted CA bundle
+|Production with proper certificates
+
+|`"True"`
+|Use system default CA bundle
+|Standard SSL verification
+|===
+
+=== Volume Configuration Patterns
+
+==== TLS Secret Volume
+[source,yaml]
+----
+volumes:
+  - name: tls-certs
+    secret:
+      secretName: $MODEL-predictor-serving-cert
+      items:  # Optional: specify specific keys
+        - key: tls.crt
+          path: tls.crt
+        - key: tls.key
+          path: tls.key
+----
+
+==== CA Bundle ConfigMap Volume
+[source,yaml]
+----
+volumes:
+  - name: ca-bundle
+    configMap:
+      name: openshift-service-ca.crt
+      items:  # Optional: specify specific keys
+        - key: service-ca.crt
+          path: service-ca.crt
+----
+
+==== Volume Mount Options
+[source,yaml]
+----
+volumeMounts:
+  - name: tls-certs
+    mountPath: /etc/ssl/certs/tls.crt
+    subPath: tls.crt  # Mount specific file, not entire volume
+    readOnly: true
+  - name: ca-bundle
+    mountPath: /etc/ssl/certs/ca-bundle.crt
+    subPath: service-ca.crt
+    readOnly: true
+----
+
+== Verification and Troubleshooting
+
+=== Verify TLS Configuration
+
+Check that the LMEvalJob has proper TLS configuration:
+
+[source,bash]
+----
+kubectl get lmevaljob tls-eval-job -n $NAMESPACE -o yaml
+----
+
+Look for:
+
+- `verify_certificate: "/etc/ssl/certs/ca-bundle.crt"` in modelArgs
+- `volumeMounts` section in pod.container
+- `volumes` section in pod
+
+=== Check Pod Volume Mounts
+
+[source,bash]
+----
+kubectl describe pod tls-eval-job -n $NAMESPACE
+----
+
+Verify:
+
+- Volumes are listed in the pod spec
+- Volume mounts are correctly configured
+- No mount conflicts or permission issues
+
+=== Verify Certificate Access
+
+Check that certificates are accessible inside the pod:
+
+[source,bash]
+----
+kubectl exec tls-eval-job -n $NAMESPACE -- ls -la /etc/ssl/certs/
+kubectl exec tls-eval-job -n $NAMESPACE -- cat /etc/ssl/certs/ca-bundle.crt | head -5
+----
+
+=== Check SSL Warnings
+
+Monitor job logs for SSL-related messages:
+
+[source,bash]
+----
+kubectl logs tls-eval-job -n $NAMESPACE | grep -i ssl
+kubectl logs tls-eval-job -n $NAMESPACE | grep -i certificate
+kubectl logs tls-eval-job -n $NAMESPACE | grep -i verify
+----
+
+== Troubleshooting
+
+[cols="1,2,2"]
+|===
+|Problem |Causes |Solution
+
+|Certificate Not Found +
+*(File not found errors for certificate paths)*
+a|* Secret or configmap missing
+* Incorrect volume mount paths
+* Wrong secret/configmap names
+a|* Verify secret and configmap exist in the same namespace
+* Check volume mount paths and subPath values
+* Ensure correct secret/configmap names
+
+|SSL Verification Still Disabled +
+*(`InsecureRequestWarning` in logs, `verify_certificate: False` in modelArgs)*
+a|* Incorrect `verify_certificate` value in modelArgs
+* Certificate path not accessible
+* Wrong CA bundle content
+a|* Set `verify_certificate: "/etc/ssl/certs/ca-bundle.crt"`
+* Verify certificate files are mounted correctly
+* Check CA bundle contains valid certificates
+
+|Permission Denied +
+*(Permission errors accessing mounted certificates)*
+a|* Volume mount permissions
+* Secret and configmap access issues
+* Pod security context restrictions
+a|* Ensure volumes are mounted as `readOnly: true`
+* Check secret and configmap permissions
+* Verify pod security context if applicable
+
+|Certificate Trust Issues +
+*(SSL verification fails even with certificates mounted)*
+a|* Wrong CA bundle for the certificate chain
+* Certificate expired or invalid
+* Trust chain incomplete
+a|* Verify certificate validity: `openssl x509 -in /etc/ssl/certs/tls.crt -text -noout`
+* Check certificate chain matches CA bundle
+* Use correct ConfigMap for your cluster's CA
+|===
