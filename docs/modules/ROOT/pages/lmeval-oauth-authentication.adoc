@@ -26,7 +26,7 @@ When an InferenceService has OAuth protection enabled, the authentication flow w
 
 === Step 1: Create RBAC Permissions
 
-The service account needs permission to access InferenceServices in the namespace.
+The service account used by the LMEvalJob needs permission to access InferenceServices in the namespace.
 
 ==== Create the Role
 
