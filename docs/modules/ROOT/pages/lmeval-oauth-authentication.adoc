@@ -255,7 +255,7 @@ kubectl auth can-i get inferenceservices.serving.kserve.io \
 Verify service account token:
 [source,bash]
 ----
-kubectl get secret lmeval-sa-token -n $NAMESPACE -o jsonpath='{.data.token}' | base64 -d | head -c 50
+kubectl get secret lmeval-sa-token -n $NAMESPACE -o jsonpath='{.data.token}' | base64 -d
 ----
 
 Test OAuth proxy connectivity:
