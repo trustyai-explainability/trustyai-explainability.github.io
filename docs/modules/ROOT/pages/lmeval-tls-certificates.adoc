@@ -51,7 +51,38 @@ kubectl get configmap openshift-service-ca.crt -n openshift-config-managed -o ya
 
 This contains the `service-ca.crt` key with the Certificate Authority bundle.
 
+IMPORTANT: The `openshift-service-ca.crt` ConfigMap exists in the `openshift-config-managed` namespace, but Kubernetes cannot mount ConfigMaps across namespaces. To use this CA bundle in your LMEvalJob, you have two options:
+
+1. **Copy the ConfigMap** to your target namespace:
++
+[source,bash]
+----
+kubectl get configmap openshift-service-ca.crt -n openshift-config-managed -o yaml | \
+  sed 's/namespace: openshift-config-managed/namespace: $NAMESPACE/' | \
+  kubectl apply -f -
+----
+
+2. **Use OpenShift's service CA injection** (recommended):
++
+Create a ConfigMap with the injection annotation:
++
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-ca-bundle
+  namespace: $NAMESPACE
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}  # left empty; the operator will add service-ca.crt
+----
++
+Then reference this ConfigMap in your volume configuration.
+
 === Step 2: Create LMEvalJob with TLS Configuration
+
+Before creating the LMEvalJob, ensure you have created the service CA bundle ConfigMap in your target namespace using one of the methods described above.
 
 Create an LMEvalJob that mounts TLS certificates and configures SSL verification.
 
@@ -110,7 +141,7 @@ spec:
           secretName: $MODEL-predictor-serving-cert
       - name: ca-bundle
         configMap:
-          name: openshift-service-ca.crt
+          name: service-ca-bundle
 ----
 <1> Replace `$NAMESPACE` with your target namespace
 <2> Use `local-completions` for OpenAI-compatible API endpoints
@@ -185,16 +216,32 @@ volumes:
 ----
 
 ==== CA Bundle ConfigMap Volume
+
+**Option 1: Using Service CA Injection (Recommended)**
 [source,yaml]
 ----
 volumes:
   - name: ca-bundle
     configMap:
-      name: openshift-service-ca.crt
+      name: service-ca-bundle  # <1>
       items:  # Optional: specify specific keys
         - key: service-ca.crt
           path: service-ca.crt
 ----
+<1> ConfigMap created with `service.beta.openshift.io/inject-cabundle: "true"` annotation
+
+**Option 2: Using Copied ConfigMap**
+[source,yaml]
+----
+volumes:
+  - name: ca-bundle
+    configMap:
+      name: openshift-service-ca.crt  # <1>
+      items:  # Optional: specify specific keys
+        - key: service-ca.crt
+          path: service-ca.crt
+----
+<1> ConfigMap manually copied from `openshift-config-managed` namespace
 
 ==== Volume Mount Options
 [source,yaml]
@@ -272,9 +319,11 @@ kubectl logs tls-eval-job -n $NAMESPACE | grep -i verify
 a|* Secret or configmap missing
 * Incorrect volume mount paths
 * Wrong secret/configmap names
-a|* Verify secret and configmap exist in the same namespace
+* ConfigMap in wrong namespace
+a|* Verify secret and configmap exist in the same namespace as LMEvalJob
 * Check volume mount paths and subPath values
 * Ensure correct secret/configmap names
+* Use service CA injection or copy ConfigMap to target namespace
 
 |SSL Verification Still Disabled +
 *(`InsecureRequestWarning` in logs, `verify_certificate: False` in modelArgs)*
@@ -302,4 +351,13 @@ a|* Wrong CA bundle for the certificate chain
 a|* Verify certificate validity: `openssl x509 -in /etc/ssl/certs/tls.crt -text -noout`
 * Check certificate chain matches CA bundle
 * Use correct ConfigMap for your cluster's CA
+
+|Cross-Namespace ConfigMap Error +
+*(ConfigMap `openshift-service-ca.crt` not found in target namespace)*
+a|* Trying to mount ConfigMap from `openshift-config-managed` namespace
+* Kubernetes cannot mount ConfigMaps across namespaces
+* Missing service CA injection setup
+a|* Create ConfigMap with `service.beta.openshift.io/inject-cabundle: "true"` annotation
+* Or copy ConfigMap: `kubectl get configmap openshift-service-ca.crt -n openshift-config-managed -o yaml \| sed 's/namespace: openshift-config-managed/namespace: $NAMESPACE/' \| kubectl apply -f -`
+* Update volume to reference the namespaced ConfigMap
 |===
