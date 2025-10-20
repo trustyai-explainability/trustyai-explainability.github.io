@@ -82,7 +82,7 @@ Then reference this ConfigMap in your volume configuration.
 
 === Step 2: Create LMEvalJob with TLS Configuration
 
-Before creating the LMEvalJob, ensure you have created the service CA bundle ConfigMap in your target namespace using one of the methods described above.
+Before creating the LMEvalJob, make sure you have created the service CA bundle ConfigMap in your namespace using one of the methods described above.
 
 Create an LMEvalJob that mounts TLS certificates and configures SSL verification.
 
