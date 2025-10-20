@@ -148,7 +148,7 @@ spec:
 <3> Model arguments configure the evaluation client
 <4> HTTPS endpoint of the OAuth-protected InferenceService
 <5> Path to mounted CA bundle for SSL verification
-<6> Service account token for OAuth authentication
+<6> Service account token for OAuth authentication (see xref:lmeval-oauth-authentication.adoc#_step_2_create_service_account_token_secret[Create Service Account Token Secret])
 <7> Mount TLS certificate and CA bundle into container
 <8> Define volumes for TLS secret and CA bundle ConfigMap
 
