@@ -1009,7 +1009,7 @@ As an example manifest of the OCI Artifact structure:
   "mediaType": "application/vnd.oci.image.manifest.v1+json",
   "subject": { <1>
     "mediaType": "application/vnd.oci.image.manifest.v1+json",
-    "size": 870
+    "size": 870,
     "digest": "sha256:d7fe7ac73bd294141563993dcbc344512804048941128ab996b00f37df8b8daf"
   },
   "layers": [
