@@ -291,6 +291,18 @@ Specify extra information for the lm-eval job's pod.
 |`outputs.pvcName`
 |Binds an existing PVC to a job by specifying its name. The PVC must be created separately and must already exist when creating the job.
 
+|`outputs.oci`
+|Persist the job's traces and results as an OCI artifact. Supports the following fields:
+
+* `registry`: A secret reference to the OCI registry.
+* `repository`: The repository to be used in the OCI registry to persist traces and results.
+* `tag`: Optionally specify the tag to be used for the OCI Artifact. Defaults to the job's name.
+* `subject`: Optional OCI reference to be used as the Subject for the OCI Artifact. OCI specification constraints applies (i.e. the Subject must be in the same registry and repository)
+* `username`: A secret reference to the username to be used for storing in the OCI registry.
+* `password`: A secret reference to the password to be used for storing in the OCI registry.
+* `dockerConfigJson`: A secret reference to the docker config.json to be used for storing in the OCI registry, as an alternative to username and password.
+* `verifySSL`: Optionally use non-encrypted connection and skip any TLS verification. Helpful for local testing. Defaults to `true`.
+
 |`allowOnline`
 |If set to `true`, the LMEval job will download artifacts as needed (e.g. models, datasets or tokenizers). If set to `false`, these will not be downloaded and will be used from local storage. See `offline`.
 
@@ -842,6 +854,200 @@ spec:
 In this case, the PVC is not managed by the TrustyAI operator, so it will be available even after deleting the `LMEvalJob`.
 
 In the case where both managed and existing PVCs are referenced in `outputs`, the TrustyAI operator will prefer the managed PVC and ignore the existing one.
+
+
+=== Persist traces and results as OCI Artifact
+
+Traces and results can be persisted as an OCI Artifact.
+When comparing PVC and OCI, storing traces and results as an OCI Artifact provides longer-term, portable storage that can be especially helpful for auditing and traceability scenarios.
+
+To enable OCI Artifact persistent storage, configure the `LMEvalJob` using the `spec.outputs.oci` field; for example:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  # other fields omitted ...
+  outputs:
+    oci:
+      registry: <1>
+        name: my-oci-credentials
+        key: OCI_HOST
+      repository: my-org/my-repository <2>
+      tag: results <3>
+      dockerConfigJson: <4>
+        name: my-oci-credentials
+        key: .dockerconfigjson
+----
+<1> `registry` is a secret reference to the OCI registry to be used
+<2> `repository` is the OCI repository to be used to push the OCI Artifact to
+<3> `tag` the tag of the OCI Artifact to be used, will default to the Job's name if not specified
+<4> `dockerConfigJson` is a secret reference to the docker config.json to be used to push the OCI Artifact to the OCI registry
+
+Below is an example of the `my-oci-credentials` secret (remember to use the same Namespace as the `LMEvalJob` as usual in Kubernetes):
+
+[source,yaml]
+----
+kind: Secret
+apiVersion: v1
+metadata:
+  name: my-oci-credentials
+  labels:
+    opendatahub.io/dashboard: 'true'
+  annotations:
+    opendatahub.io/connection-type-ref: oci-v1
+    openshift.io/description: ''
+    openshift.io/display-name: my-oci-credentials
+type: kubernetes.io/dockerconfigjson
+stringData:
+  .dockerconfigjson: | <1>
+    {
+      "auths": {
+        "quay.io": {
+          "auth": "bW1...g==",
+          "email": ""
+        }
+      }
+    }
+  ACCESS_TYPE: '["Push","Pull"]'
+  OCI_HOST: quay.io <2>
+----
+<1> `.dockerconfigjson` the actual docker config.json to be used to for the related OCI registry
+<2> `OCI_HOST` the OCI registry to be used
+
+This will push an OCI Artifact `quay.io/my-org/my-repository:results` to the OCI registry containing the traces and the results, in compressed format and one file per layer.
+
+[NOTE]
+====
+The persisted Artifact uses the OCI Image media-type in order to be also compatible with mounting as an ImageVolume also in CRI-O based Kubernetes distributions.
+====
+
+As an example manifest of the OCI Artifact structure:
+
+[source]
+----
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json", <1>
+...
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "size": 2837,
+      "digest": "sha256:467e2c648cf98ab5fb2f2089cf7489258e5cbce2fb6cdee724c57136c4df99c0", <2>
+      "annotations": {
+        "olot.title": "results_2025-11-27T15-35-14.843328.json"
+      }
+    },
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "size": 2583,
+      "digest": "sha256:9a856f87762174283ed9470b7708d71b9820510a79ba2bde17e590700c5348a5", <3>
+      "annotations": {
+        "olot.title": "samples_unfair_tos_2025-11-27T15-35-14.843328.jsonl"
+      }
+    }
+  ]
+}
+----
+<1> using the Image media-type in addition of being an artifact allows for ImageVolume mount in CRI-O based Kubernetes distributions
+<2> results file
+<3> traces file
+
+==== Pointing from the OCI Artifact to a known reference
+
+It is possible for the OCI Artifact to reference a specific Subject, meaning "pointing" to an already existing OCI reference on the same repository.
+This is particularly helpful to implement a semantic of relationship; for example, from a Model on OCI to its LMEval results, or from a given LMEval result to a following result.
+
+Use the `subject` field to specify the OCI reference to be used:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: LMEvalJob
+metadata:
+  name: evaljob-sample
+spec:
+  # other fields omitted ...
+  outputs:
+    oci:
+      registry:
+        name: my-oci-credentials
+        key: OCI_HOST
+      repository: my-org/my-repository
+      tag: evaluations
+      subject: "quay.io/my-org/my-repository:modelcar" <1>
+      dockerConfigJson:
+        name: my-oci-credentials
+        key: .dockerconfigjson
+----
+<1> `subject` Optional OCI reference to be used as Subject for the OCI Artifact being pushed
+
+[NOTE]
+====
+According the OCI Specification, the Subject must reside in the same OCI registry and repository.
+====
+
+[TIP]
+====
+It is best to use for Subject a digest-based reference, than tag-based reference.
+I.e., prefer using `quay.io/my-org/my-repository@sha256:...` than `quay.io/my-org/my-repository:tag`.
+In the above code example, the tag-based reference was used for illustrative purpose.
+====
+
+This will push an OCI Artifact `quay.io/my-org/my-repository:evaluations` to the OCI registry containing the traces and the results, in compressed format and one file per layer, referencing as Subject the `quay.io/my-org/my-repository:modelcar`.
+
+As an example manifest of the OCI Artifact structure:
+
+[source]
+----
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "subject": { <1>
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "size": 870
+    "digest": "sha256:d7fe7ac73bd294141563993dcbc344512804048941128ab996b00f37df8b8daf"
+  },
+  "layers": [
+    ... as illustrated previously ...
+  ]
+}
+----
+<1> descriptor pointing to the `quay.io/my-org/my-repository:modelcar`.
+
+This allows referrer discovery on OCI registry supporting the OCI Distribution Referrer API.
+
+For example using the `oras discover` tooling:
+
+[source]
+----
+% oras discover quay.io/my-org/my-repository:modelcar --format json
+{
+  "manifests": [
+    {
+      "reference": "quay.io/my-org/my-repository@sha256:e2f103d916bade657cbd3cfa616dbbd6a5e4488e143e75143cb24b3ef79ff376",
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:e2f103d916bade657cbd3cfa616dbbd6a5e4488e143e75143cb24b3ef79ff376", <1>
+      "size": 1058
+    }
+  ]
+}
+
+% oras discover quay.io/my-org/my-repository:modelcar --format table
+Discovered 1 artifact referencing quay.io/my-org/my-repository:modelcar
+Digest: sha256:d7fe7ac73bd294141563993dcbc344512804048941128ab996b00f37df8b8daf
+
+Artifact Type   Digest
+                sha256:e2f103d916bade657cbd3cfa616dbbd6a5e4488e143e75143cb24b3ef79ff376 <1>
+----
+<1> digest reference of `quay.io/my-org/my-repository:evaluations`
+
+This provides a foundation to build a reference chain using the OCI Referrer API.
+
 
 === Using an `InferenceService`
 
