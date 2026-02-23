@@ -1,0 +1,726 @@
+= Garak Llama Stack Tutorial (All Deployment Modes)
+
+This page follows the same flow as `demos/guide.ipynb` from the Garak provider repository, but in narrative form with explanatory notes and sample outputs.
+
+Use this as the canonical end-to-end feature walkthrough.
+
+== First: Use the Correct Repository
+
+All deployment configs and the canonical notebook referenced here are in:
+
+* https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak
+
+Quick start:
+
+[source,bash]
+----
+git clone https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak.git
+cd llama-stack-provider-trustyai-garak
+----
+
+Then choose deployment mode in:
+
+* xref:garak-lls-deployment-modes.adoc[Deployment Modes and Setup]
+
+== What This Guide Covers
+
+* Configure `BASE_URL` across deployment modes
+* Discover Garak provider
+* List predefined benchmarks
+* Tune predefined runs with `soft_probe_prompt_cap`
+* Run benchmarks and monitor jobs
+* Interpret results (`_overall`, probe-level metrics, and `tbsa`)
+* Inspect artifacts from job metadata
+* Register custom benchmarks with `metadata.garak_config`
+* Update benchmarks with deep-merge behavior
+* Evaluate shields (`shield_ids` and `shield_config`)
+
+[NOTE]
+====
+Sample outputs are illustrative. Your IDs, durations, and scores vary by model, benchmark, and environment.
+====
+
+== 1) Configure `BASE_URL`
+
+Use the URL for your deployment mode:
+
+|===
+| Mode | Typical `BASE_URL`
+
+| Total inline / Partial remote
+| `http://localhost:8321`
+
+| Total remote (in-cluster workbench)
+| `http://<lsd-service>.<namespace>.svc.cluster.local:8321`
+
+| Total remote (route)
+| `https://<route-hostname>`
+|===
+
+== 2) Import and Connect
+
+[source,python]
+----
+import logging
+import random
+import time
+from pathlib import Path
+import webbrowser
+
+from rich.pretty import pprint
+from llama_stack_client import LlamaStackClient
+from llama_stack_provider_trustyai_garak import (
+    GarakCommandConfig,
+    GarakSystemConfig,
+    GarakRunConfig,
+    GarakPluginsConfig,
+    GarakReportingConfig,
+)
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+BASE_URL = "http://localhost:8321"
+client = LlamaStackClient(base_url=BASE_URL)
+print(f"Connected to: {BASE_URL}")
+----
+
+Sample output:
+
+[source,text]
+----
+Connected to: http://localhost:8321
+----
+
+== 3) Discover Garak Provider
+
+[source,python]
+----
+garak_provider = next(
+    p for p in client.providers.list()
+    if p.provider_type.endswith("trustyai_garak")
+)
+garak_provider_id = garak_provider.provider_id
+
+print("Garak provider:")
+pprint(garak_provider)
+print(f"Using provider_id: {garak_provider_id}")
+----
+
+Sample output:
+
+[source,text]
+----
+Using provider_id: trustyai_garak
+----
+
+== 4) List Predefined Benchmarks
+
+All predefined Garak benchmarks are prefixed with `trustyai_garak::`.
+
+[source,python]
+----
+all_benchmarks = client.alpha.benchmarks.list()
+predefined = [b for b in all_benchmarks if b.identifier.startswith("trustyai_garak::")]
+
+print(f"Found {len(predefined)} predefined benchmarks:")
+for b in sorted(predefined, key=lambda x: x.identifier):
+    meta = b.metadata or {}
+    print(f"- {b.identifier:<33} | {meta.get('name', '')}")
+----
+
+Sample output:
+
+[source,text]
+----
+Found 8 predefined benchmarks:
+- trustyai_garak::avid              | AVID Taxonomy
+- trustyai_garak::avid_ethics       | AVID Ethics Taxonomy
+- trustyai_garak::avid_performance  | AVID Performance Taxonomy
+- trustyai_garak::avid_security     | AVID Security Taxonomy
+- trustyai_garak::cwe               | Common Weakness Enumeration
+- trustyai_garak::owasp_llm_top10   | OWASP LLM Top 10
+- trustyai_garak::quality           | Quality issues
+- trustyai_garak::quick             | Quick Scan
+----
+
+Predefined benchmark reference:
+
+|===
+| Benchmark ID | What it is | Typical use
+
+| `trustyai_garak::owasp_llm_top10`
+| OWASP LLM Top 10 aligned checks
+| Release gating and deeper security review
+
+| `trustyai_garak::cwe`
+| CWE-oriented weakness checks
+| Software-security-focused analysis
+
+| `trustyai_garak::quality`
+| Quality and content-risk categories
+| General model quality screening
+
+| `trustyai_garak::avid`
+| Broad AVID taxonomy profile
+| Comprehensive governance scans
+
+| `trustyai_garak::avid_security`
+| AVID security subset
+| Security-only AVID scans
+
+| `trustyai_garak::avid_ethics`
+| AVID ethics subset
+| Ethics and fairness checks
+
+| `trustyai_garak::avid_performance`
+| AVID performance subset
+| Performance and reliability checks
+
+| `trustyai_garak::quick`
+| Very small smoke-test profile
+| Verify pipeline quickly
+|===
+
+== 5) Performance Tip for Predefined Benchmarks
+
+Predefined benchmarks are comprehensive by design.
+For exploratory runs, create a tuned variant with lower `soft_probe_prompt_cap`.
+
+[source,python]
+----
+fast_benchmark_id = "owasp_fast_demo"
+
+client.alpha.benchmarks.register(
+    benchmark_id=fast_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id="trustyai_garak::owasp_llm_top10",
+    metadata={
+        "garak_config": {
+            "run": {"soft_probe_prompt_cap": 100}
+        }
+    },
+)
+
+pprint(client.alpha.benchmarks.retrieve(benchmark_id=fast_benchmark_id))
+----
+
+Sample output:
+
+[source,text]
+----
+Benchmark(... identifier='owasp_fast_demo' ...)
+----
+
+== 6) Pick Model and Run a Predefined Benchmark
+
+[source,python]
+----
+models = client.models.list()
+llm_models = [m for m in models if (m.custom_metadata or {}).get("model_type") == "llm"]
+if not llm_models:
+    raise RuntimeError("No LLM models found. Register a model first.")
+
+model_id = llm_models[0].id
+benchmark_id = "trustyai_garak::quick"
+
+job = client.alpha.eval.run_eval(
+    benchmark_id=benchmark_id,
+    benchmark_config={
+        "eval_candidate": {
+            "type": "model",
+            "model": model_id,
+            "sampling_params": {"max_tokens": 100},
+        }
+    },
+)
+print("Started job:")
+pprint(job)
+----
+
+Sample output:
+
+[source,text]
+----
+Started job:
+Job(job_id='garak-job-...', status='scheduled', metadata={...})
+----
+
+== 7) Wait for Job Completion
+
+[source,python]
+----
+def wait_for_job(client, benchmark_id, job_id, poll_interval=30):
+    while True:
+        status = client.alpha.eval.jobs.status(job_id=job_id, benchmark_id=benchmark_id)
+        print(status)
+        if status.status in {"completed", "failed", "cancelled"}:
+            return status
+        time.sleep(poll_interval)
+
+status = wait_for_job(client, benchmark_id=benchmark_id, job_id=job.job_id)
+print(status)
+----
+
+Sample output:
+
+[source,text]
+----
+Job(... status='in_progress' ...)
+Job(... status='completed' ...)
+----
+
+== 8) Retrieve Job Result
+
+[source,python]
+----
+job_result = client.alpha.eval.jobs.retrieve(
+    job_id=job.job_id,
+    benchmark_id=benchmark_id,
+)
+
+print(f"generations: {len(job_result.generations)}")
+print(f"score entries: {len(job_result.scores)}")
+----
+
+Sample output:
+
+[source,text]
+----
+generations: 1088
+score entries: 13
+----
+
+== 9) Understand Results: Probe Scores + `_overall`
+
+`job_result.scores` is a dictionary keyed by probe name. It contains:
+
+* one score entry per probe
+* one synthetic `_overall` entry
+* probe-level metadata (for example AVID taxonomy tags) when available
+
+[source,python]
+----
+aggregated = {k: v.aggregated_results for k, v in job_result.scores.items()}
+overall = aggregated.get("_overall", {})
+
+probe_ids = sorted([k for k in aggregated.keys() if k != "_overall"])
+print(f"Score entries: {len(aggregated)}")
+print(f"Probe entries: {len(probe_ids)}")
+print(f"First 5 probe ids: {probe_ids[:5]}")
+
+print("\n_overall aggregated_results:")
+pprint(overall)
+
+if probe_ids:
+    example_probe = random.choice(probe_ids)
+    print(f"\nExample probe ({example_probe}) aggregated_results:")
+    pprint(aggregated[example_probe])
+else:
+    print("No probe entries found. Check job status and benchmark configuration.")
+----
+
+Sample output:
+
+[source,text]
+----
+Score entries: 13
+Probe entries: 12
+First 5 probe ids: ['continuation.ContinueSlursReclaimedSlurs', 'divergence.RepeatedToken', 'goodside.ThreatenJSON', 'goodside.WhoIsRiley', 'lmrc.Deadnaming']
+
+_overall aggregated_results:
+{
+  'total_attempts': 1088,
+  'benign_responses': 866,
+  'vulnerable_responses': 222,
+  'attack_success_rate': 20.4,
+  'probe_count': 12,
+  'tbsa': 4.2,
+  'version_probe_hash': 'b0defeba',
+  'probe_detector_pairs_contributing': 18
+}
+
+Example probe (misleading.FalseAssertion) aggregated_results:
+{
+  'total_attempts': 150,
+  'benign_responses': 18,
+  'vulnerable_responses': 132,
+  'attack_success_rate': 88.0,
+  'metadata': {
+    'avid_taxonomy': {
+      'risk_domain': ['Performance'],
+      'sep_view': ['P0204: Accuracy'],
+      'lifecycle_view': ['L05: Evaluation']
+    },
+    'model': {'type': 'openai.OpenAICompatible', 'name': 'ollama/qwen2.5:1.5b'}
+  }
+}
+----
+
+If you want the full probe-by-probe map exactly as returned, print the whole dictionary:
+
+[source,python]
+----
+pprint(aggregated)
+----
+
+Sample output (truncated):
+
+[source,text]
+----
+{
+  'continuation.ContinueSlursReclaimedSlurs': {
+    'total_attempts': 285,
+    'benign_responses': 285,
+    'vulnerable_responses': 0,
+    'attack_success_rate': 0.0,
+    'metadata': {'avid_taxonomy': {...}, 'model': {...}}
+  },
+  'divergence.RepeatedToken': {
+    'total_attempts': 500,
+    'benign_responses': 458,
+    'vulnerable_responses': 42,
+    'attack_success_rate': 8.4,
+    'metadata': {'avid_taxonomy': {...}, 'model': {...}}
+  },
+  ... more probes ...,
+  '_overall': {
+    'total_attempts': 1088,
+    'benign_responses': 866,
+    'vulnerable_responses': 222,
+    'attack_success_rate': 20.4,
+    'probe_count': 12,
+    'tbsa': 4.2,
+    'version_probe_hash': 'b0defeba',
+    'probe_detector_pairs_contributing': 18
+  }
+}
+----
+
+How to read the most important keys in `_overall`:
+
+|===
+| Key | Meaning | How to use it
+
+| `attack_success_rate`
+| Percent of vulnerable responses across all probe attempts
+| Lower is better for security posture
+
+| `tbsa`
+| Tier-Based Security Aggregate in the range 1.0 to 5.0
+| Higher is better for overall risk quality
+
+| `probe_count`
+| Number of probes that contributed to this run
+| Confirm scan breadth before comparing runs
+
+| `version_probe_hash`
+| Fingerprint of the probe:detector set used for TBSA
+| Compare TBSA across runs only when this hash is the same
+
+| `probe_detector_pairs_contributing`
+| Number of probe:detector pairs used by TBSA
+| Larger values usually mean a broader evidence base
+|===
+
+[IMPORTANT]
+====
+`_overall.attack_success_rate` is useful for a quick scan-wide signal, but it can hide concentrated risk.
+
+For example, an overall value near 20% can still include one probe at 80%+ attack success while many others are near 0%.
+Always inspect per-probe metrics before making go/no-go decisions.
+====
+
+Per-probe object shape (what one probe entry usually contains):
+
+[source,text]
+----
+{
+  'total_attempts': 150,
+  'benign_responses': 18,
+  'vulnerable_responses': 132,
+  'attack_success_rate': 88.0,
+  'metadata': {
+    'avid_taxonomy': {
+      'risk_domain': ['Performance'],
+      'sep_view': ['P0204: Accuracy'],
+      'lifecycle_view': ['L05: Evaluation']
+    },
+    'model': {'type': 'openai.OpenAICompatible', 'name': 'ollama/qwen2.5:1.5b'}
+  }
+}
+----
+
+How to read a per-probe object:
+
+|===
+| Field | Meaning | Why it matters
+
+| `total_attempts`
+| Number of prompts executed for this probe
+| Low counts can make percentages noisy
+
+| `benign_responses`
+| Attempts judged non-vulnerable
+| Lets you verify pass volume directly
+
+| `vulnerable_responses`
+| Attempts judged vulnerable
+| Absolute failures, useful for audit trails
+
+| `attack_success_rate`
+| Vulnerable responses as a percentage for this probe
+| Best signal for identifying risky probe families
+
+| `metadata.avid_taxonomy.risk_domain`
+| High-level risk category labels
+| Helps route issues to the right owners (security, ethics, quality)
+
+| `metadata.avid_taxonomy.sep_view`
+| Specific SEP taxonomy tags
+| Gives finer-grained issue classification
+
+| `metadata.avid_taxonomy.lifecycle_view`
+| Lifecycle phase tags (for example evaluation)
+| Supports governance and reporting workflows
+
+| `metadata.model`
+| Model identity/type used during the run
+| Confirms which model produced the result
+|===
+
+Quick way to identify the riskiest probes first:
+
+[source,python]
+----
+top_probes = sorted(
+    [(k, v.get("attack_success_rate", 0.0), v.get("vulnerable_responses", 0), v.get("total_attempts", 0))
+     for k, v in aggregated.items() if k != "_overall"],
+    key=lambda x: x[1],
+    reverse=True,
+)
+
+print("Top 5 probes by attack_success_rate:")
+for probe_id, asr, vulnerable, attempts in top_probes[:5]:
+    print(f"- {probe_id:<45} asr={asr:>6}%  vulnerable={vulnerable}/{attempts}")
+----
+
+Sample output:
+
+[source,text]
+----
+Top 5 probes by attack_success_rate:
+- misleading.FalseAssertion                    asr=  88.0%  vulnerable=132/150
+- lmrc.Deadnaming                              asr= 66.67%  vulnerable=4/6
+- promptinject.HijackHateHumans                asr= 37.0%   vulnerable=37/100
+- divergence.RepeatedToken                     asr=   8.4%  vulnerable=42/500
+- continuation.ContinueSlursReclaimedSlurs     asr=   0.0%  vulnerable=0/285
+----
+
+[NOTE]
+====
+Use `_overall` for quick trend tracking and per-probe metrics for triage and remediation priorities.
+====
+
+TBSA in context:
+
+`tbsa` (Tier-Based Security Aggregate) is a 1.0 to 5.0 score where higher is better.
+
+High-level computation:
+
+* Garak grades each probe-detector outcome on a DEFCON-like 1-5 scale
+* pass-rate DEFCON and z-score DEFCON are combined conservatively using `min`
+* probe-detector results are grouped by tier
+* tier-level results are weighted (typically Tier1:Tier2 = 2:1)
+* final value is rounded to one decimal
+
+This provides more granularity than a simple pass-fail result while preserving severe failures.
+
+== 10) Artifacts and Job Metadata
+
+Completed jobs include artifact file IDs in `status.metadata`.
+
+[source,python]
+----
+def find_scan_artifacts(metadata):
+    return sorted([k for k in metadata.keys() if "scan" in k])
+
+artifact_keys = find_scan_artifacts(status.metadata or {})
+print("Artifact keys:")
+pprint(artifact_keys)
+----
+
+Sample output:
+
+[source,text]
+----
+[
+  'garak-job-..._scan.avid.jsonl',
+  'garak-job-..._scan.hitlog.jsonl',
+  'garak-job-..._scan.log',
+  'garak-job-..._scan.report.html',
+  'garak-job-..._scan.report.jsonl',
+  'garak-job-..._scan_result.json'
+]
+----
+
+You can fetch file metadata and content:
+
+[source,python]
+----
+scan_log_file = client.files.retrieve(status.metadata[f"{job.job_id}_scan.log"])
+pprint(scan_log_file)
+
+scan_log_content = client.files.content(status.metadata[f"{job.job_id}_scan.log"])
+print(scan_log_content.split("\n")[-10:])
+----
+
+HTML report example:
+
+[source,python]
+----
+Path("reports").mkdir(exist_ok=True)
+report_path = Path("reports") / f"{job.job_id}_scan.report.html"
+
+scan_report_content = client.files.content(status.metadata[f"{job.job_id}_scan.report.html"])
+report_path.write_text(scan_report_content)
+webbrowser.open(f"file://{report_path.resolve()}")
+----
+
+== 11) Register a Custom Benchmark (`garak_config`)
+
+[source,python]
+----
+custom_benchmark_id = "custom_promptinject"
+
+client.alpha.benchmarks.register(
+    benchmark_id=custom_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id=custom_benchmark_id,
+    metadata={
+        "garak_config": GarakCommandConfig(
+            system=GarakSystemConfig(parallel_attempts=8),
+            run=GarakRunConfig(
+                generations=1,
+                eval_threshold=0.5,
+                soft_probe_prompt_cap=100,
+                seed=333,
+            ),
+            plugins=GarakPluginsConfig(probe_spec=["promptinject"]),
+            reporting=GarakReportingConfig(taxonomy="owasp"),
+        ),
+        "timeout": 900,
+    },
+)
+
+pprint(client.alpha.benchmarks.retrieve(benchmark_id=custom_benchmark_id))
+----
+
+Sample output:
+
+[source,text]
+----
+Benchmark(... identifier='custom_promptinject' ...)
+----
+
+More details: xref:garak-lls-metadata-shields-reference.adoc[Benchmark Metadata and Shields Reference]
+
+== 12) Update Existing Benchmark (Deep-Merge)
+
+Create tuned variants by pointing `provider_benchmark_id` to an existing benchmark.
+
+[source,python]
+----
+updated_benchmark_id = "promptinject_hijackhatehumans"
+
+client.alpha.benchmarks.register(
+    benchmark_id=updated_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id=custom_benchmark_id,
+    metadata={
+        "garak_config": GarakCommandConfig(
+            plugins=GarakPluginsConfig(
+                probe_spec=["promptinject.HijackHateHumans"],
+            )
+        ),
+        "timeout": 600,
+    },
+)
+
+pprint(client.alpha.benchmarks.retrieve(benchmark_id=updated_benchmark_id))
+----
+
+Sample output:
+
+[source,text]
+----
+Benchmark(... identifier='promptinject_hijackhatehumans' ...)
+----
+
+More details: xref:garak-lls-metadata-shields-reference.adoc[Benchmark Metadata and Shields Reference]
+
+== 13) Shield Testing
+
+Two supported styles:
+
+* `shield_ids`: shorthand input shields
+* `shield_config`: explicit input/output mapping
+
+Example using `shield_ids`:
+
+[source,python]
+----
+shield_ids_benchmark_id = "promptinject_inp_shield"
+
+client.alpha.benchmarks.register(
+    benchmark_id=shield_ids_benchmark_id,
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id=updated_benchmark_id,
+    metadata={
+        "shield_ids": ["llama-guard"],
+        "timeout": 600,
+    },
+)
+
+pprint(client.alpha.benchmarks.retrieve(benchmark_id=shield_ids_benchmark_id))
+----
+
+Sample output:
+
+[source,text]
+----
+Benchmark(... identifier='promptinject_inp_shield' ...)
+----
+
+You can run and compare scores before/after shielding using the same run and retrieve steps above.
+
+== 14) Optional Cleanup
+
+[source,python]
+----
+for benchmark_id in [
+    "owasp_fast_demo",
+    "custom_promptinject",
+    "promptinject_hijackhatehumans",
+    "promptinject_inp_shield",
+]:
+    try:
+        client.alpha.benchmarks.unregister(benchmark_id=benchmark_id)
+        print(f"Unregistered: {benchmark_id}")
+    except Exception as exc:
+        print(f"Skip {benchmark_id}: {exc}")
+----
+
+== Next Steps
+
+* Deployment setup details: xref:garak-lls-deployment-modes.adoc[Deployment Modes and Setup]
+* Metadata field reference: xref:garak-lls-metadata-shields-reference.adoc[Benchmark Metadata and Shields Reference]
+* Canonical notebook source:
+  https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak/blob/main/demos/guide.ipynb
