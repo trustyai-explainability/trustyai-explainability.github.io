@@ -1,0 +1,276 @@
+= Getting started with EvalHub
+
+EvalHub is an evaluation service deployed and managed by the TrustyAI Operator.
+It provides a unified API for orchestrating AI model evaluations using a variety of built-in
+link:https://eval-hub.github.io/[evaluation providers and collections].
+
+This tutorial covers the operator and Kubernetes side: how to deploy an `EvalHub` instance,
+configure its database, and set up tenant namespaces.
+For SDK usage, the EvalHub REST API, and job authoring, see the
+link:https://eval-hub.github.io/[EvalHub documentation].
+
+In this tutorial, you will learn how to:
+
+* Create the database secret required by EvalHub
+* Deploy an `EvalHub` custom resource
+* Label namespaces to enable multi-tenancy
+* Configure optional features: MCP server and OpenTelemetry
+
+== Prerequisites
+
+* The TrustyAI Operator is installed in your cluster.
+* You have `kubectl` or `oc` access with permission to create namespaces, secrets, and custom resources.
+
+== Step 1 — Create the database secret
+
+EvalHub requires an explicit database configuration (`spec.database`).
+For production deployments, use PostgreSQL. For development, SQLite requires no secret.
+
+The PostgreSQL connection URL is stored in a Kubernetes `Secret` with the key `db-url`:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: evalhub-db-secret <1>
+  namespace: trustyai-operator <2>
+type: Opaque
+stringData:
+  db-url: "postgresql://evalhub:password@postgres-host:5432/evalhub?sslmode=require" <3>
+----
+<1> The secret name you will reference in `spec.database.secret`.
+<2> The namespace where the `EvalHub` CR will be created.
+<3> A full PostgreSQL connection URL. Include `sslmode=require` for encrypted connections.
+
+== Step 2 — Deploy an EvalHub instance
+
+Create an `EvalHub` custom resource. The minimal production configuration is:
+
+[source,yaml]
+----
+apiVersion: trustyai.opendatahub.io/v1
+kind: EvalHub
+metadata:
+  name: evalhub <1>
+  namespace: trustyai-operator <2>
+spec:
+  replicas: 1 <3>
+  database:
+    type: postgresql <4>
+    secret: evalhub-db-secret <5>
+  tenancy: multi <6>
+  providers: <7>
+    - garak
+    - garak-kfp
+    - lm-evaluation-harness
+  collections: <8>
+    - leaderboard-v2
+    - safety-and-fairness-v1
+    - toxicity-and-ethical-principles
+----
+<1> Name of the EvalHub instance.
+<2> The namespace where the operator and EvalHub service run (the control-plane namespace in multi-tenancy mode).
+<3> Number of replicas for the EvalHub API Deployment. Defaults to `1`.
+<4> Database backend: `postgresql` or `sqlite`. Use `sqlite` for quick local trials only.
+<5> Name of the `Secret` created in Step 1. Not required when `type` is `sqlite`.
+<6> Tenancy mode: `multi` (default) or `single`. See xref:component-evalhub.adoc#tenancy-model[Tenancy model].
+<7> Built-in providers to mount. See xref:component-evalhub.adoc#providers[Providers] for the full list.
+<8> Built-in collections to mount. See xref:component-evalhub.adoc#collections[Collections] for the full list.
+
+Apply the manifest:
+
+[source,shell]
+----
+kubectl apply -f evalhub.yaml
+----
+
+Wait for the instance to become ready:
+
+[source,shell]
+----
+kubectl wait evalhub/evalhub --for=jsonpath='{.status.ready}'=True --timeout=120s -n trustyai-operator
+----
+
+Once ready, the instance URL is available in the status:
+
+[source,shell]
+----
+kubectl get evalhub evalhub -n trustyai-operator -o jsonpath='{.status.url}'
+----
+
+== Step 3 — Label tenant namespaces (multi-tenancy)
+
+In multi-tenancy mode the operator discovers tenant namespaces by label and propagates
+the RBAC needed for EvalHub jobs to run there.
+
+Label the namespaces that should submit evaluation jobs to this EvalHub instance:
+
+[source,shell]
+----
+kubectl label namespace my-eval-namespace evalhub.trustyai.opendatahub.io/tenant=true
+----
+
+After labelling, the operator creates a `Role`, `RoleBinding`, and a discovery `ConfigMap`
+(`evalhub-discovery`) in the tenant namespace. Clients in that namespace use the discovery
+ConfigMap to resolve the EvalHub service URL without hardcoding it.
+
+To remove a namespace from tenancy, remove the label:
+
+[source,shell]
+----
+kubectl label namespace my-eval-namespace evalhub.trustyai.opendatahub.io/tenant-
+----
+
+[NOTE]
+====
+A namespace that is labelled as a tenant cannot also host an EvalHub CR in multi-tenancy mode.
+Use `tenancy: single` if you want EvalHub and its jobs in the same namespace.
+====
+
+== EvalHub CRD reference [[crd]]
+
+The following table describes all fields in the `EvalHub` spec (`trustyai.opendatahub.io/v1`).
+
+=== Core fields
+
+[cols="2,1,1,4", options="header"]
+|===
+|Field |Type |Default |Description
+| `spec.replicas` | integer | `1` | Number of replicas for the EvalHub API Deployment.
+| `spec.env` | `[]EnvVar` | — | Additional environment variables injected into the EvalHub container.
+| `spec.providers` | `[]string` | `["garak","garak-kfp","lm-evaluation-harness"]` | Built-in provider names to mount. Each name must match an operator-namespace ConfigMap labelled `trustyai.opendatahub.io/evalhub-provider-name`.
+| `spec.collections` | `[]string` | `["leaderboard-v2","safety-and-fairness-v1","toxicity-and-ethical-principles"]` | Built-in collection names to mount. Each name must match an operator-namespace ConfigMap labelled `trustyai.opendatahub.io/evalhub-collection-name`.
+| `spec.tenancy` | string | `multi` | Tenancy mode: `multi` or `single`.
+|===
+
+=== spec.database
+
+Database configuration is required. The operator will not start the EvalHub service unless `spec.database.type` is set.
+
+[cols="2,1,1,4", options="header"]
+|===
+|Field |Type |Default |Description
+| `spec.database.type` | string | — | *Required.* Database backend: `sqlite` or `postgresql`.
+| `spec.database.secret` | string | — | Name of the `Secret` containing a `db-url` key with the full PostgreSQL connection URL. Required when `type` is `postgresql`; ignored for `sqlite`.
+| `spec.database.maxOpenConns` | integer | `25` | Maximum number of open database connections. PostgreSQL only.
+| `spec.database.maxIdleConns` | integer | `5` | Maximum number of idle database connections. PostgreSQL only.
+|===
+
+=== spec.otel
+
+Including this section enables OpenTelemetry. When omitted, OTEL is disabled.
+
+[cols="2,1,1,4", options="header"]
+|===
+|Field |Type |Default |Description
+| `spec.otel.exporterType` | string | `otlp-grpc` | OTEL exporter protocol: `otlp-grpc`, `otlp-http`, or `stdout`.
+| `spec.otel.exporterEndpoint` | string | — | OTLP collector endpoint URL.
+| `spec.otel.exporterInsecure` | boolean | `false` | Skip TLS verification for the OTEL exporter.
+| `spec.otel.samplingRatio` | string | `"1.0"` | Trace sampling ratio as a string-encoded float between `"0"` and `"1"` (e.g. `"0.5"` samples half of traces).
+| `spec.otel.enableTracing` | boolean | `true` | Enable distributed tracing.
+| `spec.otel.enableMetrics` | boolean | `false` | Enable OTEL metrics export.
+| `spec.otel.enableLogs` | boolean | `false` | Enable OTEL log export.
+| `spec.otel.tracerTimeout` | string | — | Trace export timeout as a Go duration string (e.g. `"30s"`).
+| `spec.otel.tracerBatchInterval` | string | — | Trace batch flush interval as a Go duration string (e.g. `"5s"`).
+| `spec.otel.enableJobContainerLogs` | boolean | `false` | Export adapter container logs at job terminal transition. Requires `enableLogs: true`.
+| `spec.otel.serviceName` | string | — | Overrides the default `service.name` OTEL resource attribute.
+| `spec.otel.enableEcsResourceDetection` | boolean | `false` | Enable ECS resource detection on the OTEL resource.
+| `spec.otel.disableRedirectOtelLogs` | boolean | `false` | Prevent OTEL SDK diagnostic logs from being redirected to the main logger.
+| `spec.otel.disableDatabaseOtelScans` | boolean | `false` | Disable database query spans while still allowing DB metrics when `enableMetrics` is true.
+| `spec.otel.metricExportInterval` | string | — | Metrics export interval as a Go duration string (e.g. `"60s"`).
+|===
+
+=== spec.mcp
+
+Including this section and setting `enabled: true` deploys an MCP server alongside EvalHub.
+
+[cols="2,1,1,4", options="header"]
+|===
+|Field |Type |Default |Description
+| `spec.mcp.enabled` | boolean | `false` | Deploy the MCP server. Must be set explicitly to `true`.
+| `spec.mcp.replicas` | integer | `1` | Number of MCP server replicas.
+| `spec.mcp.transport` | string | `http` | MCP client transport protocol: `http` or `http-sse`.
+| `spec.mcp.evalHubTransport` | string | (same as `transport`) | Overrides the `EVALHUB_TRANSPORT` environment variable for the MCP server. Defaults to the value of `transport`.
+| `spec.mcp.env` | `[]EnvVar` | — | Additional environment variables for the MCP server container.
+| `spec.mcp.resources` | `ResourceRequirements` | 100m/128Mi req, 500m/256Mi limit | CPU and memory resource requests and limits for the MCP server container.
+| `spec.mcp.image` | string | — | Override the default MCP server container image.
+| `spec.mcp.authSecret` | string | — | Name of a `Secret` with a `token` key used by the MCP server to authenticate against the EvalHub API.
+|===
+
+== Optional: Enable the MCP server [[mcp]]
+
+The MCP server exposes EvalHub functionality to AI agents via the Model Context Protocol.
+Enable it by adding the `mcp` block to your CR:
+
+[source,yaml]
+----
+spec:
+  mcp:
+    enabled: true <1>
+    transport: http <2>
+    authSecret: evalhub-mcp-auth <3>
+----
+<1> Must be explicitly set to `true`; the MCP server is not deployed otherwise.
+<2> MCP client transport: `http` (default) or `http-sse`.
+<3> A `Secret` with a `token` key used by the MCP server to call the EvalHub API.
+
+External MCP clients (AI agents calling the MCP server directly) must have Kubernetes RBAC
+`get` and `create` permissions on `evalhubs/proxy` for this EvalHub instance.
+
+== Optional: OpenTelemetry [[otel]]
+
+Add the `otel` block to enable distributed tracing, metrics, and logs:
+
+[source,yaml]
+----
+spec:
+  otel:
+    exporterType: otlp-grpc <1>
+    exporterEndpoint: http://otel-collector:4317 <2>
+    samplingRatio: "0.5" <3>
+    enableTracing: true
+    enableMetrics: true
+    metricExportInterval: "60s"
+----
+<1> Export protocol: `otlp-grpc`, `otlp-http`, or `stdout`.
+<2> URL of your OpenTelemetry collector.
+<3> Sample 50% of traces. Set to `"1.0"` to sample everything.
+
+== Optional: Custom providers and collections [[custom-providers]]
+
+Namespace administrators can add their own providers or collections by creating ConfigMaps
+in the EvalHub instance namespace and labelling them for tenant discovery.
+
+For a custom provider:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-custom-provider
+  namespace: trustyai-operator <1>
+  labels:
+    trustyai.opendatahub.io/evalhub-provider-type: tenant <2>
+    trustyai.opendatahub.io/evalhub-provider-name: my-provider <3>
+data:
+  my-provider.yaml: | <4>
+    id: my-provider
+    name: My Provider
+    description: My custom evaluation framework
+    runtime:
+      k8s:
+        image: quay.io/myorg/my-eval-provider:latest <5>
+----
+<1> Must be in the same namespace as the EvalHub instance.
+<2> Label value `tenant` distinguishes custom ConfigMaps from system (operator-managed) ones.
+<3> The name used to reference this provider in `spec.providers`.
+<4> Provider configuration in EvalHub's YAML format.
+<5> Container image for the evaluation provider job. Providers are built with the link:https://github.com/eval-hub/eval-hub-sdk[EvalHub SDK].
+
+For a custom collection, use label `trustyai.opendatahub.io/evalhub-collection-type: tenant`
+and `trustyai.opendatahub.io/evalhub-collection-name: <name>` instead.
+
+Custom provider ConfigMaps are mounted at a separate path (`/etc/evalhub/config/providers/tenant/`)
+and cannot shadow built-in system provider configuration.

@@ -2415,3 +2415,16 @@ footer.footer {
         color: inherit
     }
 }
+
+/* Mermaid diagram sizing */
+.mermaid.content {
+    display: block;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    text-align: center;
+}
+.mermaid.content svg {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+}

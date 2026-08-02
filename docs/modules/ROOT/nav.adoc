@@ -32,6 +32,7 @@
 *** xref:vllm-judge-basic-evaluation.adoc[Basic Evaluation Guide]
 *** xref:vllm-judge-metrics.adoc[Using Metrics]
 *** xref:vllm-judge-templates.adoc[Template Variables]
+** xref:evalhub-tutorial.adoc[EvalHub Tutorial]
 * Components
 ** xref:trustyai-service.adoc[]
 ** xref:trustyai-operator.adoc[]
@@ -40,5 +41,6 @@
 ** xref:component-kserve-explainer.adoc[]
 ** xref:component-lm-eval.adoc[]
 ** xref:component-gorch.adoc[]
+** xref:component-evalhub.adoc[EvalHub]
 * Reference
 ** xref:trustyai-service-api-reference.adoc[]
