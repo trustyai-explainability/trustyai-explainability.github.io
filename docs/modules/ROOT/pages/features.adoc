@@ -13,6 +13,7 @@
 == Evaluation
 
 * xref:feature-lm-evaluation.adoc[LM Evaluation]
+* xref:component-evalhub.adoc[EvalHub]
 
 == Red Teaming
 

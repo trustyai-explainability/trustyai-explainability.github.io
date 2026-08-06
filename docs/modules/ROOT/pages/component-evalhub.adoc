@@ -1,0 +1,115 @@
+= EvalHub
+
+EvalHub is a model evaluation service managed by the TrustyAI Operator.
+It provides a unified API for running AI model evaluations on Kubernetes,
+supporting a range of built-in evaluation providers and curated benchmark collections.
+
+This page covers the Kubernetes and operator aspects of EvalHub: how to deploy it,
+how it is structured, and what built-in providers and collections are available.
+For SDK usage, job authoring, and the EvalHub API reference, see the
+link:https://eval-hub.github.io/[EvalHub documentation].
+
+== Architecture
+
+When an `EvalHub` custom resource is created, the operator deploys and manages the following Kubernetes resources:
+
+[mermaid]
+....
+graph TD
+    CR["EvalHub CR"] -->|reconciles| OP["TrustyAI Operator"]
+    OP --> DEP["EvalHub Deployment"]
+    DEP --> APP["evalhub container"]
+    DEP --> PROXY["kube-rbac-proxy\n(HTTPS :8443)"]
+    OP --> SVC["Service\n(:8443)"]
+    OP --> MSVC["Metrics Service\n(:8081)"]
+    OP --> CM["Provider & Collection\nConfigMaps"]
+    OP --> RBAC["Tenant RBAC\n(Role / RoleBinding)"]
+    OP -.->|optional| MCP["MCP Server\nDeployment"]
+    MCP --> MCPPROXY["kube-rbac-proxy\nsidecar"]
+....
+
+* *EvalHub Deployment* — the EvalHub API server, fronted by a `kube-rbac-proxy` sidecar that handles authentication and authorisation. The API is exposed over HTTPS on port 8443.
+* *Metrics Service* — a Prometheus scraping endpoint on port 8081, with an optional `ServiceMonitor` for automatic discovery.
+* *Provider and Collection ConfigMaps* — built-in provider and collection configuration is mounted from ConfigMaps in the operator namespace.
+* *Tenant RBAC* — in multi-tenancy mode, the operator propagates `Role` and `RoleBinding` resources into each namespace labelled as a tenant.
+* *MCP Server* (optional) — a Model Context Protocol server deployment, also fronted by `kube-rbac-proxy`, for AI agent integration.
+
+== Providers [[providers]]
+
+Providers define the evaluation frameworks that EvalHub can run jobs against.
+The following built-in providers are available. The default set deployed when `spec.providers` is not specified is `garak`, `garak-kfp`, and `lm-evaluation-harness`.
+
+[cols="1,3", options="header"]
+|===
+|Name |Description
+| `lm-evaluation-harness` | Accuracy and reasoning benchmarks (MMLU, HellaSwag, ARC, GSM8K, and more) via the EleutherAI LM Evaluation Harness.
+| `garak` | LLM vulnerability scanner and red-teaming framework. Supports OWASP LLM Top 10, AVID taxonomy, CWE, and toxicity probes.
+| `garak-kfp` | Garak evaluations orchestrated via a KubeFlow Pipelines backend.
+| `guidellm` | Performance benchmarking for LLM inference servers. Measures latency, throughput, and scaling under various load profiles.
+| `deepeval` | LLM quality evaluation covering hallucination, relevance, faithfulness, and G-Eval metrics.
+| `ragas` | RAG pipeline evaluation: context precision, recall, faithfulness, and answer relevance.
+| `inspect` | UK AISI Inspect AI framework for alignment auditing, safety benchmarks, and agentic evaluations.
+| `lighteval` | Lightweight LLM evaluation with a broad benchmark catalogue.
+| `ibm-clear` | IBM CLEAR error analysis and reporting framework for agentic evaluations.
+|===
+
+Additional tenant-scoped providers can be added by creating ConfigMaps in the EvalHub instance namespace
+labelled with `trustyai.opendatahub.io/evalhub-provider-type: tenant`.
+See xref:evalhub-tutorial.adoc#custom-providers[Custom providers and collections] for details.
+
+== Collections [[collections]]
+
+Collections are curated sets of benchmarks that group related evaluation tasks under a named profile.
+The following built-in collections are available:
+
+[cols="1,3", options="header"]
+|===
+|Name |Description
+| `leaderboard-v2` | Comprehensive evaluation suite for general-purpose language models.
+| `safety-and-fairness-v1` | Evaluates model safety, bias, and fairness across diverse scenarios.
+| `toxicity-and-ethical-principles` | End-to-end safety assessment covering toxic content generation, ethical principles, and model alignment.
+| `coding-v1` | Evaluates code generation capability of instruction-tuned chat LLMs on real-world programming tasks.
+| `instruction-following-v1` | Evaluates how well instruction-tuned chat LLMs follow explicit instructions across diverse task types.
+| `long-context-v1` | Evaluates long-context retrieval and comprehension for instruction-tuned chat LLMs.
+| `reasoning-v1` | Evaluates multi-step and chain-of-thought reasoning for instruction-tuned chat LLMs.
+| `model-validation` | Evaluates model safety using context-aware vulnerability scanning.
+| `standard-llm-evals-v1` | Standard evaluation protocol covering instruction following, reasoning, coding, and safety.
+|===
+
+== Tenancy model [[tenancy-model]]
+
+EvalHub supports two tenancy modes, controlled by `spec.tenancy`.
+
+*Multi-tenancy* (`multi`, the default) deploys a single EvalHub instance in a control-plane namespace
+that serves multiple tenant namespaces.
+The operator discovers tenant namespaces by the label `evalhub.trustyai.opendatahub.io/tenant=true`
+and propagates the necessary RBAC resources into each one.
+A discovery ConfigMap (`evalhub-discovery`) is also created in each tenant namespace
+so that clients can resolve the EvalHub service URL without hardcoding it.
+Note that a multi-tenant EvalHub cannot be placed in a namespace that is itself labelled as a tenant.
+
+*Single-tenancy* (`single`) deploys EvalHub directly in the workload namespace.
+No cross-namespace label discovery or RBAC propagation is performed.
+Use this mode when a dedicated EvalHub per team or environment is preferred.
+
+[mermaid]
+....
+graph TD
+    subgraph multi["Multi-tenancy (spec.tenancy: multi)"]
+        direction TB
+        EH["EvalHub\n(control-plane namespace)"]
+        T1["tenant-ns-1\n(evalhub.../tenant=true)"]
+        T2["tenant-ns-2\n(evalhub.../tenant=true)"]
+        EH -->|RBAC + discovery CM| T1
+        EH -->|RBAC + discovery CM| T2
+    end
+
+    subgraph single["Single-tenancy (spec.tenancy: single)"]
+        direction TB
+        EHS["EvalHub"]
+        NS["same namespace\n(no label required)"]
+        EHS --- NS
+    end
+....
+
+In multi-tenancy mode the operator watches for namespace label changes cluster-wide and reconciles RBAC immediately when a namespace is labelled or unlabelled.
