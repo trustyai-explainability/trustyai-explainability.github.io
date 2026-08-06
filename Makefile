@@ -16,5 +16,6 @@ build-local: install
 	BRANCH=$$(git branch --show-current); \
 	BRANCH=$${BRANCH:-HEAD}; \
 	yq ".content.sources[0].branches = [\"$$BRANCH\"] | .content.sources[0].url = \"$$GIT_ROOT\"" antora-playbook.yml > antora-temp.yml; \
-	npx antora antora-temp.yml; \
-	rm -f antora-temp.yml
+	npx antora antora-temp.yml; STATUS=$$?; \
+	rm -f antora-temp.yml; \
+	exit $$STATUS

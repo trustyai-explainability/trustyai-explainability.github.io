@@ -19,7 +19,10 @@ In this tutorial, you will learn how to:
 == Prerequisites
 
 * The TrustyAI Operator is installed in your cluster.
-* You have `kubectl` or `oc` access with permission to create namespaces, secrets, and custom resources.
+* You have `kubectl` or `oc` access with the following permissions:
+** `create` on namespaces, secrets, and custom resources (e.g. `EvalHub`)
+** `update` or `patch` on namespaces (required for `kubectl label`)
+** `get` and `watch` on custom resources (required for `kubectl wait` and `kubectl get`)
 
 == Step 1 — Create the database secret
 
@@ -27,6 +30,12 @@ EvalHub requires an explicit database configuration (`spec.database`).
 For production deployments, use PostgreSQL. For development, SQLite requires no secret.
 
 The PostgreSQL connection URL is stored in a Kubernetes `Secret` with the key `db-url`:
+
+[WARNING]
+====
+Do not commit real credentials to version control.
+Replace all placeholder values with your actual credentials before applying this manifest.
+====
 
 [source,yaml]
 ----
@@ -37,11 +46,13 @@ metadata:
   namespace: trustyai-operator <2>
 type: Opaque
 stringData:
-  db-url: "postgresql://evalhub:password@postgres-host:5432/evalhub?sslmode=require" <3>
+  db-url: "postgresql://<db-user>:<db-password>@<db-host>:<db-port>/<db-name>?sslmode=verify-full&sslrootcert=/etc/ssl/certs/db-ca.crt" <3>
 ----
 <1> The secret name you will reference in `spec.database.secret`.
 <2> The namespace where the `EvalHub` CR will be created.
-<3> A full PostgreSQL connection URL. Include `sslmode=require` for encrypted connections.
+<3> A full PostgreSQL connection URL for production. `sslmode=verify-full` encrypts the connection *and* verifies the server certificate against the CA, preventing man-in-the-middle attacks.
+Mount your database CA certificate into the EvalHub pod (for example, via a `ConfigMap` or a projected volume) and set `sslrootcert` to the mount path.
+For development environments without a CA certificate, you may use `sslmode=require` instead — this encrypts the connection but does *not* verify the server identity and must not be used in production.
 
 == Step 2 — Deploy an EvalHub instance
 
@@ -139,8 +150,8 @@ The following table describes all fields in the `EvalHub` spec (`trustyai.openda
 |Field |Type |Default |Description
 | `spec.replicas` | integer | `1` | Number of replicas for the EvalHub API Deployment.
 | `spec.env` | `[]EnvVar` | — | Additional environment variables injected into the EvalHub container.
-| `spec.providers` | `[]string` | `["garak","garak-kfp","lm-evaluation-harness"]` | Built-in provider names to mount. Each name must match an operator-namespace ConfigMap labelled `trustyai.opendatahub.io/evalhub-provider-name`.
-| `spec.collections` | `[]string` | `["leaderboard-v2","safety-and-fairness-v1","toxicity-and-ethical-principles"]` | Built-in collection names to mount. Each name must match an operator-namespace ConfigMap labelled `trustyai.opendatahub.io/evalhub-collection-name`.
+| `spec.providers` | `[]string` | `["garak","garak-kfp","lm-evaluation-harness"]` | Provider names to mount. Built-in names are resolved from ConfigMaps in the operator namespace labelled `trustyai.opendatahub.io/evalhub-provider-name`. Custom names are resolved from ConfigMaps of the same name in the EvalHub instance namespace (tenant ConfigMaps).
+| `spec.collections` | `[]string` | `["leaderboard-v2","safety-and-fairness-v1","toxicity-and-ethical-principles"]` | Collection names to mount. Built-in names are resolved from ConfigMaps in the operator namespace labelled `trustyai.opendatahub.io/evalhub-collection-name`. Custom names are resolved from ConfigMaps of the same name in the EvalHub instance namespace (tenant ConfigMaps).
 | `spec.tenancy` | string | `multi` | Tenancy mode: `multi` or `single`.
 |===
 
@@ -201,7 +212,19 @@ Including this section and setting `enabled: true` deploys an MCP server alongsi
 == Optional: Enable the MCP server [[mcp]]
 
 The MCP server exposes EvalHub functionality to AI agents via the Model Context Protocol.
-Enable it by adding the `mcp` block to your CR:
+
+Before enabling the MCP server, create the authentication Secret that the MCP server uses to call the EvalHub API:
+
+[source,shell]
+----
+kubectl create secret generic evalhub-mcp-auth \
+  --from-literal=token=$(openssl rand -hex 32) \
+  -n trustyai-operator
+----
+
+This creates a Secret named `evalhub-mcp-auth` with a randomly generated `token` key, matching the `authSecret` field in the CR below.
+
+Enable the MCP server by adding the `mcp` block to your CR:
 
 [source,yaml]
 ----
@@ -228,14 +251,23 @@ spec:
   otel:
     exporterType: otlp-grpc <1>
     exporterEndpoint: http://otel-collector:4317 <2>
-    samplingRatio: "0.5" <3>
+    exporterInsecure: true <3>
+    samplingRatio: "0.5" <4>
     enableTracing: true
     enableMetrics: true
     metricExportInterval: "60s"
 ----
 <1> Export protocol: `otlp-grpc`, `otlp-http`, or `stdout`.
-<2> URL of your OpenTelemetry collector.
-<3> Sample 50% of traces. Set to `"1.0"` to sample everything.
+<2> URL of your OpenTelemetry collector. The `http://` scheme is used here for a development setup only — do not use this in production.
+<3> Set to `true` to skip TLS verification. Required when using a plaintext `http://` endpoint. *Do not use in production.*
+<4> Sample 50% of traces. Set to `"1.0"` to sample everything.
+
+[NOTE]
+====
+For production, use an `https://` endpoint and remove `exporterInsecure` (or set it to `false`).
+Your collector must present a certificate trusted by the system CA bundle, or you must mount a
+custom CA and configure the EvalHub pod to trust it.
+====
 
 == Optional: Custom providers and collections [[custom-providers]]
 

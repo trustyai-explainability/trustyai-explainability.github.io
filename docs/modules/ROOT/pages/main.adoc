@@ -11,7 +11,7 @@ https://trustyai.org[TrustyAI] is an open source Responsible AI toolkit supporte
 * Language model benchmarking
 * Language model guardrails
 
-TrustyAI is a default component of https://opendatahub.io/[Open Data Hub] and https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai[Red Hat Openshift AI], and has integrations with projects like https://github.com/kserve/kserve[KServe], https://github.com/caikit/caikit[Caikit], https://github.com/vllm-project/vllm[vLLM], and https://eval-hub.github.io/[EvalHub].
+TrustyAI is a default component of https://opendatahub.io/[Open Data Hub] and https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai[Red Hat OpenShift AI], and has integrations with projects like https://github.com/kserve/kserve[KServe], https://github.com/caikit/caikit[Caikit], https://github.com/vllm-project/vllm[vLLM], and https://eval-hub.github.io/[EvalHub].
 
 == 🗂️ Our Projects 🗂️
 * xref:trustyai-core.adoc[TrustyAI core], the core TrustyAI Java module, containing fairness metrics, AI explainers, and other XAI utilities.
