@@ -120,12 +120,10 @@ The key insight: Red-teaming tells you *where you're vulnerable*; guardrails are
 
 == Ready to Red-Team Your LLM? Start Here
 
-Now that you understand *why* red-teaming matters and *what* attacks to look for, it's time to put theory into practice. 
+Now that you understand *why* red-teaming matters and *what* attacks to look for, it's time to put theory into practice.
 
-The TrustyAI Llama Stack Garak provider makes it easy to run security assessments and provide quantitative scores you can act on. Here are some resources to get you started:
+The TrustyAI Llama Stack Garak provider makes it easy to run security assessments and provide quantitative scores you can act on. Here are the recommended docs in order:
 
-1. xref:garak-lls-inline.adoc[Inline Tutorial]
-2. xref:garak-lls-shields.adoc[Shield/Guardrail Evaluation Tutorial]
-3. xref:garak-lls-remote.adoc[Remote Execution Tutorial]
-
-**Ready to break your LLM safely?** Start with the inline tutorial and work your way up.
+1. xref:garak-lls-deployment-modes.adoc[Deployment Modes and Setup]
+2. xref:garak-lls-unified-tutorial.adoc[Garak Llama Stack Tutorial]
+3. xref:garak-lls-metadata-shields-reference.adoc[Benchmark Metadata and Shields Reference]

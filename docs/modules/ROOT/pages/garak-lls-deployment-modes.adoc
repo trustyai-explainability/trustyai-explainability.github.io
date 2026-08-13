@@ -1,0 +1,184 @@
+= Llama Stack Garak Deployment Modes and Setup
+
+This page explains deployment choices.
+Use this first to pick an operating mode, then run the feature tutorial:
+
+* xref:garak-lls-unified-tutorial.adoc[Garak Llama Stack Tutorial]
+
+== First: Work from the Correct Repository
+
+All deployment files referenced in this page are in:
+
+* https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak
+
+Start here:
+
+[source,bash]
+----
+git clone https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak.git
+cd llama-stack-provider-trustyai-garak
+----
+
+
+== Why This Page Exists
+
+There is one core Garak workflow (register benchmark, run eval, monitor job, read results).
+What changes across environments is where components run and how they are configured.
+
+== Quick Mode Picker
+
+|===
+| Mode | Llama Stack server | Garak scans | Cluster resources required | Best for
+
+| Total inline
+| Local
+| Local
+| None
+| Fast local development and debugging
+
+| Partial remote
+| Local
+| KFP (cluster)
+| KFP resources only
+| Dev workflow with realistic remote execution
+
+| Total remote
+| Cluster
+| KFP (cluster)
+| Full stack resources (KFP + LSD + RBAC + secrets + postgres)
+| Production-style deployment
+|===
+
+== Shared Concepts (All Modes)
+
+* Your client code is mostly identical in every mode.
+* The major runtime difference is `BASE_URL`.
+* In remote modes, job metadata includes KFP details (for example `kfp_run_id`).
+* Optional `KUBEFLOW_EXPERIMENT_NAME` groups pipeline runs under one KFP experiment.
+
+== Mode 1: Total Inline (Everything Local)
+
+Use when you want the fastest iteration loop.
+
+[source,bash]
+----
+pip install "llama-stack-provider-trustyai-garak[inline]"
+
+export VLLM_URL="http://localhost:8000/v1"
+export VLLM_API_TOKEN="<token-if-needed>"
+
+llama stack run demos/3-local-inline/inline.yaml
+----
+
+Client URL:
+
+[source,text]
+----
+BASE_URL="http://localhost:8321"
+----
+
+== Mode 2: Partial Remote (Local Server + KFP Scans)
+
+Use when you want local control plane with cluster-scale scan execution.
+
+=== Resource Scope
+
+Only KFP resources are required in cluster for this mode.
+If DSP/KFP is not already installed, use:
+
+* `lsd_remote/kfp-setup/kfp.yaml`
+* Repository: https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak/tree/main/lsd_remote
+
+=== Setup
+
+[source,bash]
+----
+pip install llama-stack-provider-trustyai-garak
+
+export VLLM_URL="http://your-model-endpoint/v1"
+export VLLM_API_TOKEN="<token-if-needed>"
+
+export KUBEFLOW_PIPELINES_ENDPOINT="https://your-dsp-endpoint" # echo “https://$(oc get routes ds-pipeline-dspa -o jsonpath='{.spec.host}')”
+export KUBEFLOW_NAMESPACE="your-namespace"
+export KUBEFLOW_GARAK_BASE_IMAGE="quay.io/opendatahub/odh-trustyai-garak-lls-provider-dsp:dev"
+export KUBEFLOW_EXPERIMENT_NAME="trustyai-garak"  # optional
+export KUBEFLOW_PIPELINES_TOKEN="<token-if-needed>"
+
+# Local Llama Stack URL reachable by cluster pods (route/ngrok/public URL)
+export KUBEFLOW_LLAMA_STACK_URL="https://your-public-url"
+
+llama stack run demos/2-partial-remote/partial-remote.yaml
+----
+
+Client URL:
+
+[source,text]
+----
+BASE_URL="http://localhost:8321"
+----
+
+== Mode 3: Total Remote (Cluster Server + KFP Scans)
+
+Use for production-style deployment and shared team environments.
+
+=== Resource Scope
+
+Total remote needs all relevant cluster resources from `lsd_remote`, not just KFP:
+
+* `kfp-setup/kfp.yaml`
+* `postgres-complete-deployment.yaml`
+* `llama_stack_distro-setup/lsd-config.yaml`
+* `llama_stack_distro-setup/lsd-secrets.yaml`
+* `llama_stack_distro-setup/lsd-garak.yaml`
+* `llama_stack_distro-setup/lsd-role.yaml`
+
+Repository: https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak/tree/main/lsd_remote
+
+=== Important Settings
+
+In the LSD config flow, confirm:
+
+* `KUBEFLOW_PIPELINES_ENDPOINT`
+* `KUBEFLOW_NAMESPACE`
+* `KUBEFLOW_GARAK_BASE_IMAGE`
+* `KUBEFLOW_LLAMA_STACK_URL`
+* optional `KUBEFLOW_EXPERIMENT_NAME` (defaults to `trustyai-garak` if omitted)
+
+=== Client Access Options
+
+You can connect via:
+
+* in-cluster service URL
+* local `oc port-forward`
+* OpenShift route URL
+
+Typical `BASE_URL` values:
+
+[source,text]
+----
+# in-cluster
+BASE_URL="http://<lsd-service>.<namespace>.svc.cluster.local:8321"
+
+# local port-forward
+BASE_URL="http://localhost:8321"
+
+# route
+BASE_URL="https://<route-hostname>"
+----
+
+== Which Tutorial to Run After Setup
+
+After choosing and configuring your mode, run:
+
+* xref:garak-lls-unified-tutorial.adoc[Garak Llama Stack Tutorial]
+
+That tutorial covers all features (predefined listing, custom `garak_config`, deep-merge updates, shields, `_overall`, TBSA, artifacts).
+
+== Troubleshooting Checklist
+
+* KFP cannot start runs:
+** verify endpoint, namespace, and token/permissions
+* Remote scans cannot call your server:
+** verify `KUBEFLOW_LLAMA_STACK_URL` is reachable from pods
+* Jobs stay in `scheduled`:
+** check provider logs and KFP run details for auth/network/image issues

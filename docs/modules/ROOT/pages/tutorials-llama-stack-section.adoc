@@ -10,8 +10,8 @@ This section contains tutorials for working with Llama Stack in TrustyAI. These 
 
 * xref:trustyai-fms-lls-tutorial.adoc[Using trustyai_fms with Llama Stack] - Learn how to apply content filtering to your language model using the trustyai_fms Llama Stack External Safety Provider
 
-* xref:garak-lls-inline.adoc[Red-Teaming with Llama Stack Garak (Inline)] - Learn how to perform security testing of Large Language Models using the TrustyAI Garak provider in Llama Stack's inline mode.
+* xref:garak-lls-deployment-modes.adoc[Llama Stack Garak Deployment Modes and Setup] - Choose the right deployment model (total inline, partial remote, or total remote) and configure it correctly.
 
-* xref:garak-lls-shields.adoc[Red-Teaming with Shields: Measuring Guardrail Effectiveness] - Learn how to evaluate the effectiveness of AI safety shields and guardrails using the Llama Stack TrustyAI Garak provider.
+* xref:garak-lls-unified-tutorial.adoc[Unified Garak Tutorial for Llama Stack (All Deployment Modes)] - Use one workflow for predefined benchmarks, custom `garak_config`, deep-merge updates, shields, artifacts, `_overall`, and TBSA.
 
-* xref:garak-lls-remote.adoc[Red-Teaming with Llama Stack Garak on Kubeflow Pipelines (Remote)] - Learn how to run the same security testing from the previous red-teaming tutorials using Kubeflow Pipelines for remote execution.
+* xref:garak-lls-metadata-shields-reference.adoc[Benchmark Metadata and Shields Reference (TrustyAI Garak)] - Understand metadata fields in detail, including `garak_config`, shields, timeout, remote options, and typed Python config models.

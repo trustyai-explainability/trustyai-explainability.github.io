@@ -1,0 +1,231 @@
+= Benchmark Metadata and Shields Reference (TrustyAI Garak)
+
+This page explains benchmark metadata fields in practical language.
+It is the reference companion to:
+
+* xref:garak-lls-unified-tutorial.adoc[Garak Llama Stack Tutorial]
+
+Use this page when you need to customize benchmark behavior.
+
+== 1) Metadata Shape
+
+The current structure:
+
+[source,python]
+----
+metadata = {
+    "garak_config": {
+        "system": {...},
+        "run": {...},
+        "plugins": {...},
+        "reporting": {...},
+    },
+    "timeout": 1800,
+    "shield_ids": ["Prompt-Guard-86M"],  # or use shield_config
+    "max_retries": 3,                    # remote mode only
+    "use_gpu": False,                    # remote mode only
+}
+----
+
+If `garak_config` is omitted, defaults are used, which can be slow and broad.
+
+== 2) Build `garak_config` with Typed Python Models (Optional)
+
+You can build `garak_config` as plain dictionaries, or use typed classes:
+
+[source,python]
+----
+from llama_stack_provider_trustyai_garak import (
+    GarakCommandConfig,
+    GarakSystemConfig,
+    GarakRunConfig,
+    GarakPluginsConfig,
+    GarakReportingConfig,
+)
+----
+
+Example:
+
+[source,python]
+----
+garak_cfg = GarakCommandConfig(
+    system=GarakSystemConfig(parallel_attempts=16),
+    run=GarakRunConfig(generations=1, eval_threshold=0.5),
+    plugins=GarakPluginsConfig(probe_spec=["promptinject.HijackHateHumans"]),
+    reporting=GarakReportingConfig(taxonomy="owasp"),
+)
+
+metadata = {
+    "garak_config": garak_cfg.to_dict(),
+    "timeout": 900,
+}
+----
+
+== 3) Top-Level Metadata Keys
+
+|===
+| Key | Type | Mode | What it controls
+
+| `garak_config`
+| `dict`
+| inline + remote
+| Main Garak command config (recommended to set explicitly)
+
+| `timeout`
+| `int` seconds
+| inline + remote
+| Max runtime for the benchmark run
+
+| `shield_ids`
+| `list[str]`
+| inline + remote
+| Quick input shield list
+
+| `shield_config`
+| `dict`
+| inline + remote
+| Explicit input/output shield mapping
+
+| `max_retries`
+| `int`
+| remote only
+| KFP retry count
+
+| `use_gpu`
+| `bool`
+| remote only
+| Requests GPU execution for scan pipeline
+|===
+
+== 4) Shield Rules
+
+=== `shield_ids`
+
+[source,python]
+----
+"shield_ids": ["Prompt-Guard-86M"]
+----
+
+* Treated as input shields.
+* Best for simple setups.
+
+=== `shield_config`
+
+[source,python]
+----
+"shield_config": {
+    "input": ["Prompt-Guard-86M"],
+    "output": ["Llama-Guard-3-8B"]
+}
+----
+
+* Use when you need explicit input/output chains.
+
+[NOTE]
+====
+If both `shield_ids` and `shield_config` are provided, `shield_ids` takes precedence.
+====
+
+== 5) `garak_config` Sections
+
+`garak_config` groups options under four sections:
+
+* `system` (parallelism, verbosity, worker behavior)
+* `run` (generations, thresholds, seed, prompt cap)
+* `plugins` (probe/detector/buff selection)
+* `reporting` (taxonomy and report aggregation preferences)
+
+Practical examples:
+
+[source,python]
+----
+"garak_config": {
+    "system": {
+        "parallel_attempts": 16
+    },
+    "run": {
+        "generations": 1,
+        "eval_threshold": 0.5,
+        "soft_probe_prompt_cap": 100
+    },
+    "plugins": {
+        "probe_spec": ["promptinject.HijackHateHumans"]
+    },
+    "reporting": {
+        "taxonomy": "owasp"
+    }
+}
+----
+
+Performance note:
+
+* `run.soft_probe_prompt_cap` can reduce prompts per probe for faster exploratory scans.
+* For strict comparisons, keep this value consistent across runs.
+
+== 6) Register Example
+
+[source,python]
+----
+client.alpha.benchmarks.register(
+    benchmark_id="custom_promptinject",
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id="custom_promptinject",
+    metadata={
+        "garak_config": {
+            "plugins": {"probe_spec": ["promptinject"]},
+            "reporting": {"taxonomy": "owasp"},
+        },
+        "timeout": 900,
+    },
+)
+----
+
+== 7) Deep-Merge Updates (Predefined or Existing Benchmarks)
+
+When `provider_benchmark_id` points to an existing benchmark, your metadata is deep-merged on top.
+This allows targeted overrides.
+
+[source,python]
+----
+client.alpha.benchmarks.register(
+    benchmark_id="quick_promptinject_tuned",
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id="trustyai_garak::quick",
+    metadata={
+        "garak_config": {
+            "plugins": {"probe_spec": ["promptinject"]},
+            "system": {"parallel_attempts": 20}
+        },
+        "timeout": 1200
+    }
+)
+----
+
+== 8) Fast Variant of a Predefined Benchmark
+
+[source,python]
+----
+client.alpha.benchmarks.register(
+    benchmark_id="owasp_fast",
+    dataset_id="garak",
+    scoring_functions=["garak_scoring"],
+    provider_id=garak_provider_id,
+    provider_benchmark_id="trustyai_garak::owasp_llm_top10",
+    metadata={
+        "garak_config": {
+            "run": {"soft_probe_prompt_cap": 100}
+        }
+    },
+)
+----
+
+== 9) Where to Go Next
+
+* End-to-end usage: xref:garak-lls-unified-tutorial.adoc[Garak Llama Stack Tutorial]
+* Deployment setup: xref:garak-lls-deployment-modes.adoc[Deployment Modes and Setup]
+* Full upstream reference:
+  https://github.com/trustyai-explainability/llama-stack-provider-trustyai-garak/blob/main/BENCHMARK_METADATA_REFERENCE.md
