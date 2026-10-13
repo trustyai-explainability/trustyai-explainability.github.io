@@ -279,6 +279,10 @@ Specify extra information for the lm-eval job's pod.
 ** `resources`: Specify the resources for the lm-eval container.
 * `volumes`: Specify the volume information for the lm-eval and other containers. It uses the `Volume` data structure of kubernetes.
 * `sideCars`: A list of containers that run along with the lm-eval container. It uses the `Container` data structure of kubernetes.
+* `affinity`: Scheduling constraints for the pod. It uses the `Affinity` data structure of kubernetes.
+* `tolerations`: Tolerations for the pod, allowing it to be scheduled on nodes with matching taints. It uses the `Toleration` data structure of kubernetes.
+* `nodeSelector`: A map of key-value pairs. The pod will only be scheduled on nodes that have all the specified labels.
+* `nodeName`: If specified, the pod is bound directly to the named node, bypassing the scheduler.
 
 |`outputs`
 |This sections defines custom output locations for the evaluation results storage. At the moment only Persistent Volume Claims (PVC) are supported.
