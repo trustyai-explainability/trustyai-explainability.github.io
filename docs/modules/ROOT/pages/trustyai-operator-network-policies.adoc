@@ -1,0 +1,245 @@
+= Network Policies
+
+image::trustyai-operator-network-policy-traffic.svg[Ingress peers and egress grants admitted by the operator's policies]
+
+Every workload the TrustyAI operator deploys is selected by a Kubernetes `NetworkPolicy` that the operator owns. The policies exist so that a cluster running with a default-deny baseline keeps working: without them, a namespace-wide deny rule would block the service endpoints, the metrics scrape and the model-serving callbacks that TrustyAI depends on.
+
+Each policy declares both directions. Ingress is a list of peers that are allowed to reach the workload, written per component. Egress is an explicit, documented allow-all grant. Both are recorded in the policy annotations, so you can read the intent from the object rather than from the source code.
+
+The design follows the Open Data Hub NetworkPolicy contract for operators (ODH-ADR-Operator-0016).
+
+== Which workloads have a policy
+
+[cols="2,3,2,3", options="header"]
+|===
+| Workload | Created by | Ingress | Egress
+
+| TrustyAI service Pod
+| `TrustyAIService`
+| Router, Prometheus, dashboard, KServe and ModelMesh
+| Allow all
+
+| Evaluation Pod
+| `LMEvalJob`
+| None
+| Allow all
+
+| EvalHub API Pod
+| `EvalHub`
+| Router, Prometheus, dashboard, evaluation jobs, MCP
+| Allow all
+
+| EvalHub MCP Pod
+| `EvalHub` with `spec.mcp.enabled`
+| Router
+| Allow all
+
+| Workload operator Pod
+| Installed with the operator
+| Prometheus, probe and webhook ports
+| Allow all
+
+| Module operator Pod
+| Installed with the operator
+| Probe port
+| Allow all
+|===
+
+== Where the policies come from
+
+Two different mechanisms produce them, and the difference matters when you are looking for one.
+
+Policies for the operator Pods themselves are part of the installation: they are rendered by kustomize, so they exist as soon as the operator is installed, whether or not any custom resource exists.
+
+Policies for the workloads are reconciled at runtime from each custom resource. The selector is built from the resource identity, so two `TrustyAIService` instances in the same namespace get two different policies, and neither can select the other's Pods.
+
+image::trustyai-operator-network-policy-lifecycle.svg[The operator writes the policy before a Pod enters its selector]
+
+The ordering is deliberate. The operator writes the policy first and labels the Pod second, so a Pod only enters the selector of a policy whose allow rules have already been accepted by the API server. If the policy cannot be written, the workload does not start: the custom resource reports `NetworkPolicyReady=False` and the operator retries rather than running an unprotected Pod.
+
+Because the operator owns these objects, it also repairs them. Deleting a policy, editing its rules or relabelling a Pod is noticed by the controller watch and reverted on the next reconcile.
+
+== What each workload admits
+
+=== TrustyAI service
+
+image::trustyai-operator-network-policy-tas.svg[Ingress peers and egress grant for the TrustyAI service Pod]
+
+The service Pod has the widest set of callers: the `Route`, the dashboard, `Prometheus`, and the model servers that report their inference payloads to it. The logger ports are separate from the API port on purpose: KServe and ModelMesh use the TLS logger on TCP 4443, and TCP 8080 is opened only for KServe Pods and only when the operator is configured for Serverless, where it patches inference services with an HTTP logger URL that goes through the service port 80.
+
+=== LMEval evaluation Pods
+
+image::trustyai-operator-network-policy-lmevaljob.svg[No ingress peers for the LMEval evaluation Pod, egress is unrestricted]
+
+No ingress rule at all, which is worth stating because it looks like an omission. The evaluation driver is controlled from inside the Pod rather than over the network, so nothing outside the Pod needs to reach it and nothing is admitted. Calling the driver directly is not a supported interface.
+
+=== EvalHub API
+
+image::trustyai-operator-network-policy-evalhub-api.svg[Ingress peers and egress grant for the EvalHub API Pod]
+
+Most of the traffic here is not user traffic. The API is called by the evaluation jobs it schedules, which report their status back while they run, and by the operator manager Pod, which reports the failures a job container cannot report itself, such as a Pod that never scheduled. The MCP server is a peer as well, but only while `spec.mcp.enabled` is true.
+
+=== EvalHub MCP server
+
+image::trustyai-operator-network-policy-evalhub-mcp.svg[Only the Route reaches the EvalHub MCP server]
+
+A narrow policy for a narrow contract: the MCP server is documented as an endpoint for external clients reaching it through the `Route` with a bearer token, so the `Route` is the only peer. If you have an in-cluster MCP client, it is not covered and needs a policy of its own.
+
+The policy only governs inbound traffic. The MCP server is a client of the EvalHub API as well: it calls the API `Service` and authenticates with the token in `spec.mcp.authSecret`. That call is admitted from both sides, since the MCP policy allows all egress and the API policy names the MCP Pods as a peer while `spec.mcp.enabled` is true. An MCP server that cannot reach the API is therefore an authentication or certificate problem, not a policy one.
+
+=== Operator Pods
+
+image::trustyai-operator-network-policy-operators.svg[Ingress peers and egress grants for the module and workload operator Pods]
+
+Both operator Pods are covered by policies that ship with the installation rather than being reconciled from a custom resource, because the operator must be reachable before any custom resource exists. The module operator needs only its probe port. The workload operator also serves metrics and the CRD conversion webhook, which is why it has three admitted ports rather than one.
+
+== How peers are matched
+
+The sections above say who is allowed in. This one explains what each peer actually selects, because several of them are less precise than they look.
+
+=== Route traffic
+
+Anything that reaches TrustyAI through an OpenShift `Route` arrives from router Pods. The policies admit namespaces carrying the `network.openshift.io/policy-group: ingress` label, because there is no stable, supported router Pod selector to name instead.
+
+The consequence is worth stating plainly: any Pod running in a namespace with that label can reach the authenticated listener. Route traffic is TLS and, for the TrustyAI service, requires a token; the policy is not doing authentication for you.
+
+=== Metrics
+
+`Prometheus` is selected by namespace and Pod label together, using the `network.openshift.io/policy-group: monitoring` namespace label plus the Prometheus Pod labels. Both must match, so a Pod in a monitoring namespace that is not `Prometheus` is not admitted.
+
+=== Dashboard
+
+The OpenShift dashboard calls the service directly, on the service port rather than through the `Route`. That peer requires the applications namespace and the dashboard Pod labels together, so the grant is scoped to that workload rather than to the whole namespace.
+
+=== KServe and ModelMesh
+
+These are matched on the labels their own controllers set, not on the namespace: `serving.kserve.io/inferenceservice` for KServe and `modelmesh-service: modelmesh-serving` for ModelMesh. A Pod that serves models without those labels is not a peer.
+
+=== Evaluation jobs and tenancy
+
+EvalHub job Pods are matched by their labels, both in the API's own namespace and, when multi-tenancy is enabled, in the tenant namespaces where the jobs actually run. In a single-tenant deployment the tenant peer matches nothing and the same-namespace peer is what admits the callback.
+
+=== Probes and webhooks
+
+Two ports cannot be constrained by peers, and the policies do not pretend otherwise.
+
+Kubelet health and readiness probes originate on the node, outside the Pod network, so they arrive from an address that no selector describes. The conversion webhook on TCP 9443 is called by the Kubernetes API server, which is host-networked with a dynamic address. Both are admitted from any source.
+
+In both cases the exposure is the port, not the Pod: every other port still requires a matching peer.
+
+== Egress
+
+Every policy grants unrestricted egress. This is a deliberate compatibility choice, not an oversight, and the reason differs per component: the TrustyAI service reaches databases and model endpoints given in its custom resource, LMEval jobs resolve datasets, tokenizers and model weights from the internet, and EvalHub reaches model and judge endpoints, MLflow and object storage that are only known at evaluation time.
+
+There is no complete static allowlist for these modes, so each policy records its posture in annotations:
+
+[source,shell]
+----
+oc get networkpolicy -n $NAMESPACE -l trustyai.opendatahub.io/component=tas -o yaml \
+  | grep -A1 -E 'network-policy-egress-(mode|behavior)'
+----
+
+Unrestricted egress means these policies provide no protection against data leaving the cluster. If you need that, add your own policy on top: NetworkPolicy grants are additive, so a narrower rule elsewhere does not reduce what these policies allow.
+
+== Finding a policy
+
+Reconciled policies are named from a hash of the owning resource, so the name is not something you type from memory. Use the labels instead:
+
+[source,shell]
+----
+# every policy the operator manages, across namespaces
+oc get networkpolicy -A -l trustyai.opendatahub.io/network-policy-managed-by=trustyai-service-operator
+
+# the policy for one component in one namespace
+oc get networkpolicy -n $NAMESPACE -l trustyai.opendatahub.io/component=tas
+----
+
+[cols="2,3", options="header"]
+|===
+| Label or annotation | Meaning
+
+| `trustyai.opendatahub.io/component`
+| `tas`, `lmes` or `evalhub`
+
+| `trustyai.opendatahub.io/role`
+| `service`, `evaluation`, `api` or `mcp`
+
+| `trustyai.opendatahub.io/owner-uid`
+| UID of the custom resource the policy belongs to
+
+| `trustyai.opendatahub.io/network-policy-managed-by`
+| Always `trustyai-service-operator`
+
+| `trustyai.opendatahub.io/network-policy-egress-mode`
+| `AllowAll`
+
+| `trustyai.opendatahub.io/network-policy-egress-rationale`
+| Why the egress posture is what it is
+
+| `trustyai.opendatahub.io/network-policy-egress-residual-risk`
+| What the grant does not protect against
+|===
+
+== Changing what the policies allow
+
+Editing a reconciled policy does not work: the operator rewrites it. Add a policy of your own instead, selecting the same Pods with the additional rule you need:
+
+[source,yaml]
+----
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-batch-namespace
+  namespace: $NAMESPACE
+spec:
+  podSelector:
+    matchLabels:
+      trustyai.opendatahub.io/component: tas
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: batch-jobs
+      ports:
+        - protocol: TCP
+          port: 8443
+----
+
+Use a name the operator does not generate, and leave out the `trustyai.opendatahub.io/network-policy-managed-by` label. The operator refuses to adopt or delete a policy it does not own, so your object stays yours.
+
+[NOTE]
+====
+If your cluster runs a platform-managed default policy for the applications namespace, its rules apply in addition to these. That is not a conflict, but it does mean the effective ingress is the union of both, and a component policy alone may not be what is actually controlling traffic. Check the whole set for the namespace before concluding that a port is closed.
+====
+
+== Limitations
+
+* Egress is not restricted. There is no restricted-egress profile yet, so a workload configured to run offline still has unrestricted network access. `allowOnline` and similar settings are application behaviour, not firewall rules.
+* The policies operate at layer 3 and 4. They do not inspect payloads, and they do not replace authentication, authorisation or TLS.
+* All containers in a Pod share one network boundary. A policy for a Pod covers its sidecars, and there is no intra-Pod isolation.
+* Pods created by another controller are not covered by these policies. The evaluation pipelines that Garak runs through Data Science Pipelines are an example: those Pods belong to the pipeline, not to TrustyAI.
+* NetworkPolicy support for `NeMo Guardrails` is in progress.
+
+== Troubleshooting
+
+[cols="2,3", options="header"]
+|===
+| Symptom | What to check
+
+| A new client cannot reach the service
+| The client's namespace is not in any ingress peer. Add your own NetworkPolicy rather than editing the managed one.
+
+| Prometheus shows no TrustyAI metrics
+| The monitoring namespace must carry `network.openshift.io/policy-group: monitoring`, and the scrape must come from a Pod with the Prometheus labels.
+
+| The dashboard cannot load bias or drift metrics
+| Dashboard Pod labels are matched by deployment name; a customised or renamed dashboard is not covered.
+
+| KServe models fail to register observations
+| Check whether the deployment is Serverless: port 8080 is only admitted for KServe Pods when it is.
+
+| Policy appears and disappears
+| The custom resource is being recreated or deleted. The policy name is derived from its UID, so a new resource means a new policy.
+|===

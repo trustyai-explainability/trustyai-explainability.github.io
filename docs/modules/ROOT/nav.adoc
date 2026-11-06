@@ -35,7 +35,9 @@
 ** xref:evalhub-tutorial.adoc[EvalHub Tutorial]
 * Components
 ** xref:trustyai-service.adoc[]
-** xref:trustyai-operator.adoc[]
+** TrustyAI Operator
+*** xref:trustyai-operator.adoc[Overview]
+*** xref:trustyai-operator-network-policies.adoc[Network Policies]
 ** xref:python-trustyai.adoc[]
 ** xref:trustyai-core.adoc[]
 ** xref:component-kserve-explainer.adoc[]
