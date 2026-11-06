@@ -1,8 +1,33 @@
 = TrustyAI operator
 
-The TrustyAI Kubernetes Operator aims at simplifying the deployment and management of the xref:trustyai-service.adoc[TrustyAI service] and xref:component-lm-eval.adoc[LM-Eval] on Kubernetes and OpenShift clusters by watching for custom resources of kind `TrustyAIService` and `LMEvalJob` in the `trustyai.opendatahub.io` API group and manages deployments, services, and optionally, routes and `ServiceMonitors` corresponding to these resources.
+image::trustyai-operator-architecture.svg[The TrustyAI module operator installs the workload operator, which reconciles the TrustyAI service, LMEval and EvalHub resources]
 
-The operator ensures the service is properly configured, is discoverable by Prometheus for metrics scraping (on both Kubernetes and OpenShift), and is accessible via a `Route` on OpenShift.
+The TrustyAI Kubernetes Operator aims at simplifying the deployment and management of the xref:trustyai-service.adoc[TrustyAI service], xref:component-lm-eval.adoc[LM-Eval] and xref:component-evalhub.adoc[EvalHub] on Kubernetes and OpenShift clusters by watching for custom resources in the `trustyai.opendatahub.io` API group and managing the deployments, services, and optionally, routes and `ServiceMonitors` corresponding to these resources.
+
+The operator ensures the service is properly configured, is discoverable by Prometheus for metrics scraping (on both Kubernetes and OpenShift), and is accessible via a `Route` on OpenShift. It also sets the network policy posture of everything it deploys; see xref:trustyai-operator-network-policies.adoc[] for what that means in practice.
+
+== What the operator manages
+
+The operator is delivered in two parts. The module operator is installed once per cluster and renders the manifests for the workload operator, which then reconciles the individual resources:
+
+[cols="2,2,3", options="header"]
+|===
+| Custom resource | Creates | Notes
+
+| `TrustyAIService`
+| `Deployment`, `Service`, optional `Route` and `ServiceMonitor`
+| The fairness, drift and explainability API described in xref:trustyai-service.adoc[].
+
+| `LMEvalJob`
+| One evaluation `Pod` per job
+| Benchmark runs driven by xref:component-lm-eval.adoc[LM-Eval].
+
+| `EvalHub`
+| API and MCP `Deployment`s with their `Service`s and `Route`s
+| The evaluation platform described in xref:component-evalhub.adoc[].
+|===
+
+Every one of those workloads is selected by a `NetworkPolicy` the operator owns, so a cluster running with a default-deny baseline still works. The rules are described in xref:trustyai-operator-network-policies.adoc[Network Policies].
 
 == Installation
 
