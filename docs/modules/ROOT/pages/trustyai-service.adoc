@@ -9,7 +9,12 @@ Although it can be used as a standalone service, it is designed to be used as pa
 
 The main functionality of the service is to provide a REST API to calculate metrics and explainability. The service can consume model data (inputs and outputs) for metrics calculation either via a consumer endpoint, or cloud events.
 
-To provide explanations, the service performs inferences to a ModelMesh/KServe-deployed model using gRPC.
+The service does not need a model-serving stack to start or to answer requests: data uploaded to the consumer endpoint is enough to run the bias and drift metrics. Serving is used for two things, and neither of them blocks the service:
+
+* Payload capture. When the serving API is installed and the namespace holds an `InferenceService`, the xref:trustyai-operator.adoc[operator] configures the model's predictor to report its requests and responses to the service, so monitoring runs on live inference traffic rather than uploaded data.
+* Explanations. To provide explanations, the service performs inferences to a ModelMesh/KServe-deployed model using gRPC.
+
+The serving state is visible in the `TrustyAIService` `InferenceServicesPresent` condition, which never affects `Ready`; see xref:trustyai-operator.adoc[] for what each reason means.
 
 == External endpoints
 

@@ -29,6 +29,35 @@ The operator is delivered in two parts. The module operator is installed once pe
 
 Every one of those workloads is selected by a `NetworkPolicy` the operator owns, so a cluster running with a default-deny baseline still works. The rules are described in xref:trustyai-operator-network-policies.adoc[Network Policies].
 
+== Model serving is optional
+
+The operator does not require a model-serving stack, either to install or to run. It does not watch `InferenceService` resources; it reads the serving API only to find the models it configures. A cluster without the KServe `InferenceService` custom resource definition therefore installs and reconciles a `TrustyAIService` normally, and the resource reaches `Ready=True` without one.
+
+Serving state is read once per reconcile, on a fixed 30-second requeue, and reported in the `InferenceServicesPresent` condition. That condition is informational: no value of it changes `Ready`, `Degraded` or the `Phase` of the resource.
+
+[cols="3,1,4", options="header"]
+|===
+| Reason | Status | Meaning
+
+| `InferenceServicesFound`
+| `True`
+| The serving API is usable and the namespace holds at least one `InferenceService`, so the inference payloads of those models are captured.
+
+| `NoInferenceServices`
+| `False`
+| The serving API is usable but the namespace holds no `InferenceService`. Payload capture starts on the reconcile after one is created.
+
+| `ServingCRDNotFound`
+| `False`
+| The serving custom resource definition is not installed. The service API, including data uploaded to its consumer endpoint, keeps working; payload capture is unavailable until serving is installed.
+
+| `ServingVersionUnsupported`
+| `False`
+| No served version of the serving API declares the predictor field the operator writes, so it configures nothing rather than writing an object that API cannot accept.
+|===
+
+The condition message names the serving group and version that was adopted, which makes version adoption observable from outside the operator. A served version is adopted only when its schema declares `spec.predictor.logger`.
+
 == Installation
 
 === OpenShift installation
